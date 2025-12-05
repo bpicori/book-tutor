@@ -11,14 +11,15 @@ interface ReaderProps {
 
 export function Reader({ viewRef }: ReaderProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { setProgress, setCurrentTocHref, settings } = useStore()
+  const { setProgress, setCurrentTocHref, setCurrentSectionIndex, settings } = useStore()
   const [selection, setSelection] = useState<SelectionInfo | null>(null)
 
   const handleRelocate = useCallback((event: Event) => {
-    const { fraction, tocItem } = (event as CustomEvent).detail
+    const { fraction, tocItem, index } = (event as CustomEvent).detail
     setProgress({ fraction, tocLabel: tocItem?.label })
     if (tocItem?.href) setCurrentTocHref(tocItem.href)
-  }, [setProgress, setCurrentTocHref])
+    if (typeof index === 'number') setCurrentSectionIndex(index)
+  }, [setProgress, setCurrentTocHref, setCurrentSectionIndex])
 
   const handleDismissSelection = useCallback(() => {
     setSelection(null)

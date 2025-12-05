@@ -12,10 +12,18 @@ export interface BookMetadata {
   language?: string
 }
 
+export interface BookSection {
+  id: string | number
+  createDocument(): Promise<Document>
+  linear?: string
+}
+
 export interface Book {
   metadata?: BookMetadata
   toc?: TOCItem[]
+  sections?: BookSection[]
   getCover?(): Promise<Blob | null>
+  resolveHref?(href: string): { index: number; anchor?: (doc: Document) => Element | Range }
 }
 
 export interface FoliateRenderer extends HTMLElement {
@@ -51,6 +59,24 @@ export interface ChatMessage {
   content: string
   isStreaming?: boolean
 }
+
+// AI Sidebar Types
+export type AiSidebarTab = 'preview' | 'ask'
+
+export interface ChapterPreview {
+  chapterHref: string
+  chapterLabel: string
+  themes: string[]
+  keyConcepts: string[]
+  toneAndStyle?: string
+  characters?: string[]
+  definitions?: Array<{ term: string; definition: string }>
+  guidingQuestions: string[]
+  generatedAt: number
+}
+
+export type ChapterChats = Record<string, ChatMessage[]>
+export type ChapterPreviews = Record<string, ChapterPreview>
 
 // Progress Types
 export interface ProgressInfo {

@@ -1,6 +1,17 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Book, LibraryBook, ChatMessage, ProgressInfo, AppPage, ReaderSettings } from '../types'
+import type { 
+  Book, 
+  LibraryBook, 
+  ChatMessage, 
+  ProgressInfo, 
+  AppPage, 
+  ReaderSettings,
+  AiSidebarTab,
+  ChapterPreview,
+  ChapterChats,
+  ChapterPreviews
+} from '../types'
 
 interface AppState {
   // Routing
@@ -15,6 +26,7 @@ interface AppState {
   coverUrl: string | null
   progress: ProgressInfo
   currentTocHref: string | null
+  currentSectionIndex: number | null
 
   // UI
   isAiSidebarOpen: boolean
@@ -24,8 +36,11 @@ interface AppState {
   // Settings
   settings: ReaderSettings
 
-  // Chat
-  chatMessages: ChatMessage[]
+  // AI Sidebar
+  activeAiTab: AiSidebarTab
+  chapterChats: ChapterChats
+  chapterPreviews: ChapterPreviews
+  previewLoading: boolean
 
   // Actions
   setCurrentView: (view: AppPage) => void
@@ -40,6 +55,7 @@ interface AppState {
   setCoverUrl: (url: string | null) => void
   setProgress: (progress: ProgressInfo) => void
   setCurrentTocHref: (href: string | null) => void
+  setCurrentSectionIndex: (index: number | null) => void
 
   toggleAiSidebar: (open?: boolean) => void
   toggleSidebar: (collapsed?: boolean) => void
@@ -48,9 +64,17 @@ interface AppState {
   updateSettings: (settings: Partial<ReaderSettings>) => void
   resetSettings: () => void
 
-  addChatMessage: (message: ChatMessage) => void
-  updateLastChatMessage: (content: string, isStreaming?: boolean) => void
-  clearChat: () => void
+  // AI Sidebar Actions
+  setActiveAiTab: (tab: AiSidebarTab) => void
+  addChatMessage: (chapterHref: string, message: ChatMessage) => void
+  updateLastChatMessage: (chapterHref: string, content: string, isStreaming?: boolean) => void
+  getChatMessages: (chapterHref: string) => ChatMessage[]
+  clearChapterChat: (chapterHref: string) => void
+  
+  setChapterPreview: (chapterHref: string, preview: ChapterPreview) => void
+  getChapterPreview: (chapterHref: string) => ChapterPreview | null
+  setPreviewLoading: (loading: boolean) => void
+  clearChapterPreview: (chapterHref: string) => void
 }
 
 const initialReaderState = {
@@ -58,7 +82,10 @@ const initialReaderState = {
   coverUrl: null,
   progress: { fraction: 0 },
   currentTocHref: null,
-  chatMessages: [],
+  currentSectionIndex: null,
+  chapterChats: {},
+  chapterPreviews: {},
+  previewLoading: false,
 }
 
 const defaultSettings: ReaderSettings = {
@@ -73,7 +100,7 @@ const defaultSettings: ReaderSettings = {
 
 export const useStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // Initial state
       currentView: 'library',
       currentBookId: null,
@@ -83,6 +110,7 @@ export const useStore = create<AppState>()(
       isSidebarCollapsed: false,
       isSettingsOpen: false,
       settings: defaultSettings,
+      activeAiTab: 'preview',
 
       // Routing
       setCurrentView: (view) => set({ currentView: view }),
@@ -123,6 +151,7 @@ export const useStore = create<AppState>()(
       setCoverUrl: (coverUrl) => set({ coverUrl }),
       setProgress: (progress) => set({ progress }),
       setCurrentTocHref: (currentTocHref) => set({ currentTocHref }),
+      setCurrentSectionIndex: (currentSectionIndex) => set({ currentSectionIndex }),
 
       // UI
       toggleAiSidebar: (open) =>
@@ -148,13 +177,23 @@ export const useStore = create<AppState>()(
       resetSettings: () =>
         set({ settings: defaultSettings }),
 
-      // Chat
-      addChatMessage: (message) =>
-        set((state) => ({ chatMessages: [...state.chatMessages, message] })),
+      // AI Sidebar
+      setActiveAiTab: (tab) => set({ activeAiTab: tab }),
 
-      updateLastChatMessage: (content, isStreaming) =>
+      addChatMessage: (chapterHref, message) =>
         set((state) => {
-          const messages = [...state.chatMessages]
+          const currentMessages = state.chapterChats[chapterHref] || []
+          return {
+            chapterChats: {
+              ...state.chapterChats,
+              [chapterHref]: [...currentMessages, message],
+            },
+          }
+        }),
+
+      updateLastChatMessage: (chapterHref, content, isStreaming) =>
+        set((state) => {
+          const messages = [...(state.chapterChats[chapterHref] || [])]
           if (messages.length > 0) {
             const lastMessage = messages[messages.length - 1]
             messages[messages.length - 1] = {
@@ -163,10 +202,43 @@ export const useStore = create<AppState>()(
               isStreaming: isStreaming ?? false,
             }
           }
-          return { chatMessages: messages }
+          return {
+            chapterChats: {
+              ...state.chapterChats,
+              [chapterHref]: messages,
+            },
+          }
         }),
 
-      clearChat: () => set({ chatMessages: [] }),
+      getChatMessages: (chapterHref) => {
+        return get().chapterChats[chapterHref] || []
+      },
+
+      clearChapterChat: (chapterHref) =>
+        set((state) => {
+          const { [chapterHref]: _, ...rest } = state.chapterChats
+          return { chapterChats: rest }
+        }),
+
+      setChapterPreview: (chapterHref, preview) =>
+        set((state) => ({
+          chapterPreviews: {
+            ...state.chapterPreviews,
+            [chapterHref]: preview,
+          },
+        })),
+
+      getChapterPreview: (chapterHref) => {
+        return get().chapterPreviews[chapterHref] || null
+      },
+
+      setPreviewLoading: (loading) => set({ previewLoading: loading }),
+
+      clearChapterPreview: (chapterHref) =>
+        set((state) => {
+          const { [chapterHref]: _, ...rest } = state.chapterPreviews
+          return { chapterPreviews: rest }
+        }),
     }),
     {
       name: 'read-with-ai-storage',
