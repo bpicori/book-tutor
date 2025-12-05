@@ -37,8 +37,8 @@ export interface ChatMessage {
 }
 
 export interface ProgressInfo {
-  fraction: number
-  tocLabel?: string
+  fraction: number // 0-1, representing the progress of the book
+  tocLabel?: string // the label of the current toc item
 }
 
 interface AppState {
