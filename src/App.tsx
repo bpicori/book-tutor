@@ -1,13 +1,9 @@
 import { useStore } from './store/useStore'
-import { LibraryPage } from './components/LibraryPage'
-import { ReaderPage } from './components/ReaderPage'
+import { LibraryPage } from './components/library'
+import { ReaderPage } from './components/reader'
 
 export function App() {
   const { currentView } = useStore()
 
-  if (currentView === 'reader') {
-    return <ReaderPage />
-  }
-
-  return <LibraryPage />
+  return currentView === 'reader' ? <ReaderPage /> : <LibraryPage />
 }

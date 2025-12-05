@@ -1,20 +1,14 @@
-import { useState, useRef, useEffect } from 'react'
-import { useStore } from '../store/useStore'
+import { useState, useRef, useEffect, memo } from 'react'
+import { useStore } from '../../store/useStore'
 import { ChatMessage } from './ChatMessage'
 
 const QUICK_ACTIONS = [
-  { action: 'summarize', label: 'Summarize this chapter' },
-  { action: 'themes', label: 'Explain the main themes' },
-  { action: 'characters', label: 'Who are the main characters?' },
+  { action: 'summarize', label: 'Summarize this chapter', message: 'Can you summarize this chapter for me?' },
+  { action: 'themes', label: 'Explain the main themes', message: 'What are the main themes in this book?' },
+  { action: 'characters', label: 'Who are the main characters?', message: 'Who are the main characters and what are their roles?' },
 ]
 
-const ACTION_MESSAGES: Record<string, string> = {
-  summarize: 'Can you summarize this chapter for me?',
-  themes: 'What are the main themes in this book?',
-  characters: 'Who are the main characters and what are their roles?',
-}
-
-export function AISidebar() {
+export const AISidebar = memo(function AISidebar() {
   const { book, isAiSidebarOpen, toggleAiSidebar, chatMessages, addChatMessage } = useStore()
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -34,7 +28,7 @@ export function AISidebar() {
       const bookInfo = book?.metadata?.title ? `about "${book.metadata.title}"` : ''
       addChatMessage({
         role: 'assistant',
-        content: `I received your question ${bookInfo}: "${message}". This is a placeholder response. To integrate with an actual AI service, you would need to add an API endpoint and connect it here.`,
+        content: `I received your question ${bookInfo}: "${message}". This is a placeholder response. To integrate with an actual AI service, you would need to add an API endpoint.`,
       })
     }, 500)
   }
@@ -46,25 +40,13 @@ export function AISidebar() {
     }
   }
 
-  const handleQuickAction = (action: string) => {
-    const message = ACTION_MESSAGES[action]
-    if (message) {
-      handleSubmit(message)
-    }
-  }
-
-  if (!isAiSidebarOpen) {
-    return null
-  }
+  if (!isAiSidebarOpen) return null
 
   return (
     <aside className="flex flex-col w-96 h-full bg-warm-off-white border-l border-border-warm overflow-hidden">
       <header className="flex-shrink-0 p-4 border-b border-border-warm flex items-center justify-between">
         <h3 className="text-muted-gray-text font-semibold text-base">AI Assistant</h3>
-        <button
-          onClick={() => toggleAiSidebar(false)}
-          className="text-light-gray-text hover:text-forest-green transition-colors"
-        >
+        <button onClick={() => toggleAiSidebar(false)} className="text-light-gray-text hover:text-forest-green transition-colors">
           <span className="material-symbols-outlined text-xl">close</span>
         </button>
       </header>
@@ -73,16 +55,12 @@ export function AISidebar() {
         <div className="flex flex-col gap-4">
           {/* Welcome Message */}
           <div className="flex items-end gap-3">
-            <div
-              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-8 shrink-0 bg-forest-green flex items-center justify-center"
-            >
+            <div className="bg-forest-green rounded-full w-8 shrink-0 flex items-center justify-center h-8">
               <span className="material-symbols-outlined text-white text-base">smart_toy</span>
             </div>
             <div className="flex flex-1 flex-col gap-1 items-start">
-              <p className="text-light-gray-text text-sm font-medium leading-normal max-w-[360px]">
-                AI Assistant
-              </p>
-              <p className="text-base font-normal leading-normal flex max-w-[360px] rounded-lg rounded-bl-none px-4 py-2 bg-hover-warm text-muted-gray-text">
+              <p className="text-light-gray-text text-sm font-medium leading-normal">AI Assistant</p>
+              <p className="text-base font-normal leading-normal rounded-lg rounded-bl-none px-4 py-2 bg-hover-warm text-muted-gray-text">
                 Hello! How can I help you understand this book?
               </p>
             </div>
@@ -91,10 +69,10 @@ export function AISidebar() {
           {/* Quick Actions */}
           {book && (
             <div className="flex flex-col items-start gap-2 pt-4">
-              {QUICK_ACTIONS.map(({ action, label }) => (
+              {QUICK_ACTIONS.map(({ action, label, message }) => (
                 <button
                   key={action}
-                  onClick={() => handleQuickAction(action)}
+                  onClick={() => handleSubmit(message)}
                   className="text-sm text-forest-green border border-forest-green/50 rounded-full px-3 py-1 hover:bg-forest-green/10 transition-colors"
                 >
                   {label}
@@ -131,5 +109,5 @@ export function AISidebar() {
       </div>
     </aside>
   )
-}
+})
 

@@ -1,12 +1,12 @@
-import { useStore } from '../store/useStore'
+import { memo } from 'react'
+import { useStore } from '../../store/useStore'
+import { ProgressBar } from '../common'
 
-export function Footer() {
+export const Footer = memo(function Footer() {
   const { book, progress } = useStore()
   const percent = Math.round(progress.fraction * 100)
 
-  if (!book) {
-    return null
-  }
+  if (!book) return null
 
   return (
     <footer className="p-6 border-t border-border-warm bg-sepia-panel">
@@ -17,14 +17,9 @@ export function Footer() {
           </p>
           <p className="text-light-gray-text text-sm">{percent}%</p>
         </div>
-        <div className="w-full rounded-full bg-hover-warm h-2">
-          <div
-            className="h-2 rounded-full bg-forest-green transition-all duration-300"
-            style={{ width: `${percent}%` }}
-          />
-        </div>
+        <ProgressBar value={progress.fraction} />
       </div>
     </footer>
   )
-}
+})
 
