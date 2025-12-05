@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Ebook Reader with AI Assistant</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;500;600;700&amp;family=Source+Sans+Pro:wght@400;600;700&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "warm-off-white": "#F7F3EB",
+              "sepia-panel": "#FDF0D0",
+              "forest-green": "#225732",
+              "muted-gray-text": "#544D45",
+              "light-gray-text": "#6B6051",
+              "border-warm": "#E8E0CE",
+              "hover-warm": "#E8DEC2",
+              "active-green-light": "#E0EEDA",
+            },
+            fontFamily: {
+              "serif-main": ["Literata", "serif"],
+              "sans-ui": ["Source Sans Pro", "sans-serif"],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height: 100%; }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      foliate-view { display: block; width: 100%; height: 100%; }
+      #toc-list::-webkit-scrollbar, #chat-messages::-webkit-scrollbar { width: 6px; }
+      #toc-list::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb {
+        background: #E8E0CE; border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body class="bg-warm-off-white font-sans-ui">
+    <div class="flex h-screen w-full">
+      <!-- Left Sidebar: Table of Contents -->
+      <aside id="toc-sidebar" class="flex flex-col w-72 bg-warm-off-white border-r border-border-warm">
+        <div class="flex flex-col h-full justify-between p-4">
+          <div class="flex flex-col gap-4">
+            <!-- Book Info Header -->
+            <div class="flex items-center gap-3 px-2">
+              <div id="book-cover" class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-10 bg-hover-warm flex items-center justify-center">
+                <span class="material-symbols-outlined text-light-gray-text">menu_book</span>
+              </div>
+              <div class="flex flex-col">
+                <h1 id="book-title" class="text-muted-gray-text text-base font-medium leading-normal">Open a Book</h1>
+                <p id="book-author" class="text-light-gray-text text-sm font-normal leading-normal">Select an EPUB file</p>
+              </div>
+            </div>
+            <!-- File Input -->
+            <div class="px-2">
+              <label class="flex items-center gap-2 px-3 py-2 rounded-lg bg-forest-green text-white cursor-pointer hover:bg-forest-green/90 transition-colors">
+                <span class="material-symbols-outlined text-lg">upload_file</span>
+                <span class="text-sm font-medium">Open EPUB</span>
+                <input id="file-input" type="file" accept=".epub" class="hidden" />
+              </label>
+            </div>
+            <!-- TOC List -->
+            <div id="toc-list" class="flex flex-col gap-1 mt-2 overflow-y-auto max-h-[calc(100vh-200px)]">
+              <p class="text-light-gray-text text-sm px-3 py-2">No book loaded</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Reading Area -->
+      <main class="flex-1 flex flex-col">
+        <!-- Header -->
+        <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-warm px-8 py-3 bg-sepia-panel">
+          <div class="flex items-center gap-4 text-muted-gray-text">
+            <div class="size-4 text-forest-green">
+              <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z" fill="currentColor"></path>
+              </svg>
+            </div>
+            <h2 id="header-title" class="text-muted-gray-text text-lg font-bold leading-tight tracking-[-0.015em]">Read with AI</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="prev-btn" class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 text-sm font-bold">
+              <span class="material-symbols-outlined text-xl">chevron_left</span>
+            </button>
+            <button id="next-btn" class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 text-sm font-bold">
+              <span class="material-symbols-outlined text-xl">chevron_right</span>
+            </button>
+            <button id="toggle-ai-btn" class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-3 bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 text-sm font-bold gap-2">
+              <span class="material-symbols-outlined text-xl">smart_toy</span>
+              <span class="hidden sm:inline">AI Assistant</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Reading Area -->
+        <div id="reader" class="flex-1 overflow-hidden bg-sepia-panel"></div>
+
+        <!-- Footer with Progress -->
+        <footer id="progress-footer" class="p-6 border-t border-border-warm bg-sepia-panel hidden">
+          <div class="flex flex-col gap-2">
+            <div class="flex gap-6 justify-between items-center">
+              <p id="progress-label" class="text-muted-gray-text text-sm font-medium leading-normal">Reading Progress</p>
+              <p id="progress-percent" class="text-light-gray-text text-sm">0%</p>
+            </div>
+            <div class="w-full rounded-full bg-hover-warm h-2">
+              <div id="progress-bar" class="h-2 rounded-full bg-forest-green transition-all duration-300" style="width: 0%;"></div>
+            </div>
+          </div>
+        </footer>
+      </main>
+
+      <!-- Right Sidebar: AI Assistant -->
+      <aside id="ai-sidebar" class="flex flex-col w-96 bg-warm-off-white border-l border-border-warm">
+        <header class="p-4 border-b border-border-warm flex items-center justify-between">
+          <h3 class="text-muted-gray-text font-semibold">AI Assistant</h3>
+          <button id="close-ai-btn" class="text-light-gray-text hover:text-forest-green">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+        </header>
+        <div id="chat-messages" class="flex-1 flex flex-col p-4 overflow-y-auto">
+          <div class="flex flex-col gap-4">
+            <!-- AI Welcome Message -->
+            <div class="flex items-end gap-3">
+              <div class="bg-forest-green rounded-full w-8 h-8 shrink-0 flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-lg">smart_toy</span>
+              </div>
+              <div class="flex flex-1 flex-col gap-1 items-start">
+                <p class="text-light-gray-text text-sm font-medium leading-normal max-w-[360px]">AI Assistant</p>
+                <p class="text-base font-normal leading-normal flex max-w-[360px] rounded-lg rounded-bl-none px-4 py-2 bg-hover-warm text-muted-gray-text">
+                  Hello! Open a book and I can help you understand it. Ask me to summarize chapters, explain themes, or answer questions about the text.
+                </p>
+              </div>
+            </div>
+            <!-- Quick Actions -->
+            <div id="quick-actions" class="flex flex-col items-start gap-2 pt-4 hidden">
+              <button class="quick-action text-sm text-forest-green border border-forest-green/50 rounded-full px-3 py-1 hover:bg-forest-green/10" data-action="summarize">
+                Summarize this chapter
+              </button>
+              <button class="quick-action text-sm text-forest-green border border-forest-green/50 rounded-full px-3 py-1 hover:bg-forest-green/10" data-action="themes">
+                Explain the main themes
+              </button>
+              <button class="quick-action text-sm text-forest-green border border-forest-green/50 rounded-full px-3 py-1 hover:bg-forest-green/10" data-action="characters">
+                Who are the main characters?
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="p-4 border-t border-border-warm">
+          <div class="relative">
+            <input id="chat-input" class="w-full h-12 pl-4 pr-12 text-sm bg-warm-off-white border border-border-warm rounded-lg focus:ring-2 focus:ring-forest-green focus:border-forest-green text-muted-gray-text placeholder-light-gray-text" placeholder="Ask a question..." type="text" />
+            <button id="send-btn" class="absolute inset-y-0 right-0 flex items-center justify-center w-12 text-light-gray-text hover:text-forest-green">
+              <span class="material-symbols-outlined">send</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
