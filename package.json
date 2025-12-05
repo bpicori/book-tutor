@@ -20,6 +20,7 @@
     "vite": "^7.2.4"
   },
   "dependencies": {
+    "openai": "^6.10.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "zustand": "^5.0.9"

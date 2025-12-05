@@ -49,6 +49,7 @@ export interface LibraryBook {
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
+  isStreaming?: boolean
 }
 
 // Progress Types

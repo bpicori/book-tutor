@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect, memo } from 'react'
+import { useState, useRef, useEffect, memo, useCallback } from 'react'
 import { useStore } from '../../store/useStore'
 import { ChatMessage } from './ChatMessage'
+import { streamChat, LLMServiceError } from '../../services/llmService'
 
 const QUICK_ACTIONS = [
   { action: 'summarize', label: 'Summarize this chapter', message: 'Can you summarize this chapter for me?' },
@@ -9,29 +10,90 @@ const QUICK_ACTIONS = [
 ]
 
 export const AISidebar = memo(function AISidebar() {
-  const { book, isAiSidebarOpen, toggleAiSidebar, chatMessages, addChatMessage } = useStore()
+  const { 
+    book, 
+    isAiSidebarOpen, 
+    toggleAiSidebar, 
+    chatMessages, 
+    addChatMessage, 
+    updateLastChatMessage,
+    settings 
+  } = useStore()
   const [inputValue, setInputValue] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages])
 
-  const handleSubmit = (message: string) => {
-    if (!message.trim()) return
+  const handleSubmit = useCallback(async (message: string) => {
+    if (!message.trim() || isLoading) return
 
+    // Add user message
     addChatMessage({ role: 'user', content: message })
     setInputValue('')
 
-    // Simulate AI response
-    setTimeout(() => {
-      const bookInfo = book?.metadata?.title ? `about "${book.metadata.title}"` : ''
+    // Check if API key is configured
+    if (!settings.llmApiKey) {
       addChatMessage({
         role: 'assistant',
-        content: `I received your question ${bookInfo}: "${message}". This is a placeholder response. To integrate with an actual AI service, you would need to add an API endpoint.`,
+        content: 'Please configure your API key in Settings to use the AI assistant.',
       })
-    }, 500)
-  }
+      return
+    }
+
+    setIsLoading(true)
+
+    // Add empty assistant message for streaming
+    addChatMessage({ role: 'assistant', content: '', isStreaming: true })
+
+    const llmSettings = {
+      apiKey: settings.llmApiKey,
+      baseUrl: settings.llmBaseUrl,
+      model: settings.llmModel,
+    }
+
+    // Build system prompt with book context
+    const bookTitle = book?.metadata?.title || 'the book'
+    const bookAuthor = book?.metadata?.author 
+      ? Array.isArray(book.metadata.author) 
+        ? book.metadata.author.join(', ') 
+        : book.metadata.author 
+      : 'unknown author'
+    
+    const systemPrompt = `You are a helpful reading assistant. The user is currently reading "${bookTitle}" by ${bookAuthor}. Help them understand the book, answer questions about its content, themes, characters, and provide insights. Be concise but thorough in your responses.`
+
+    // Get conversation history (excluding the empty streaming message we just added)
+    const conversationHistory = chatMessages.map(msg => ({
+      role: msg.role,
+      content: msg.content,
+    }))
+    // Add the new user message
+    conversationHistory.push({ role: 'user' as const, content: message })
+
+    try {
+      let fullContent = ''
+      
+      for await (const chunk of streamChat(conversationHistory, llmSettings, systemPrompt)) {
+        fullContent += chunk
+        updateLastChatMessage(fullContent, true)
+      }
+
+      // Mark streaming as complete
+      updateLastChatMessage(fullContent, false)
+    } catch (error) {
+      let errorMessage = 'An unexpected error occurred. Please try again.'
+      
+      if (error instanceof LLMServiceError) {
+        errorMessage = error.message
+      }
+      
+      updateLastChatMessage(errorMessage, false)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [isLoading, addChatMessage, settings, book, chatMessages, updateLastChatMessage])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -67,7 +129,7 @@ export const AISidebar = memo(function AISidebar() {
           </div>
 
           {/* Quick Actions */}
-          {book && (
+          {book && !isLoading && chatMessages.length === 0 && (
             <div className="flex flex-col items-start gap-2 pt-4">
               {QUICK_ACTIONS.map(({ action, label, message }) => (
                 <button
@@ -95,19 +157,24 @@ export const AISidebar = memo(function AISidebar() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full h-12 pl-4 pr-12 text-sm bg-warm-off-white border border-border-warm rounded-lg focus:ring-2 focus:ring-forest-green focus:border-forest-green text-muted-gray-text placeholder-light-gray-text outline-none"
-            placeholder="Ask a question..."
+            disabled={isLoading}
+            className="w-full h-12 pl-4 pr-12 text-sm bg-warm-off-white border border-border-warm rounded-lg focus:ring-2 focus:ring-forest-green focus:border-forest-green text-muted-gray-text placeholder-light-gray-text outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            placeholder={isLoading ? 'AI is thinking...' : 'Ask a question...'}
             type="text"
           />
           <button
             onClick={() => handleSubmit(inputValue)}
-            className="absolute inset-y-0 right-0 flex items-center justify-center w-12 text-light-gray-text hover:text-forest-green transition-colors"
+            disabled={isLoading || !inputValue.trim()}
+            className="absolute inset-y-0 right-0 flex items-center justify-center w-12 text-light-gray-text hover:text-forest-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span className="material-symbols-outlined">send</span>
+            {isLoading ? (
+              <span className="material-symbols-outlined animate-spin">progress_activity</span>
+            ) : (
+              <span className="material-symbols-outlined">send</span>
+            )}
           </button>
         </div>
       </div>
     </aside>
   )
 })
-

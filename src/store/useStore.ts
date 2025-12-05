@@ -49,6 +49,7 @@ interface AppState {
   resetSettings: () => void
 
   addChatMessage: (message: ChatMessage) => void
+  updateLastChatMessage: (content: string, isStreaming?: boolean) => void
   clearChat: () => void
 }
 
@@ -150,6 +151,20 @@ export const useStore = create<AppState>()(
       // Chat
       addChatMessage: (message) =>
         set((state) => ({ chatMessages: [...state.chatMessages, message] })),
+
+      updateLastChatMessage: (content, isStreaming) =>
+        set((state) => {
+          const messages = [...state.chatMessages]
+          if (messages.length > 0) {
+            const lastMessage = messages[messages.length - 1]
+            messages[messages.length - 1] = {
+              ...lastMessage,
+              content,
+              isStreaming: isStreaming ?? false,
+            }
+          }
+          return { chatMessages: messages }
+        }),
 
       clearChat: () => set({ chatMessages: [] }),
     }),
