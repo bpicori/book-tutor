@@ -69,5 +69,10 @@ export interface ReaderSettings {
   
   // Reading
   viewMode: 'paginated' | 'scroll'
+  
+  // LLM Settings (OpenAI compatible)
+  llmApiKey: string
+  llmBaseUrl: string
+  llmModel: string
 }
 

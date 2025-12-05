@@ -65,6 +65,9 @@ const defaultSettings: ReaderSettings = {
   fontSize: 16,
   lineHeight: 1.6,
   viewMode: 'paginated',
+  llmApiKey: '',
+  llmBaseUrl: 'https://api.openai.com/v1',
+  llmModel: 'gpt-4o-mini',
 }
 
 export const useStore = create<AppState>()(

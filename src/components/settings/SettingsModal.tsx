@@ -2,8 +2,9 @@ import { memo, useState } from 'react'
 import { useStore } from '../../store/useStore'
 import { Modal } from '../common'
 import { TypographyTab } from './tabs/TypographyTab'
+import { LLMTab } from './tabs/LLMTab'
 
-type TabId = 'typography'
+type TabId = 'typography' | 'llm'
 
 interface Tab {
   id: TabId
@@ -13,6 +14,7 @@ interface Tab {
 
 const tabs: Tab[] = [
   { id: 'typography', label: 'Typography', icon: 'text_fields' },
+  { id: 'llm', label: 'LLM', icon: 'smart_toy' },
 ]
 
 export const SettingsModal = memo(function SettingsModal() {
@@ -27,6 +29,8 @@ export const SettingsModal = memo(function SettingsModal() {
     switch (activeTab) {
       case 'typography':
         return <TypographyTab settings={settings} onUpdate={updateSettings} />
+      case 'llm':
+        return <LLMTab settings={settings} onUpdate={updateSettings} />
       default:
         return null
     }
