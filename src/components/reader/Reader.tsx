@@ -15,10 +15,11 @@ export function Reader({ viewRef }: ReaderProps) {
   const [selection, setSelection] = useState<SelectionInfo | null>(null)
 
   const handleRelocate = useCallback((event: Event) => {
-    const { fraction, tocItem, index } = (event as CustomEvent).detail
+    const { fraction, tocItem, section } = (event as CustomEvent).detail
     setProgress({ fraction, tocLabel: tocItem?.label })
     if (tocItem?.href) setCurrentTocHref(tocItem.href)
-    if (typeof index === 'number') setCurrentSectionIndex(index)
+    // Section index is in section.current from the progress object
+    if (typeof section?.current === 'number') setCurrentSectionIndex(section.current)
   }, [setProgress, setCurrentTocHref, setCurrentSectionIndex])
 
   const handleDismissSelection = useCallback(() => {
