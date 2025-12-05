@@ -9,7 +9,7 @@ interface HeaderProps {
 }
 
 export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
-  const { book, toggleAiSidebar, toggleSidebar, isSidebarCollapsed, goToLibrary } = useStore()
+  const { book, toggleAiSidebar, toggleSidebar, isSidebarCollapsed, goToLibrary, toggleSettings } = useStore()
   const title = formatLanguageMap(book?.metadata?.title) || 'Read with AI'
 
   return (
@@ -27,6 +27,7 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
       <div className="flex items-center gap-2">
         <IconButton icon="chevron_left" label="Previous page" onClick={onPrev} />
         <IconButton icon="chevron_right" label="Next page" onClick={onNext} />
+        <IconButton icon="settings" label="Settings" onClick={() => toggleSettings()} />
         <IconButton icon="smart_toy" label="Toggle AI Assistant" text="AI Assistant" onClick={() => toggleAiSidebar()} />
       </div>
     </header>

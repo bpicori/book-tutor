@@ -55,3 +55,14 @@ export interface ProgressInfo {
 // App Types
 export type AppPage = 'library' | 'reader'
 
+// Settings Types
+export interface ReaderSettings {
+  // Typography
+  fontFamily: string
+  fontSize: number // 12-24
+  lineHeight: number // 1.2-2.0
+  
+  // Reading
+  viewMode: 'paginated' | 'scroll'
+}
+

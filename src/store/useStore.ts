@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Book, LibraryBook, ChatMessage, ProgressInfo, AppPage } from '../types'
+import type { Book, LibraryBook, ChatMessage, ProgressInfo, AppPage, ReaderSettings } from '../types'
 
 interface AppState {
   // Routing
@@ -19,6 +19,10 @@ interface AppState {
   // UI
   isAiSidebarOpen: boolean
   isSidebarCollapsed: boolean
+  isSettingsOpen: boolean
+
+  // Settings
+  settings: ReaderSettings
 
   // Chat
   chatMessages: ChatMessage[]
@@ -39,6 +43,10 @@ interface AppState {
 
   toggleAiSidebar: (open?: boolean) => void
   toggleSidebar: (collapsed?: boolean) => void
+  toggleSettings: (open?: boolean) => void
+
+  updateSettings: (settings: Partial<ReaderSettings>) => void
+  resetSettings: () => void
 
   addChatMessage: (message: ChatMessage) => void
   clearChat: () => void
@@ -52,6 +60,13 @@ const initialReaderState = {
   chatMessages: [],
 }
 
+const defaultSettings: ReaderSettings = {
+  fontFamily: 'Literata',
+  fontSize: 16,
+  lineHeight: 1.6,
+  viewMode: 'paginated',
+}
+
 export const useStore = create<AppState>()(
   persist(
     (set) => ({
@@ -62,6 +77,8 @@ export const useStore = create<AppState>()(
       ...initialReaderState,
       isAiSidebarOpen: true,
       isSidebarCollapsed: false,
+      isSettingsOpen: false,
+      settings: defaultSettings,
 
       // Routing
       setCurrentView: (view) => set({ currentView: view }),
@@ -114,6 +131,19 @@ export const useStore = create<AppState>()(
           isSidebarCollapsed: collapsed ?? !state.isSidebarCollapsed,
         })),
 
+      toggleSettings: (open) =>
+        set((state) => ({
+          isSettingsOpen: open ?? !state.isSettingsOpen,
+        })),
+
+      updateSettings: (newSettings) =>
+        set((state) => ({
+          settings: { ...state.settings, ...newSettings },
+        })),
+
+      resetSettings: () =>
+        set({ settings: defaultSettings }),
+
       // Chat
       addChatMessage: (message) =>
         set((state) => ({ chatMessages: [...state.chatMessages, message] })),
@@ -128,6 +158,7 @@ export const useStore = create<AppState>()(
         library: state.library,
         isSidebarCollapsed: state.isSidebarCollapsed,
         isAiSidebarOpen: state.isAiSidebarOpen,
+        settings: state.settings,
       }),
     }
   )
