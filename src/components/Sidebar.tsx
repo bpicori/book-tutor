@@ -2,9 +2,15 @@ import { useStore, type TOCItem } from '../store/useStore'
 
 interface SidebarProps {
   onNavigate: (href: string) => void
-  onFileSelect: (file: File) => void
 }
 
+
+/**
+ * TOCLink renders a Table of Contents (TOC) entry for the book sidebar navigation.
+ * It displays the chapter/item label, highlights the current location, 
+ * and recursively renders any subitems. Clicking on a link triggers navigation
+ * and updates global state to reflect the active chapter.
+ */
 function TOCLink({
   item,
   level,
@@ -75,18 +81,11 @@ const formatContributor = (contributor: unknown): string => {
   return formatOneContributor(contributor)
 }
 
-export function Sidebar({ onNavigate, onFileSelect }: SidebarProps) {
+export function Sidebar({ onNavigate }: SidebarProps) {
   const { book, coverUrl, isSidebarCollapsed } = useStore()
 
   const title = formatLanguageMap(book?.metadata?.title) || 'Table of Contents'
-  const author = formatContributor(book?.metadata?.author) || 'Select an EPUB file'
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      onFileSelect(file)
-    }
-  }
+  const author = formatContributor(book?.metadata?.author) || ''
 
   if (isSidebarCollapsed) {
     return null
@@ -109,22 +108,10 @@ export function Sidebar({ onNavigate, onFileSelect }: SidebarProps) {
             </div>
             <div className="flex flex-col min-w-0">
               <h1 className="text-muted-gray-text text-base font-medium leading-normal truncate">{title}</h1>
-              <p className="text-light-gray-text text-sm font-normal leading-normal truncate">{author}</p>
+              {author && (
+                <p className="text-light-gray-text text-sm font-normal leading-normal truncate">{author}</p>
+              )}
             </div>
-          </div>
-
-          {/* File Input */}
-          <div className="px-2">
-            <label className="flex items-center gap-2 px-3 py-2 rounded-lg bg-forest-green text-white cursor-pointer hover:bg-forest-green/90 transition-colors">
-              <span className="material-symbols-outlined text-lg">upload_file</span>
-              <span className="text-sm font-medium">Open EPUB</span>
-              <input
-                type="file"
-                accept=".epub"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-            </label>
           </div>
         </div>
       </div>

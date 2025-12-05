@@ -17,7 +17,7 @@ const formatLanguageMap = (x: unknown): string => {
 }
 
 export function Header({ onPrev, onNext }: HeaderProps) {
-  const { book, toggleAiSidebar, toggleSidebar, isSidebarCollapsed } = useStore()
+  const { book, toggleAiSidebar, toggleSidebar, isSidebarCollapsed, goToLibrary } = useStore()
   const title = formatLanguageMap(book?.metadata?.title) || 'Read with AI'
 
   return (
@@ -32,6 +32,17 @@ export function Header({ onPrev, onNext }: HeaderProps) {
             {isSidebarCollapsed ? 'menu' : 'menu_open'}
           </span>
         </button>
+        
+        {/* Back to Library button */}
+        <button
+          onClick={goToLibrary}
+          className="flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-3 bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 text-sm font-medium transition-colors"
+          aria-label="Back to Library"
+        >
+          <span className="material-symbols-outlined text-xl">arrow_back</span>
+          <span className="hidden sm:inline">Library</span>
+        </button>
+        
         <div className="size-4 text-forest-green">
           <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -71,4 +82,3 @@ export function Header({ onPrev, onNext }: HeaderProps) {
     </header>
   )
 }
-
