@@ -76,7 +76,7 @@ const formatContributor = (contributor: unknown): string => {
 }
 
 export function Sidebar({ onNavigate, onFileSelect }: SidebarProps) {
-  const { book, coverUrl } = useStore()
+  const { book, coverUrl, isSidebarCollapsed } = useStore()
 
   const title = formatLanguageMap(book?.metadata?.title) || 'Table of Contents'
   const author = formatContributor(book?.metadata?.author) || 'Select an EPUB file'
@@ -86,6 +86,10 @@ export function Sidebar({ onNavigate, onFileSelect }: SidebarProps) {
     if (file) {
       onFileSelect(file)
     }
+  }
+
+  if (isSidebarCollapsed) {
+    return null
   }
 
   return (

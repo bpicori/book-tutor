@@ -17,12 +17,21 @@ const formatLanguageMap = (x: unknown): string => {
 }
 
 export function Header({ onPrev, onNext }: HeaderProps) {
-  const { book, toggleAiSidebar } = useStore()
+  const { book, toggleAiSidebar, toggleSidebar, isSidebarCollapsed } = useStore()
   const title = formatLanguageMap(book?.metadata?.title) || 'Read with AI'
 
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-warm px-8 py-3 bg-sepia-panel">
       <div className="flex items-center gap-4 text-muted-gray-text">
+        <button
+          onClick={() => toggleSidebar()}
+          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 text-sm font-bold transition-colors"
+          aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <span className="material-symbols-outlined text-xl">
+            {isSidebarCollapsed ? 'menu' : 'menu_open'}
+          </span>
+        </button>
         <div className="size-4 text-forest-green">
           <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
             <path

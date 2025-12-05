@@ -50,6 +50,7 @@ interface AppState {
 
   // UI state
   isAiSidebarOpen: boolean
+  isSidebarCollapsed: boolean
 
   // Chat state
   chatMessages: ChatMessage[]
@@ -60,6 +61,7 @@ interface AppState {
   setProgress: (progress: ProgressInfo) => void
   setCurrentTocHref: (href: string | null) => void
   toggleAiSidebar: (open?: boolean) => void
+  toggleSidebar: (collapsed?: boolean) => void
   addChatMessage: (message: ChatMessage) => void
   clearChat: () => void
 }
@@ -71,6 +73,7 @@ export const useStore = create<AppState>((set) => ({
   progress: { fraction: 0 },
   currentTocHref: null,
   isAiSidebarOpen: true,
+  isSidebarCollapsed: false,
   chatMessages: [],
 
   // Actions
@@ -85,6 +88,11 @@ export const useStore = create<AppState>((set) => ({
   toggleAiSidebar: (open) =>
     set((state) => ({
       isAiSidebarOpen: open !== undefined ? open : !state.isAiSidebarOpen,
+    })),
+  
+  toggleSidebar: (collapsed) =>
+    set((state) => ({
+      isSidebarCollapsed: collapsed !== undefined ? collapsed : !state.isSidebarCollapsed,
     })),
   
   addChatMessage: (message) =>
