@@ -38,19 +38,22 @@ export function Header({ onPrev, onNext }: HeaderProps) {
       <div className="flex items-center gap-2">
         <button
           onClick={onPrev}
-          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 text-sm font-bold"
+          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 text-sm font-bold transition-colors"
+          aria-label="Previous page"
         >
           <span className="material-symbols-outlined text-xl">chevron_left</span>
         </button>
         <button
           onClick={onNext}
-          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 text-sm font-bold"
+          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 text-sm font-bold transition-colors"
+          aria-label="Next page"
         >
           <span className="material-symbols-outlined text-xl">chevron_right</span>
         </button>
         <button
           onClick={() => toggleAiSidebar()}
-          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-3 bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 text-sm font-bold gap-2"
+          className="flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 text-sm font-bold transition-colors"
+          aria-label="Toggle AI Assistant"
         >
           <span className="material-symbols-outlined text-xl">smart_toy</span>
           <span className="hidden sm:inline">AI Assistant</span>

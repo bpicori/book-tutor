@@ -78,10 +78,10 @@ export function App() {
   }, [])
 
   return (
-    <div className="flex h-screen w-full">
+    <div className="flex h-screen w-full overflow-hidden">
       <Sidebar onNavigate={handleNavigate} onFileSelect={handleFileSelect} />
 
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <Header onPrev={handlePrev} onNext={handleNext} />
         <Reader viewRef={viewRef} />
         <Footer />

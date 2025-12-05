@@ -14,9 +14,9 @@
   --font-family-sans-ui: "Source Sans Pro", sans-serif;
 }
 
-* {
-  margin: 0;
-  padding: 0;
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -29,6 +29,8 @@ body,
 body {
   background-color: var(--color-warm-off-white);
   font-family: var(--font-family-sans-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .material-symbols-outlined {
