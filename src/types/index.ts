@@ -18,8 +18,13 @@ export interface Book {
   getCover?(): Promise<Blob | null>
 }
 
+export interface FoliateRenderer extends HTMLElement {
+  setStyles?(styles: string): void
+}
+
 export interface FoliateView extends HTMLElement {
   book?: Book
+  renderer?: FoliateRenderer
   open(file: File): Promise<void>
   init(options: { lastLocation?: string; showTextStart?: boolean }): Promise<void>
   prev(): Promise<void>

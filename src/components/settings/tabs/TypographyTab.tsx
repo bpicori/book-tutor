@@ -9,9 +9,6 @@ interface TypographyTabProps {
 const fontFamilies = [
   { value: 'Literata', label: 'Literata' },
   { value: 'Georgia', label: 'Georgia' },
-  { value: 'Times New Roman', label: 'Times New Roman' },
-  { value: 'Source Sans Pro', label: 'Source Sans Pro' },
-  { value: 'Inter', label: 'Inter' },
   { value: 'Merriweather', label: 'Merriweather' },
 ]
 

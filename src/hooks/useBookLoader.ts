@@ -2,9 +2,10 @@ import { useRef, useCallback, useEffect, useState } from 'react'
 import type { FoliateView } from '../types'
 import { useStore } from '../store/useStore'
 import { getBookFile } from '../store/bookStorage'
+import { generateReaderCSS } from '../utils/readerStyles'
 
 export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null>) {
-  const { currentBookId, setBook, setCoverUrl } = useStore()
+  const { currentBookId, setBook, setCoverUrl, settings } = useStore()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const loadAttemptedRef = useRef(false)
@@ -37,6 +38,13 @@ export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null
       }
 
       await view.init({ lastLocation: undefined, showTextStart: true })
+      
+      // Apply font settings after book is initialized
+      if (view.renderer) {
+        const css = generateReaderCSS(settings)
+        view.renderer.setStyles?.(css)
+      }
+      
       setIsLoading(false)
       return true
     } catch (err) {
@@ -45,7 +53,7 @@ export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null
       setIsLoading(false)
       return false
     }
-  }, [setBook, setCoverUrl, viewRef])
+  }, [setBook, setCoverUrl, viewRef, settings])
 
   useEffect(() => {
     if (loadAttemptedRef.current) return
