@@ -3,9 +3,9 @@ import { LibraryPage } from './components/LibraryPage'
 import { ReaderPage } from './components/ReaderPage'
 
 export function App() {
-  const { currentPage } = useStore()
+  const { currentView } = useStore()
 
-  if (currentPage === 'reader') {
+  if (currentView === 'reader') {
     return <ReaderPage />
   }
 

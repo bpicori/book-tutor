@@ -58,7 +58,7 @@ export type AppPage = 'library' | 'reader'
 
 interface AppState {
   // Page routing
-  currentPage: AppPage
+  currentView: AppPage
   currentBookId: string | null
 
   // Library state (persisted)
@@ -78,7 +78,7 @@ interface AppState {
   chatMessages: ChatMessage[]
 
   // Page routing actions
-  setCurrentPage: (page: AppPage) => void
+  setCurrentView: (view: AppPage) => void
   openBook: (bookId: string) => void
   goToLibrary: () => void
 
@@ -107,7 +107,7 @@ export const useStore = create<AppState>()(
   persist(
     (set) => ({
       // Initial state
-      currentPage: 'library',
+      currentView: 'library',
       currentBookId: null,
       library: [],
       book: null,
@@ -119,7 +119,7 @@ export const useStore = create<AppState>()(
       chatMessages: [],
 
       // Page routing actions
-      setCurrentPage: (page) => set({ currentPage: page }),
+      setCurrentView: (view) => set({ currentView: view }),
 
       openBook: (bookId) =>
         set((state) => {
@@ -128,7 +128,7 @@ export const useStore = create<AppState>()(
             b.id === bookId ? { ...b, lastReadAt: Date.now() } : b
           )
           return {
-            currentPage: 'reader',
+            currentView: 'reader',
             currentBookId: bookId,
             library,
             // Reset reader state
@@ -142,7 +142,7 @@ export const useStore = create<AppState>()(
 
       goToLibrary: () =>
         set({
-          currentPage: 'library',
+          currentView: 'library',
           currentBookId: null,
           book: null,
           coverUrl: null,
@@ -208,7 +208,7 @@ export const useStore = create<AppState>()(
       name: 'read-with-ai-storage',
       // Only persist these fields
       partialize: (state) => ({
-        currentPage: state.currentPage,
+        currentView: state.currentView,
         currentBookId: state.currentBookId,
         library: state.library,
         isSidebarCollapsed: state.isSidebarCollapsed,
