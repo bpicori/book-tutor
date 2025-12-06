@@ -1,3 +1,5 @@
+import { formatLanguageMap } from './formatters'
+
 /**
  * Extracts a string value from book metadata that might be:
  * - A plain string
@@ -31,10 +33,10 @@ export function formatMetadataValue(value: unknown): string {
       return formatMetadataValue(obj.value)
     }
     
-    // Language map - get first available value
-    const values = Object.values(obj)
-    if (values.length > 0) {
-      return formatMetadataValue(values[0])
+    // Language map - use formatLanguageMap helper
+    const languageMapResult = formatLanguageMap(value)
+    if (languageMapResult) {
+      return languageMapResult
     }
   }
   

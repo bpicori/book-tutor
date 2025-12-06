@@ -4,21 +4,31 @@
  * while keeping metadata in localStorage via zustand persist.
  */
 
-const DB_NAME = 'read-with-ai-books'
-const DB_VERSION = 1
-const STORE_NAME = 'books'
+import { DB_NAME, DB_VERSION, DB_STORE_NAME } from '../constants'
+
+const STORE_NAME = DB_STORE_NAME
 
 interface StoredBook {
   id: string
   data: ArrayBuffer
 }
 
+let dbCache: IDBDatabase | null = null
+
 function openDB(): Promise<IDBDatabase> {
+  // Return cached connection if available
+  if (dbCache) {
+    return Promise.resolve(dbCache)
+  }
+
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION)
 
     request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve(request.result)
+    request.onsuccess = () => {
+      dbCache = request.result
+      resolve(dbCache)
+    }
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result
@@ -27,6 +37,16 @@ function openDB(): Promise<IDBDatabase> {
       }
     }
   })
+}
+
+/**
+ * Close the database connection (useful for cleanup)
+ */
+export function closeDB(): void {
+  if (dbCache) {
+    dbCache.close()
+    dbCache = null
+  }
 }
 
 export async function saveBookFile(id: string, file: File): Promise<void> {

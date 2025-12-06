@@ -29,6 +29,35 @@ function createClient(settings: LLMSettings): OpenAI {
   })
 }
 
+/**
+ * Centralized error handler for OpenAI API errors.
+ * Converts OpenAI API errors into LLMServiceError with appropriate messages.
+ */
+function handleOpenAIError(error: unknown, settings: LLMSettings): never {
+  if (error instanceof LLMServiceError) {
+    throw error
+  }
+
+  if (error instanceof OpenAI.APIError) {
+    if (error.status === 401) {
+      throw new LLMServiceError('Invalid API key. Please check your API key in Settings.', 'INVALID_API_KEY')
+    }
+    if (error.status === 429) {
+      throw new LLMServiceError('Rate limit exceeded. Please try again later.', 'RATE_LIMIT')
+    }
+    if (error.status === 404) {
+      throw new LLMServiceError(`Model "${settings.model}" not found. Please check your model name.`, 'MODEL_NOT_FOUND')
+    }
+    throw new LLMServiceError(error.message || 'An error occurred while communicating with the API.', 'API_ERROR')
+  }
+
+  if (error instanceof SyntaxError) {
+    throw new LLMServiceError('Failed to parse AI response. Please try again.', 'PARSE_ERROR')
+  }
+
+  throw new LLMServiceError('Failed to connect to the API. Please check your network connection.', 'NETWORK_ERROR')
+}
+
 export async function* streamChat(
   messages: ChatMessage[],
   settings: LLMSettings,
@@ -63,19 +92,7 @@ export async function* streamChat(
       }
     }
   } catch (error) {
-    if (error instanceof OpenAI.APIError) {
-      if (error.status === 401) {
-        throw new LLMServiceError('Invalid API key. Please check your API key in Settings.', 'INVALID_API_KEY')
-      }
-      if (error.status === 429) {
-        throw new LLMServiceError('Rate limit exceeded. Please try again later.', 'RATE_LIMIT')
-      }
-      if (error.status === 404) {
-        throw new LLMServiceError(`Model "${settings.model}" not found. Please check your model name.`, 'MODEL_NOT_FOUND')
-      }
-      throw new LLMServiceError(error.message || 'An error occurred while communicating with the API.', 'API_ERROR')
-    }
-    throw new LLMServiceError('Failed to connect to the API. Please check your network connection.', 'NETWORK_ERROR')
+    handleOpenAIError(error, settings)
   }
 }
 
@@ -183,22 +200,7 @@ Based on the chapter content above, create a preview that will help orient and p
     if (error instanceof LLMServiceError) {
       throw error
     }
-    if (error instanceof SyntaxError) {
-      throw new LLMServiceError('Failed to parse AI response. Please try again.', 'PARSE_ERROR')
-    }
-    if (error instanceof OpenAI.APIError) {
-      if (error.status === 401) {
-        throw new LLMServiceError('Invalid API key. Please check your API key in Settings.', 'INVALID_API_KEY')
-      }
-      if (error.status === 429) {
-        throw new LLMServiceError('Rate limit exceeded. Please try again later.', 'RATE_LIMIT')
-      }
-      if (error.status === 404) {
-        throw new LLMServiceError(`Model "${settings.model}" not found. Please check your model name.`, 'MODEL_NOT_FOUND')
-      }
-      throw new LLMServiceError(error.message || 'An error occurred while communicating with the API.', 'API_ERROR')
-    }
-    throw new LLMServiceError('Failed to generate preview. Please check your network connection.', 'NETWORK_ERROR')
+    handleOpenAIError(error, settings)
   }
 }
 

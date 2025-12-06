@@ -35,8 +35,20 @@ export function LibraryPage() {
 
       await view.open(file)
       const book = view.book
-      const title = formatLanguageMap(book?.metadata?.title) || file.name.replace('.epub', '')
-      const author = formatContributor(book?.metadata?.author) || ''
+
+      // Type checks and safe formatting to address type safety and injection risk
+      let rawTitle: unknown = book?.metadata?.title
+      let rawAuthor: unknown = book?.metadata?.author
+
+      const safeTitle = typeof rawTitle === 'string' || (typeof rawTitle === 'object' && rawTitle !== null)
+        ? formatLanguageMap(rawTitle as any)
+        : ''
+      const title = safeTitle || file.name.replace('.epub', '')
+
+      const safeAuthor = typeof rawAuthor === 'string' || (Array.isArray(rawAuthor) || typeof rawAuthor === 'object')
+        ? formatContributor(rawAuthor as any)
+        : ''
+      const author = safeAuthor || ''
 
       let coverDataUrl: string | null = null
       if (book?.getCover) {
