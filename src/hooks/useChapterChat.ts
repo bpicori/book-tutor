@@ -14,6 +14,7 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
     chapterChats,
     addChatMessage,
     updateLastChatMessage,
+    clearChapterChat,
   } = useStore()
 
   const llmSettings = useLLMSettings()
@@ -87,9 +88,14 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
     ]
   )
 
+  const clearMessages = useCallback(() => {
+    clearChapterChat(chapterHref)
+  }, [chapterHref, clearChapterChat])
+
   return {
     chatMessages,
     sendMessage,
+    clearMessages,
     isLoading: chatMessages.some((msg) => msg.isStreaming),
   }
 }

@@ -17,7 +17,7 @@ export const AskTab = memo(function AskTab() {
 
   const chapterLabel = progress.tocLabel || 'Current Chapter'
   const chapterHref = currentTocHref || 'default'
-  const { chatMessages, sendMessage, isLoading } = useChapterChat(chapterHref, chapterLabel)
+  const { chatMessages, sendMessage, clearMessages, isLoading } = useChapterChat(chapterHref, chapterLabel)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -29,8 +29,13 @@ export const AskTab = memo(function AskTab() {
     await sendMessage(message)
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
+      // Cmd+Enter or Shift+Enter: insert new line (let default behavior happen)
+      if (e.metaKey || e.ctrlKey || e.shiftKey) {
+        return
+      }
+      // Enter alone: submit
       e.preventDefault()
       handleSubmit(inputValue)
     }
@@ -41,7 +46,17 @@ export const AskTab = memo(function AskTab() {
       {/* Chapter indicator */}
       <div className="flex items-center gap-2 px-4 py-3 bg-hover-warm/30 border-b border-border-warm">
         <span className="material-symbols-outlined text-forest-green text-lg">menu_book</span>
-        <span className="text-sm text-muted-gray-text font-medium truncate">{chapterLabel}</span>
+        <span className="text-sm text-muted-gray-text font-medium truncate flex-1">{chapterLabel}</span>
+        {chatMessages.length > 0 && (
+          <button
+            onClick={clearMessages}
+            disabled={isLoading}
+            className="flex items-center justify-center w-7 h-7 rounded text-light-gray-text hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Clear chat"
+          >
+            <span className="material-symbols-outlined text-lg">delete</span>
+          </button>
+        )}
       </div>
 
       {/* Messages area */}
@@ -90,19 +105,20 @@ export const AskTab = memo(function AskTab() {
       {/* Input area */}
       <div className="flex-shrink-0 p-4 border-t border-border-warm">
         <div className="relative">
-          <input
+          <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
-            className="w-full h-12 pl-4 pr-12 text-sm bg-warm-off-white border border-border-warm rounded-lg focus:ring-2 focus:ring-forest-green focus:border-forest-green text-muted-gray-text placeholder-light-gray-text outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-            placeholder={isLoading ? 'AI is thinking...' : 'Ask about this chapter...'}
-            type="text"
+            rows={1}
+            className="w-full min-h-12 max-h-32 pl-4 pr-12 py-3 text-sm bg-warm-off-white border border-border-warm rounded-lg focus:ring-2 focus:ring-forest-green focus:border-forest-green text-muted-gray-text placeholder-light-gray-text outline-none disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+            placeholder={isLoading ? 'AI is thinking...' : 'Ask about this chapter... (⌘+Enter for new line)'}
+            style={{ fieldSizing: 'content' } as React.CSSProperties}
           />
           <button
             onClick={() => handleSubmit(inputValue)}
             disabled={isLoading || !inputValue.trim()}
-            className="absolute inset-y-0 right-0 flex items-center justify-center w-12 text-light-gray-text hover:text-forest-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute bottom-0 right-0 flex items-center justify-center w-12 h-12 text-light-gray-text hover:text-forest-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <span className="material-symbols-outlined animate-spin">progress_activity</span>
