@@ -130,9 +130,15 @@ export type ChapterChats = Record<string, ChatMessage[]>
 export type ChapterPreviews = Record<string, ChapterPreview>
 
 // Progress Types
+export interface LocationInfo {
+  current: number
+  total: number
+}
+
 export interface ProgressInfo {
   fraction: number
   tocLabel?: string
+  location?: LocationInfo
 }
 
 // App Types
