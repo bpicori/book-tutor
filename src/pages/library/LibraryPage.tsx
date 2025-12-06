@@ -3,9 +3,8 @@ import type { LibraryBook } from '../../types'
 import { useStore } from '../../store/useStore'
 import { saveBookFile, deleteBookFile } from '../../store/bookStorage'
 import { formatLanguageMap, formatContributor, blobToDataUrl, generateBookId } from '../../utils/formatters'
-import { LoadingSpinner, Logo, IconButton } from '../common'
-import { BookCard } from './BookCard'
-import { AddBookCard } from './AddBookCard'
+import { LoadingSpinner, Logo, IconButton } from '../../components/common'
+import { BookCard, AddBookCard } from '../../components/library'
 
 export function LibraryPage() {
   const { library, addBookToLibrary, removeBookFromLibrary, openBook, toggleSettings } = useStore()

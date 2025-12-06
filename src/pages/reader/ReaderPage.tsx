@@ -3,12 +3,9 @@ import type { FoliateView } from '../../types'
 import { useStore } from '../../store/useStore'
 import { useBookLoader } from '../../hooks/useBookLoader'
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation'
-import { LoadingSpinner } from '../common'
-import { Sidebar } from './Sidebar'
-import { Header } from './Header'
-import { Reader } from './Reader'
-import { Footer } from './Footer'
-import { AISidebar } from '../chat/AISidebar'
+import { LoadingSpinner } from '../../components/common'
+import { Sidebar, Header, Reader, Footer } from '../../components/reader'
+import { AISidebar } from '../../components/chat'
 
 export function ReaderPage() {
   const viewRef = useRef<FoliateView | null>(null)

@@ -1,8 +1,7 @@
 import { memo, useState } from 'react'
 import { useStore } from '../../store/useStore'
-import { Modal } from '../common'
-import { TypographyTab } from './tabs/TypographyTab'
-import { LLMTab } from './tabs/LLMTab'
+import { Modal } from '../../components/common'
+import { TypographyTab, LLMTab } from '../../components/settings'
 
 type TabId = 'typography' | 'llm'
 
@@ -17,7 +16,7 @@ const tabs: Tab[] = [
   { id: 'llm', label: 'LLM', icon: 'smart_toy' },
 ]
 
-export const SettingsModal = memo(function SettingsModal() {
+export const SettingsPage = memo(function SettingsPage() {
   const { isSettingsOpen, toggleSettings, settings, updateSettings } = useStore()
   const [activeTab, setActiveTab] = useState<TabId>('typography')
 

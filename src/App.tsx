@@ -1,7 +1,5 @@
 import { useStore } from './store/useStore'
-import { LibraryPage } from './components/library'
-import { ReaderPage } from './components/reader'
-import { SettingsModal } from './components/settings'
+import { LibraryPage, ReaderPage, SettingsPage } from './pages'
 
 export function App() {
   const { currentView } = useStore()
@@ -9,7 +7,7 @@ export function App() {
   return (
     <>
       {currentView === 'reader' ? <ReaderPage /> : <LibraryPage />}
-      <SettingsModal />
+      <SettingsPage />
     </>
   )
 }
