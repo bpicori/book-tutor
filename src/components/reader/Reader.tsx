@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import type { FoliateView } from '../../types'
 import { useStore } from '../../store/useStore'
 import { generateReaderCSS } from '../../utils/readerStyles'
-import { SelectionActionBar, type SelectionInfo } from './SelectionActionBar'
+import { SelectionActionBar, type SelectionInfo } from './selection-action-bar'
 import '../../foliate-js/view.js'
 
 interface ReaderProps {

@@ -1,12 +1,9 @@
 import { useCallback, useRef, useState, useEffect } from 'react'
-import { getWordDefinition } from '../../services/llmService'
-import { useLLMTranslationSettings } from '../../hooks/useLLMSettings'
-
-export interface SelectionInfo {
-  text: string
-  x: number
-  y: number
-}
+import { getWordDefinition } from '../../../services/llmService'
+import { useLLMTranslationSettings } from '../../../hooks/useLLMSettings'
+import { ActionButton } from './ActionButton'
+import { TranslationPopup } from './TranslationPopup'
+import type { SelectionInfo } from './types'
 
 interface SelectionActionBarProps {
   selection: SelectionInfo | null
@@ -92,7 +89,7 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
   // Calculate popup position
   const popupWidth = showTranslation ? 280 : 180
   const popupHeight = showTranslation ? 120 : 44
-  
+
   // Ensure popup stays within viewport
   const padding = 8
   let left = selection.x - popupWidth / 2
@@ -105,46 +102,17 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
   // Show translation popup
   if (showTranslation) {
     return (
-      <div
+      <TranslationPopup
         ref={barRef}
-        className="fixed z-50 rounded-lg bg-sepia-panel shadow-lg border border-border-warm"
-        style={{
-          left: `${left}px`,
-          top: `${top}px`,
-          transform: 'translateY(-100%)',
-          width: `${popupWidth}px`,
-        }}
-      >
-        <div className="relative p-4">
-          <button
-            onClick={handleCloseTranslation}
-            className="absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded text-muted-gray-text hover:bg-hover-warm transition-colors"
-            aria-label="Close"
-          >
-            <span className="material-symbols-outlined text-lg">close</span>
-          </button>
-          
-          <div className="pr-6">
-            <div className="text-lg font-semibold text-muted-gray-text mb-2">
-              {selection.text}
-            </div>
-            
-            <div className="border-t border-border-warm pt-2">
-              {isLoading && (
-                <div className="text-light-gray-text text-sm">Loading definition...</div>
-              )}
-              {error && (
-                <div className="text-red-600 text-sm">{error}</div>
-              )}
-              {definition && (
-                <div className="text-muted-gray-text text-sm leading-relaxed">
-                  {definition}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+        word={selection.text}
+        definition={definition}
+        isLoading={isLoading}
+        error={error}
+        left={left}
+        top={top}
+        width={popupWidth}
+        onClose={handleCloseTranslation}
+      />
     )
   }
 
@@ -166,20 +134,3 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
   )
 }
 
-interface ActionButtonProps {
-  icon: string
-  label: string
-  onClick: () => void
-}
-
-function ActionButton({ icon, label, onClick }: ActionButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center justify-center w-9 h-9 rounded-md text-warm-off-white hover:bg-light-gray-text transition-colors"
-      title={label}
-    >
-      <span className="material-symbols-outlined text-xl">{icon}</span>
-    </button>
-  )
-}
