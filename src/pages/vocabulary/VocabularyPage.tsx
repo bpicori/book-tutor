@@ -3,7 +3,7 @@ import Markdown from 'react-markdown'
 import { useStore } from '../../store/useStore'
 import { Logo, IconButton } from '../../components/common'
 
-const WORDS_PER_PAGE = 20
+const WORDS_PER_PAGE = 10
 
 export const VocabularyPage = memo(function VocabularyPage() {
   const { words, removeWord, goToLibrary, toggleSettings } = useStore()
@@ -69,24 +69,24 @@ export const VocabularyPage = memo(function VocabularyPage() {
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {displayedWords.map((word) => (
             <div 
               key={word.id} 
-              className="relative group p-6 rounded-xl bg-white border border-border-warm hover:border-forest-green/30 hover:shadow-md transition-all duration-200"
+              className="relative group p-3 rounded-lg bg-white border border-border-warm hover:border-forest-green/30 hover:shadow-md transition-all duration-200"
             >
-              <div className="flex justify-between items-start gap-6">
+              <div className="flex justify-between items-start gap-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-3 mb-3">
-                    <h3 className="text-xl font-serif font-bold text-forest-green">{word.word}</h3>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <h3 className="text-base font-serif font-bold text-forest-green">{word.word}</h3>
                     {word.bookTitle && (
-                      <span className="text-xs text-light-gray-text truncate max-w-[300px]" title={word.bookTitle}>
+                      <span className="text-[10px] text-light-gray-text truncate max-w-[150px]" title={word.bookTitle}>
                         from {word.bookTitle}
                       </span>
                     )}
                   </div>
                   
-                  <div className="text-muted-gray-text leading-relaxed prose prose-stone max-w-none">
+                  <div className="text-muted-gray-text text-xs leading-normal prose prose-stone max-w-none line-clamp-3">
                     <Markdown
                       components={{
                         p: ({ children }) => <>{children}</>,
@@ -96,18 +96,18 @@ export const VocabularyPage = memo(function VocabularyPage() {
                     </Markdown>
                   </div>
                   
-                  <div className="mt-4 text-xs text-light-gray-text flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                  <div className="mt-2 text-[10px] text-light-gray-text flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[10px]">calendar_today</span>
                     Added {new Date(word.savedAt).toLocaleDateString()}
                   </div>
                 </div>
 
                 <button
                   onClick={() => removeWord(word.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-all duration-200 p-2 text-light-gray-text hover:text-red-600 hover:bg-red-50 rounded-lg transform translate-x-2 group-hover:translate-x-0"
+                  className="opacity-0 group-hover:opacity-100 transition-all duration-200 p-1 text-light-gray-text hover:text-red-600 hover:bg-red-50 rounded-md transform translate-x-2 group-hover:translate-x-0"
                   title="Remove word"
                 >
-                  <span className="material-symbols-outlined text-xl">delete</span>
+                  <span className="material-symbols-outlined text-base">delete</span>
                 </button>
               </div>
             </div>
