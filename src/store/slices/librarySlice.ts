@@ -11,6 +11,7 @@ export interface LibrarySlice {
   setCurrentView: (view: AppPage) => void
   openBook: (bookId: string) => void
   goToLibrary: () => void
+  goToVocabulary: () => void
   addBookToLibrary: (book: LibraryBook) => void
   removeBookFromLibrary: (bookId: string) => void
   updateBookProgress: (bookId: string, progress: number) => void
@@ -38,6 +39,12 @@ export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
   goToLibrary: () =>
     set({
       currentView: 'library',
+      currentBookId: null,
+    }),
+
+  goToVocabulary: () =>
+    set({
+      currentView: 'vocabulary',
       currentBookId: null,
     }),
 

@@ -7,7 +7,7 @@ import { LoadingSpinner, Logo, IconButton } from '../../components/common'
 import { BookCard, AddBookCard } from '../../components/library'
 
 export function LibraryPage() {
-  const { library, addBookToLibrary, removeBookFromLibrary, openBook, toggleSettings } = useStore()
+  const { library, addBookToLibrary, removeBookFromLibrary, openBook, toggleSettings, goToVocabulary } = useStore()
   const [isLoading, setIsLoading] = useState(false)
 
   const sortedLibrary = useMemo(() => 
@@ -95,11 +95,14 @@ export function LibraryPage() {
       <header className="sticky top-0 z-10 bg-warm-off-white/95 backdrop-blur-sm border-b border-border-warm">
         <div className="max-w-7xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
             <Logo />
             <h1 className="text-2xl font-bold text-muted-gray-text tracking-tight">Read with AI</h1>
             </div>
-            <IconButton icon="settings" label="Settings" onClick={() => toggleSettings()} />
+            <div className="flex items-center gap-2">
+              <IconButton icon="book_2" label="Vocabulary" onClick={goToVocabulary} />
+              <IconButton icon="settings" label="Settings" onClick={() => toggleSettings()} />
+            </div>
           </div>
         </div>
       </header>

@@ -3,6 +3,7 @@ import { getWordDefinition } from '../../services/llmService'
 import { useLLMTranslationSettings } from '../../hooks/useLLMSettings'
 import { ActionButton } from './ActionButton'
 import { TranslationPopup } from './TranslationPopup'
+import { useStore } from '../../store/useStore'
 import type { SelectionInfo } from '../../types'
 
 interface SelectionActionBarProps {
@@ -18,6 +19,10 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const llmSettings = useLLMTranslationSettings()
+  const { addWord, currentBookId, library } = useStore()
+  
+  // Get current book title for context
+  const currentBook = library.find(b => b.id === currentBookId)
 
   const handleCopy = useCallback(() => {
     if (selection?.text) {
@@ -78,11 +83,46 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
     setIsLoading(false)
   }, [selection?.text])
 
-  const handleNewWord = useCallback(() => {
-    if (selection?.text) {
-      console.log('new_word', selection.text)
+  const handleNewWord = useCallback(async () => {
+    if (!selection?.text || !llmSettings) {
+      return
     }
-  }, [selection])
+
+    const wordToSave = selection.text
+    currentWordRef.current = wordToSave
+
+    // Reuse translation UI for showing loading/success state
+    setShowTranslation(true)
+    setIsLoading(true)
+    setError(null)
+    setDefinition(null)
+
+    try {
+      const def = await getWordDefinition(wordToSave, llmSettings)
+      
+      if (currentWordRef.current === wordToSave) {
+        setDefinition(def)
+        
+        // Save to vocabulary
+        addWord({
+          id: crypto.randomUUID(),
+          word: wordToSave,
+          definition: def,
+          savedAt: Date.now(),
+          bookId: currentBookId || undefined,
+          bookTitle: currentBook?.title,
+        })
+      }
+    } catch (err) {
+      if (currentWordRef.current === wordToSave) {
+        setError(err instanceof Error ? err.message : 'Failed to get definition')
+      }
+    } finally {
+      if (currentWordRef.current === wordToSave) {
+        setIsLoading(false)
+      }
+    }
+  }, [selection, llmSettings, addWord, currentBookId, currentBook])
 
   if (!selection) return null
 

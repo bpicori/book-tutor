@@ -146,7 +146,7 @@ export interface ProgressInfo {
 }
 
 // App Types
-export type AppPage = 'library' | 'reader'
+export type AppPage = 'library' | 'reader' | 'vocabulary'
 
 // Selection Types
 export interface SelectionInfo {
@@ -154,6 +154,16 @@ export interface SelectionInfo {
   x: number
   y: number
   height: number
+}
+
+// Vocabulary Types
+export interface SavedWord {
+  id: string
+  word: string
+  definition: string
+  savedAt: number
+  bookId?: string
+  bookTitle?: string
 }
 
 // Settings Types
