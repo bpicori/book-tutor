@@ -16,11 +16,12 @@ export function Reader({ viewRef }: ReaderProps) {
   const [selection, setSelection] = useState<SelectionInfo | null>(null)
 
   const handleRelocate = useCallback((event: Event) => {
-    const { fraction, tocItem, section, location } = (event as CustomEvent).detail
+    const { fraction, tocItem, section, location, cfi } = (event as CustomEvent).detail
     setProgress({ 
       fraction, 
       tocLabel: tocItem?.label,
-      location: location ? { current: location.current, total: location.total } : undefined
+      location: location ? { current: location.current, total: location.total } : undefined,
+      cfi: cfi || undefined
     })
     if (tocItem?.href) setCurrentTocHref(tocItem.href)
     // Section index is in section.current from the progress object

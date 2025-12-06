@@ -102,6 +102,8 @@ export interface LibraryBook {
   addedAt: number
   lastReadAt: number | null
   progress: number
+  /** CFI location string for resuming reading position */
+  lastLocation: string | null
 }
 
 // Chat Types
@@ -139,6 +141,8 @@ export interface ProgressInfo {
   fraction: number
   tocLabel?: string
   location?: LocationInfo
+  /** CFI location string for resuming reading position */
+  cfi?: string
 }
 
 // App Types

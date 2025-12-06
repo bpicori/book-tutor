@@ -9,7 +9,7 @@ import { AISidebar } from '../../components/chat'
 
 export function ReaderPage() {
   const viewRef = useRef<FoliateView | null>(null)
-  const { currentBookId, updateBookProgress, progress } = useStore()
+  const { currentBookId, updateBookProgress, updateBookLocation, progress } = useStore()
   const { isLoading, error } = useBookLoader(viewRef)
 
   useKeyboardNavigation(viewRef)
@@ -24,6 +24,13 @@ export function ReaderPage() {
       updateBookProgress(currentBookId, progress.fraction)
     }
   }, [currentBookId, progress.fraction, updateBookProgress])
+
+  // Save reading location for restoring on refresh
+  useEffect(() => {
+    if (currentBookId && progress.cfi) {
+      updateBookLocation(currentBookId, progress.cfi)
+    }
+  }, [currentBookId, progress.cfi, updateBookLocation])
 
   if (error) {
     return (

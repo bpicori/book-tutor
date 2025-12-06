@@ -72,6 +72,7 @@ export function LibraryPage() {
         addedAt: Date.now(),
         lastReadAt: null,
         progress: 0,
+        lastLocation: null,
       }
       addBookToLibrary(libraryBook)
     } catch (err) {

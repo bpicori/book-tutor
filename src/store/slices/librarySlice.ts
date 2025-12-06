@@ -14,6 +14,7 @@ export interface LibrarySlice {
   addBookToLibrary: (book: LibraryBook) => void
   removeBookFromLibrary: (bookId: string) => void
   updateBookProgress: (bookId: string, progress: number) => void
+  updateBookLocation: (bookId: string, location: string) => void
 }
 
 export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
@@ -50,6 +51,13 @@ export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
     set((state) => ({
       library: state.library.map((b) =>
         b.id === bookId ? { ...b, progress } : b
+      ),
+    })),
+
+  updateBookLocation: (bookId, location) =>
+    set((state) => ({
+      library: state.library.map((b) =>
+        b.id === bookId ? { ...b, lastLocation: location } : b
       ),
     })),
 })

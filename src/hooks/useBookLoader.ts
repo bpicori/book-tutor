@@ -9,14 +9,18 @@ import { loadBookCover, updateBookTitle, applyBookStyles } from '../utils/bookOp
  * Orchestrates file loading, book opening, cover loading, title updates, and style application
  */
 export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null>) {
-  const { currentBookId, setBook, setCoverUrl, settings } = useStore()
+  const { currentBookId, setBook, setCoverUrl, settings, library } = useStore()
+  
+  // Get the saved location for the current book
+  const currentBook = library.find(b => b.id === currentBookId)
+  const savedLocation = currentBook?.lastLocation || undefined
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const loadAttemptedRef = useRef(false)
   const { loadBookFile } = useBookFile()
 
   const openBookFile = useCallback(
-    async (file: File) => {
+    async (file: File, lastLocation?: string) => {
       const view = viewRef.current
       if (!view) return false
 
@@ -32,8 +36,8 @@ export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null
         // Update document title
         updateBookTitle(book)
 
-        // Initialize view
-        await view.init({ lastLocation: undefined, showTextStart: true })
+        // Initialize view with saved location if available
+        await view.init({ lastLocation, showTextStart: !lastLocation })
 
         // Apply styles after initialization
         applyBookStyles(view.renderer || null, settings)
@@ -82,11 +86,11 @@ export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null
         return
       }
 
-      await openBookFile(file)
+      await openBookFile(file, savedLocation)
     }
 
     loadBook()
-  }, [currentBookId, loadBookFile, openBookFile, viewRef])
+  }, [currentBookId, loadBookFile, openBookFile, viewRef, savedLocation])
 
   return { isLoading, error }
 }
