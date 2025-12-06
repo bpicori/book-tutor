@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, useEffect } from 'react'
-import { getWordDefinition } from '../../../services/llmService'
-import { useLLMTranslationSettings } from '../../../hooks/useLLMSettings'
+import { getWordDefinition } from '../../services/llmService'
+import { useLLMTranslationSettings } from '../../hooks/useLLMSettings'
 import { ActionButton } from './ActionButton'
 import { TranslationPopup } from './TranslationPopup'
 import type { SelectionInfo } from './types'
