@@ -1,4 +1,4 @@
-import type { ReaderSettings } from '../types'
+import type { ReaderSettings } from "../types"
 
 /**
  * Generates CSS styles for the foliate-view reader with typography settings
@@ -48,4 +48,3 @@ export function generateReaderCSS(settings: ReaderSettings): string {
     }
   `
 }
-

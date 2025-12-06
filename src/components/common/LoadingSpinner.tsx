@@ -28,4 +28,3 @@ export function LoadingSpinner({ message, fullScreen }: LoadingSpinnerProps) {
     </div>
   )
 }
-

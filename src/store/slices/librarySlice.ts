@@ -1,5 +1,5 @@
-import type { StateCreator } from 'zustand'
-import type { LibraryBook, AppPage } from '../../types'
+import type { StateCreator } from "zustand"
+import type { LibraryBook, AppPage } from "../../types"
 
 export interface LibrarySlice {
   // State
@@ -20,7 +20,7 @@ export interface LibrarySlice {
 
 export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
   // Initial state
-  currentView: 'library',
+  currentView: "library",
   currentBookId: null,
   library: [],
 
@@ -29,22 +29,22 @@ export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
 
   openBook: (bookId) =>
     set((state) => ({
-      currentView: 'reader',
+      currentView: "reader",
       currentBookId: bookId,
       library: state.library.map((b) =>
-        b.id === bookId ? { ...b, lastReadAt: Date.now() } : b
+        b.id === bookId ? { ...b, lastReadAt: Date.now() } : b,
       ),
     })),
 
   goToLibrary: () =>
     set({
-      currentView: 'library',
+      currentView: "library",
       currentBookId: null,
     }),
 
   goToVocabulary: () =>
     set({
-      currentView: 'vocabulary',
+      currentView: "vocabulary",
       currentBookId: null,
     }),
 
@@ -57,15 +57,14 @@ export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
   updateBookProgress: (bookId, progress) =>
     set((state) => ({
       library: state.library.map((b) =>
-        b.id === bookId ? { ...b, progress } : b
+        b.id === bookId ? { ...b, progress } : b,
       ),
     })),
 
   updateBookLocation: (bookId, location) =>
     set((state) => ({
       library: state.library.map((b) =>
-        b.id === bookId ? { ...b, lastLocation: location } : b
+        b.id === bookId ? { ...b, lastLocation: location } : b,
       ),
     })),
 })
-

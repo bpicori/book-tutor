@@ -1,7 +1,7 @@
-export { Reader } from './Reader'
-export { Header } from './Header'
-export { Footer } from './Footer'
-export { Sidebar } from './Sidebar'
-export { TOCLink } from './TOCLink'
-export { SelectionActionBar } from '../selection-action-bar'
-export type { SelectionInfo } from '../../types'
+export { Reader } from "./Reader"
+export { Header } from "./Header"
+export { Footer } from "./Footer"
+export { Sidebar } from "./Sidebar"
+export { TOCLink } from "./TOCLink"
+export { SelectionActionBar } from "../selection-action-bar"
+export type { SelectionInfo } from "../../types"

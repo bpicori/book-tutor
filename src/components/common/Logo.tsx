@@ -1,12 +1,12 @@
-import { memo } from 'react'
+import { memo } from "react"
 
 interface LogoProps {
-  size?: 'sm' | 'md'
+  size?: "sm" | "md"
 }
 
-export const Logo = memo(function Logo({ size = 'md' }: LogoProps) {
-  const sizeClass = size === 'sm' ? 'size-4' : 'size-8'
-  
+export const Logo = memo(function Logo({ size = "md" }: LogoProps) {
+  const sizeClass = size === "sm" ? "size-4" : "size-8"
+
   return (
     <div className={`${sizeClass} text-forest-green`}>
       <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
@@ -18,4 +18,3 @@ export const Logo = memo(function Logo({ size = 'md' }: LogoProps) {
     </div>
   )
 })
-

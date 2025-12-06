@@ -18,7 +18,11 @@ export interface TOCItem {
  */
 export interface BookMetadata {
   /** Book title - can be string, language map, or array */
-  title?: string | Record<string, string> | string[] | Array<{ name?: string | Record<string, string> }>
+  title?:
+    | string
+    | Record<string, string>
+    | string[]
+    | Array<{ name?: string | Record<string, string> }>
   /** Author(s) - can be string, array of strings, or array of objects with name */
   author?: string | string[] | Array<{ name?: string | Record<string, string> }>
   /** Book description */
@@ -51,7 +55,10 @@ export interface Book {
   /** Get cover image as Blob */
   getCover?(): Promise<Blob | null>
   /** Resolve an href to a section index and optional anchor function */
-  resolveHref?(href: string): { index: number; anchor?: (doc: Document) => Element | Range }
+  resolveHref?(href: string): {
+    index: number
+    anchor?: (doc: Document) => Element | Range
+  }
 }
 
 /**
@@ -64,7 +71,7 @@ export interface FoliateRenderer extends HTMLElement {
 
 /**
  * Foliate view component - the main reader element
- * 
+ *
  * @example
  * ```typescript
  * const view = document.createElement('foliate-view') as FoliateView
@@ -80,7 +87,10 @@ export interface FoliateView extends HTMLElement {
   /** Open a book file */
   open(file: File): Promise<void>
   /** Initialize the reader with options */
-  init(options: { lastLocation?: string; showTextStart?: boolean }): Promise<void>
+  init(options: {
+    lastLocation?: string
+    showTextStart?: boolean
+  }): Promise<void>
   /** Navigate to previous page */
   prev(): Promise<void>
   /** Navigate to next page */
@@ -108,13 +118,13 @@ export interface LibraryBook {
 
 // Chat Types
 export interface ChatMessage {
-  role: 'user' | 'assistant'
+  role: "user" | "assistant"
   content: string
   isStreaming?: boolean
 }
 
 // AI Sidebar Types
-export type AiSidebarTab = 'preview' | 'ask'
+export type AiSidebarTab = "preview" | "ask"
 
 export interface ChapterPreview {
   chapterHref: string
@@ -146,7 +156,7 @@ export interface ProgressInfo {
 }
 
 // App Types
-export type AppPage = 'library' | 'reader' | 'vocabulary'
+export type AppPage = "library" | "reader" | "vocabulary"
 
 // Selection Types
 export interface SelectionInfo {
@@ -181,7 +191,7 @@ export interface TypographySettings {
  * Reader view mode settings
  */
 export interface ViewSettings {
-  viewMode: 'paginated' | 'scroll'
+  viewMode: "paginated" | "scroll"
 }
 
 /**
@@ -201,5 +211,5 @@ export interface LLMSettings {
  * Combined reader settings (composed of separate concerns)
  * Maintained for backward compatibility with existing code
  */
-export interface ReaderSettings extends TypographySettings, ViewSettings, LLMSettings {}
-
+export interface ReaderSettings
+  extends TypographySettings, ViewSettings, LLMSettings {}

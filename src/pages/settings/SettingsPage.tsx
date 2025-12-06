@@ -1,9 +1,9 @@
-import { memo, useState } from 'react'
-import { useStore } from '../../store/useStore'
-import { Modal } from '../../components/common'
-import { TypographyTab, LLMTab } from '../../components/settings'
+import { memo, useState } from "react"
+import { useStore } from "../../store/useStore"
+import { Modal } from "../../components/common"
+import { TypographyTab, LLMTab } from "../../components/settings"
 
-type TabId = 'typography' | 'llm'
+type TabId = "typography" | "llm"
 
 interface Tab {
   id: TabId
@@ -12,13 +12,14 @@ interface Tab {
 }
 
 const tabs: Tab[] = [
-  { id: 'typography', label: 'Typography', icon: 'text_fields' },
-  { id: 'llm', label: 'LLM', icon: 'smart_toy' },
+  { id: "typography", label: "Typography", icon: "text_fields" },
+  { id: "llm", label: "LLM", icon: "smart_toy" },
 ]
 
 export const SettingsPage = memo(function SettingsPage() {
-  const { isSettingsOpen, toggleSettings, settings, updateSettings } = useStore()
-  const [activeTab, setActiveTab] = useState<TabId>('typography')
+  const { isSettingsOpen, toggleSettings, settings, updateSettings } =
+    useStore()
+  const [activeTab, setActiveTab] = useState<TabId>("typography")
 
   const handleClose = () => {
     toggleSettings(false)
@@ -26,9 +27,9 @@ export const SettingsPage = memo(function SettingsPage() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'typography':
+      case "typography":
         return <TypographyTab settings={settings} onUpdate={updateSettings} />
-      case 'llm':
+      case "llm":
         return <LLMTab settings={settings} onUpdate={updateSettings} />
       default:
         return null
@@ -46,11 +47,13 @@ export const SettingsPage = memo(function SettingsPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-forest-green text-forest-green'
-                  : 'border-transparent text-light-gray-text hover:text-muted-gray-text'
+                  ? "border-forest-green text-forest-green"
+                  : "border-transparent text-light-gray-text hover:text-muted-gray-text"
               }`}
             >
-              <span className="material-symbols-outlined text-xl">{tab.icon}</span>
+              <span className="material-symbols-outlined text-xl">
+                {tab.icon}
+              </span>
               <span className="text-sm font-medium">{tab.label}</span>
             </button>
           ))}
@@ -64,4 +67,3 @@ export const SettingsPage = memo(function SettingsPage() {
     </Modal>
   )
 })
-

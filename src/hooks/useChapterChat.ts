@@ -1,8 +1,8 @@
-import { useCallback } from 'react'
-import { useStore } from '../store/useStore'
-import { streamChapterChat, LLMServiceError } from '../services/llmService'
-import { getBookTitle, getBookAuthor } from '../utils/bookHelpers'
-import { useLLMSettings } from './useLLMSettings'
+import { useCallback } from "react"
+import { useStore } from "../store/useStore"
+import { streamChapterChat, LLMServiceError } from "../services/llmService"
+import { getBookTitle, getBookAuthor } from "../utils/bookHelpers"
+import { useLLMSettings } from "./useLLMSettings"
 
 /**
  * Hook for managing chapter chat functionality
@@ -27,17 +27,22 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
       // Check if API key is configured
       if (!llmSettings) {
         addChatMessage(chapterHref, {
-          role: 'assistant',
-          content: 'Please configure your API key in Settings to use the AI assistant.',
+          role: "assistant",
+          content:
+            "Please configure your API key in Settings to use the AI assistant.",
         })
         return
       }
 
       // Add user message
-      addChatMessage(chapterHref, { role: 'user', content: message })
+      addChatMessage(chapterHref, { role: "user", content: message })
 
       // Add empty assistant message for streaming
-      addChatMessage(chapterHref, { role: 'assistant', content: '', isStreaming: true })
+      addChatMessage(chapterHref, {
+        role: "assistant",
+        content: "",
+        isStreaming: true,
+      })
 
       // Get book context
       const bookTitle = getBookTitle(book?.metadata)
@@ -49,17 +54,17 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
         content: msg.content,
       }))
       // Add the new user message
-      conversationHistory.push({ role: 'user' as const, content: message })
+      conversationHistory.push({ role: "user" as const, content: message })
 
       try {
-        let fullContent = ''
+        let fullContent = ""
 
         for await (const chunk of streamChapterChat(
           bookTitle,
           bookAuthor,
           chapterLabel,
           conversationHistory,
-          llmSettings
+          llmSettings,
         )) {
           fullContent += chunk
           updateLastChatMessage(chapterHref, fullContent, true)
@@ -68,7 +73,7 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
         // Mark streaming as complete
         updateLastChatMessage(chapterHref, fullContent, false)
       } catch (error) {
-        let errorMessage = 'An unexpected error occurred. Please try again.'
+        let errorMessage = "An unexpected error occurred. Please try again."
 
         if (error instanceof LLMServiceError) {
           errorMessage = error.message
@@ -85,7 +90,7 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
       llmSettings,
       addChatMessage,
       updateLastChatMessage,
-    ]
+    ],
   )
 
   const clearMessages = useCallback(() => {
@@ -99,4 +104,3 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
     isLoading: chatMessages.some((msg) => msg.isStreaming),
   }
 }
-

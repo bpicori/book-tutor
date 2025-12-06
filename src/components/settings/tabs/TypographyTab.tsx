@@ -1,5 +1,5 @@
-import { memo } from 'react'
-import type { ReaderSettings } from '../../../types'
+import { memo } from "react"
+import type { ReaderSettings } from "../../../types"
 
 interface TypographyTabProps {
   settings: ReaderSettings
@@ -7,12 +7,15 @@ interface TypographyTabProps {
 }
 
 const fontFamilies = [
-  { value: 'Literata', label: 'Literata' },
-  { value: 'Georgia', label: 'Georgia' },
-  { value: 'Merriweather', label: 'Merriweather' },
+  { value: "Literata", label: "Literata" },
+  { value: "Georgia", label: "Georgia" },
+  { value: "Merriweather", label: "Merriweather" },
 ]
 
-export const TypographyTab = memo(function TypographyTab({ settings, onUpdate }: TypographyTabProps) {
+export const TypographyTab = memo(function TypographyTab({
+  settings,
+  onUpdate,
+}: TypographyTabProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -71,4 +74,3 @@ export const TypographyTab = memo(function TypographyTab({ settings, onUpdate }:
     </div>
   )
 })
-

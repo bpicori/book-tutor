@@ -1,10 +1,10 @@
-import { useEffect, useRef, useCallback, useState } from 'react'
-import type { FoliateView } from '../../types'
-import { useStore } from '../../store/useStore'
-import { generateReaderCSS } from '../../utils/readerStyles'
-import { SelectionActionBar } from '../selection-action-bar'
-import type { SelectionInfo } from '../../types'
-import '../../foliate-js/view.js'
+import { useEffect, useRef, useCallback, useState } from "react"
+import type { FoliateView } from "../../types"
+import { useStore } from "../../store/useStore"
+import { generateReaderCSS } from "../../utils/readerStyles"
+import { SelectionActionBar } from "../selection-action-bar"
+import type { SelectionInfo } from "../../types"
+import "../../foliate-js/view.js"
 
 interface ReaderProps {
   viewRef: React.MutableRefObject<FoliateView | null>
@@ -12,21 +12,30 @@ interface ReaderProps {
 
 export function Reader({ viewRef }: ReaderProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { setProgress, setCurrentTocHref, setCurrentSectionIndex, settings } = useStore()
+  const { setProgress, setCurrentTocHref, setCurrentSectionIndex, settings } =
+    useStore()
   const [selection, setSelection] = useState<SelectionInfo | null>(null)
 
-  const handleRelocate = useCallback((event: Event) => {
-    const { fraction, tocItem, section, location, cfi } = (event as CustomEvent).detail
-    setProgress({ 
-      fraction, 
-      tocLabel: tocItem?.label,
-      location: location ? { current: location.current, total: location.total } : undefined,
-      cfi: cfi || undefined
-    })
-    if (tocItem?.href) setCurrentTocHref(tocItem.href)
-    // Section index is in section.current from the progress object
-    if (typeof section?.current === 'number') setCurrentSectionIndex(section.current)
-  }, [setProgress, setCurrentTocHref, setCurrentSectionIndex])
+  const handleRelocate = useCallback(
+    (event: Event) => {
+      const { fraction, tocItem, section, location, cfi } = (
+        event as CustomEvent
+      ).detail
+      setProgress({
+        fraction,
+        tocLabel: tocItem?.label,
+        location: location
+          ? { current: location.current, total: location.total }
+          : undefined,
+        cfi: cfi || undefined,
+      })
+      if (tocItem?.href) setCurrentTocHref(tocItem.href)
+      // Section index is in section.current from the progress object
+      if (typeof section?.current === "number")
+        setCurrentSectionIndex(section.current)
+    },
+    [setProgress, setCurrentTocHref, setCurrentSectionIndex],
+  )
 
   const handleDismissSelection = useCallback(() => {
     setSelection(null)
@@ -45,13 +54,13 @@ export function Reader({ viewRef }: ReaderProps) {
     const container = containerRef.current
     if (!container) return
 
-    const view = document.createElement('foliate-view') as FoliateView
-    view.style.width = '100%'
-    view.style.height = '100%'
+    const view = document.createElement("foliate-view") as FoliateView
+    view.style.width = "100%"
+    view.style.height = "100%"
 
     container.appendChild(view)
     viewRef.current = view
-    view.addEventListener('relocate', handleRelocate)
+    view.addEventListener("relocate", handleRelocate)
 
     const documentListeners: Array<{ doc: Document; cleanup: () => void }> = []
 
@@ -59,26 +68,26 @@ export function Reader({ viewRef }: ReaderProps) {
       const handleMouseUp = (e: MouseEvent) => {
         setTimeout(() => {
           const sel = doc.getSelection()
-          
+
           if (!sel || sel.isCollapsed || !sel.toString().trim()) {
             return
           }
-          
+
           const text = sel.toString().trim()
           if (!text) return
-          
+
           // Get selection range
           const range = sel.getRangeAt(0)
           const rects = range.getClientRects()
-          
+
           // Find the iframe element to get its position in the main viewport
           const iframe = doc.defaultView?.frameElement as HTMLElement | null
           const iframeRect = iframe?.getBoundingClientRect()
-          
+
           let x: number
           let y: number
           let height: number = 20 // Default fallback height
-          
+
           if (rects.length > 0 && iframeRect) {
             // Use the first rect of the selection for positioning
             const firstRect = rects[0]
@@ -97,7 +106,7 @@ export function Reader({ viewRef }: ReaderProps) {
             x = containerRect.left + e.clientX
             y = containerRect.top + e.clientY - 50
           }
-          
+
           setSelection({ text, x, y, height })
         }, 20)
       }
@@ -112,14 +121,14 @@ export function Reader({ viewRef }: ReaderProps) {
         }, 10)
       }
 
-      doc.addEventListener('mouseup', handleMouseUp)
-      doc.addEventListener('mousedown', handleMouseDown)
-      
+      doc.addEventListener("mouseup", handleMouseUp)
+      doc.addEventListener("mousedown", handleMouseDown)
+
       const cleanup = () => {
-        doc.removeEventListener('mouseup', handleMouseUp)
-        doc.removeEventListener('mousedown', handleMouseDown)
+        doc.removeEventListener("mouseup", handleMouseUp)
+        doc.removeEventListener("mousedown", handleMouseDown)
       }
-      
+
       documentListeners.push({ doc, cleanup })
     }
 
@@ -131,25 +140,25 @@ export function Reader({ viewRef }: ReaderProps) {
       }
     }
 
-    view.addEventListener('load', handleLoad)
+    view.addEventListener("load", handleLoad)
 
     // Handle clicks outside to dismiss selection bar (for clicks outside iframe)
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node
-      const selectionBar = document.querySelector('[data-selection-bar]')
+      const selectionBar = document.querySelector("[data-selection-bar]")
       if (selectionBar?.contains(target)) {
         return
       }
-      
+
       setSelection(null)
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside)
 
     return () => {
-      view.removeEventListener('relocate', handleRelocate)
-      view.removeEventListener('load', handleLoad)
-      document.removeEventListener('mousedown', handleClickOutside)
+      view.removeEventListener("relocate", handleRelocate)
+      view.removeEventListener("load", handleLoad)
+      document.removeEventListener("mousedown", handleClickOutside)
       for (const { cleanup } of documentListeners) {
         cleanup()
       }
@@ -160,9 +169,15 @@ export function Reader({ viewRef }: ReaderProps) {
 
   return (
     <>
-      <div ref={containerRef} className="flex-1 overflow-hidden bg-sepia-panel" />
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-hidden bg-sepia-panel"
+      />
       <div data-selection-bar>
-        <SelectionActionBar selection={selection} onDismiss={handleDismissSelection} />
+        <SelectionActionBar
+          selection={selection}
+          onDismiss={handleDismissSelection}
+        />
       </div>
     </>
   )

@@ -1,6 +1,6 @@
-import type { StateCreator } from 'zustand'
-import type { ReaderSettings } from '../../types'
-import { DEFAULT_SETTINGS } from '../../constants'
+import type { StateCreator } from "zustand"
+import type { ReaderSettings } from "../../types"
+import { DEFAULT_SETTINGS } from "../../constants"
 
 export interface UISlice {
   // State
@@ -47,4 +47,3 @@ export const createUISlice: StateCreator<UISlice> = (set) => ({
 
   resetSettings: () => set({ settings: DEFAULT_SETTINGS }),
 })
-

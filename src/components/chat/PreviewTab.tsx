@@ -1,7 +1,7 @@
-import { memo } from 'react'
-import { useStore } from '../../store/useStore'
-import { useChapterPreview } from '../../hooks/useChapterPreview'
-import type { ChapterPreview } from '../../types'
+import { memo } from "react"
+import { useStore } from "../../store/useStore"
+import { useChapterPreview } from "../../hooks/useChapterPreview"
+import type { ChapterPreview } from "../../types"
 
 // Skeleton loading component
 const PreviewSkeleton = memo(function PreviewSkeleton() {
@@ -29,12 +29,20 @@ interface PreviewSectionProps {
   children: React.ReactNode
 }
 
-const PreviewSection = memo(function PreviewSection({ title, icon, children }: PreviewSectionProps) {
+const PreviewSection = memo(function PreviewSection({
+  title,
+  icon,
+  children,
+}: PreviewSectionProps) {
   return (
     <div className="bg-hover-warm/50 rounded-lg p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="material-symbols-outlined text-forest-green text-lg">{icon}</span>
-        <h4 className="text-muted-gray-text font-semibold text-sm uppercase tracking-wide">{title}</h4>
+        <span className="material-symbols-outlined text-forest-green text-lg">
+          {icon}
+        </span>
+        <h4 className="text-muted-gray-text font-semibold text-sm uppercase tracking-wide">
+          {title}
+        </h4>
       </div>
       {children}
     </div>
@@ -46,7 +54,9 @@ interface PreviewContentProps {
   preview: ChapterPreview
 }
 
-const PreviewContent = memo(function PreviewContent({ preview }: PreviewContentProps) {
+const PreviewContent = memo(function PreviewContent({
+  preview,
+}: PreviewContentProps) {
   return (
     <div className="flex flex-col gap-4">
       {/* Themes */}
@@ -54,7 +64,10 @@ const PreviewContent = memo(function PreviewContent({ preview }: PreviewContentP
         <PreviewSection title="Main Themes" icon="lightbulb">
           <ul className="space-y-1.5">
             {preview.themes.map((theme, idx) => (
-              <li key={idx} className="text-muted-gray-text text-sm flex items-start gap-2">
+              <li
+                key={idx}
+                className="text-muted-gray-text text-sm flex items-start gap-2"
+              >
                 <span className="text-forest-green mt-1">•</span>
                 <span>{theme}</span>
               </li>
@@ -68,7 +81,10 @@ const PreviewContent = memo(function PreviewContent({ preview }: PreviewContentP
         <PreviewSection title="Key Concepts" icon="school">
           <ul className="space-y-1.5">
             {preview.keyConcepts.map((concept, idx) => (
-              <li key={idx} className="text-muted-gray-text text-sm flex items-start gap-2">
+              <li
+                key={idx}
+                className="text-muted-gray-text text-sm flex items-start gap-2"
+              >
                 <span className="text-forest-green mt-1">•</span>
                 <span>{concept}</span>
               </li>
@@ -80,7 +96,9 @@ const PreviewContent = memo(function PreviewContent({ preview }: PreviewContentP
       {/* Tone & Style (Fiction) */}
       {preview.toneAndStyle && (
         <PreviewSection title="Tone & Style" icon="palette">
-          <p className="text-muted-gray-text text-sm leading-relaxed">{preview.toneAndStyle}</p>
+          <p className="text-muted-gray-text text-sm leading-relaxed">
+            {preview.toneAndStyle}
+          </p>
         </PreviewSection>
       )}
 
@@ -89,7 +107,10 @@ const PreviewContent = memo(function PreviewContent({ preview }: PreviewContentP
         <PreviewSection title="Characters to Watch" icon="groups">
           <ul className="space-y-1.5">
             {preview.characters.map((character, idx) => (
-              <li key={idx} className="text-muted-gray-text text-sm flex items-start gap-2">
+              <li
+                key={idx}
+                className="text-muted-gray-text text-sm flex items-start gap-2"
+              >
                 <span className="text-forest-green mt-1">•</span>
                 <span>{character}</span>
               </li>
@@ -116,15 +137,22 @@ const PreviewContent = memo(function PreviewContent({ preview }: PreviewContentP
       {preview.guidingQuestions.length > 0 && (
         <div className="bg-active-green-light rounded-lg p-4 border border-forest-green/20">
           <div className="flex items-center gap-2 mb-3">
-            <span className="material-symbols-outlined text-forest-green text-lg">help_outline</span>
+            <span className="material-symbols-outlined text-forest-green text-lg">
+              help_outline
+            </span>
             <h4 className="text-forest-green font-semibold text-sm uppercase tracking-wide">
               Questions to Consider
             </h4>
           </div>
           <ul className="space-y-2">
             {preview.guidingQuestions.map((question, idx) => (
-              <li key={idx} className="text-muted-gray-text text-sm flex items-start gap-2">
-                <span className="text-forest-green font-medium">{idx + 1}.</span>
+              <li
+                key={idx}
+                className="text-muted-gray-text text-sm flex items-start gap-2"
+              >
+                <span className="text-forest-green font-medium">
+                  {idx + 1}.
+                </span>
                 <span className="italic">{question}</span>
               </li>
             ))}
@@ -142,18 +170,26 @@ interface EmptyStateProps {
   isLoading: boolean
 }
 
-const EmptyState = memo(function EmptyState({ chapterLabel, onGenerate, isLoading }: EmptyStateProps) {
+const EmptyState = memo(function EmptyState({
+  chapterLabel,
+  onGenerate,
+  isLoading,
+}: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
       <div className="bg-active-green-light rounded-full w-16 h-16 flex items-center justify-center mb-4">
-        <span className="material-symbols-outlined text-forest-green text-3xl">auto_awesome</span>
+        <span className="material-symbols-outlined text-forest-green text-3xl">
+          auto_awesome
+        </span>
       </div>
       <h3 className="text-muted-gray-text font-semibold text-lg mb-2">
         Ready to Preview
       </h3>
       <p className="text-light-gray-text text-sm mb-6 max-w-xs">
-        Generate a spoiler-free preview to orient yourself before reading{' '}
-        <span className="font-medium text-muted-gray-text">"{chapterLabel}"</span>
+        Generate a spoiler-free preview to orient yourself before reading{" "}
+        <span className="font-medium text-muted-gray-text">
+          "{chapterLabel}"
+        </span>
       </p>
       <button
         onClick={onGenerate}
@@ -162,12 +198,16 @@ const EmptyState = memo(function EmptyState({ chapterLabel, onGenerate, isLoadin
       >
         {isLoading ? (
           <>
-            <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+            <span className="material-symbols-outlined animate-spin text-lg">
+              progress_activity
+            </span>
             <span>Generating...</span>
           </>
         ) : (
           <>
-            <span className="material-symbols-outlined text-lg">auto_awesome</span>
+            <span className="material-symbols-outlined text-lg">
+              auto_awesome
+            </span>
             <span>Generate Preview</span>
           </>
         )}
@@ -179,20 +219,22 @@ const EmptyState = memo(function EmptyState({ chapterLabel, onGenerate, isLoadin
 export const PreviewTab = memo(function PreviewTab() {
   const { progress, currentTocHref } = useStore()
 
-  const chapterLabel = progress.tocLabel || 'Current Chapter'
-  const chapterHref = currentTocHref || 'default'
-  const { preview, isLoading, error, generatePreview, refreshPreview } = useChapterPreview(
-    chapterHref,
-    chapterLabel
-  )
+  const chapterLabel = progress.tocLabel || "Current Chapter"
+  const chapterHref = currentTocHref || "default"
+  const { preview, isLoading, error, generatePreview, refreshPreview } =
+    useChapterPreview(chapterHref, chapterLabel)
 
   return (
     <div className="flex flex-col h-full">
       {/* Chapter indicator */}
       <div className="flex items-center justify-between px-4 py-3 bg-hover-warm/30 border-b border-border-warm">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="material-symbols-outlined text-forest-green text-lg shrink-0">menu_book</span>
-          <span className="text-sm text-muted-gray-text font-medium truncate">{chapterLabel}</span>
+          <span className="material-symbols-outlined text-forest-green text-lg shrink-0">
+            menu_book
+          </span>
+          <span className="text-sm text-muted-gray-text font-medium truncate">
+            {chapterLabel}
+          </span>
         </div>
         {preview && !isLoading && (
           <button
@@ -228,4 +270,3 @@ export const PreviewTab = memo(function PreviewTab() {
     </div>
   )
 })
-

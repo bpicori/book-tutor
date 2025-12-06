@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
-import { useStore } from '../store/useStore'
-import type { LLMSettings } from '../services/llmService'
+import { useMemo } from "react"
+import { useStore } from "../store/useStore"
+import type { LLMSettings } from "../services/llmService"
 
 /**
  * Hook to get LLM settings from the store in the format expected by LLMService
@@ -53,4 +53,3 @@ export function useLLMTranslationSettings(): LLMSettings | null {
     settings.llmTranslationModel,
   ])
 }
-

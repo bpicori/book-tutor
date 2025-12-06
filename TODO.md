@@ -4,4 +4,3 @@
 - [ ] Implement the new word action in the selection action bar
   - [ ] Init the vocabulary entity in the database
   - [ ] Define the entity schema
-

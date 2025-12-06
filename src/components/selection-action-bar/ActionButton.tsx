@@ -15,4 +15,3 @@ export function ActionButton({ icon, label, onClick }: ActionButtonProps) {
     </button>
   )
 }
-

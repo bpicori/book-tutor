@@ -1,4 +1,4 @@
-import { memo, useEffect } from 'react'
+import { memo, useEffect } from "react"
 
 interface ModalProps {
   isOpen: boolean
@@ -7,19 +7,24 @@ interface ModalProps {
   children: React.ReactNode
 }
 
-export const Modal = memo(function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export const Modal = memo(function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       const handleEscape = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
           onClose()
         }
       }
-      document.addEventListener('keydown', handleEscape)
-      document.body.style.overflow = 'hidden'
+      document.addEventListener("keydown", handleEscape)
+      document.body.style.overflow = "hidden"
       return () => {
-        document.removeEventListener('keydown', handleEscape)
-        document.body.style.overflow = ''
+        document.removeEventListener("keydown", handleEscape)
+        document.body.style.overflow = ""
       }
     }
   }, [isOpen, onClose])
@@ -54,4 +59,3 @@ export const Modal = memo(function Modal({ isOpen, onClose, title, children }: M
     </div>
   )
 })
-

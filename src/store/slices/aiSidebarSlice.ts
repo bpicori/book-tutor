@@ -1,5 +1,11 @@
-import type { StateCreator } from 'zustand'
-import type { ChatMessage, AiSidebarTab, ChapterPreview, ChapterChats, ChapterPreviews } from '../../types'
+import type { StateCreator } from "zustand"
+import type {
+  ChatMessage,
+  AiSidebarTab,
+  ChapterPreview,
+  ChapterChats,
+  ChapterPreviews,
+} from "../../types"
 
 export interface AISidebarSlice {
   // State
@@ -11,7 +17,11 @@ export interface AISidebarSlice {
   // Actions
   setActiveAiTab: (tab: AiSidebarTab) => void
   addChatMessage: (chapterHref: string, message: ChatMessage) => void
-  updateLastChatMessage: (chapterHref: string, content: string, isStreaming?: boolean) => void
+  updateLastChatMessage: (
+    chapterHref: string,
+    content: string,
+    isStreaming?: boolean,
+  ) => void
   clearChapterChat: (chapterHref: string) => void
   setChapterPreview: (chapterHref: string, preview: ChapterPreview) => void
   setPreviewLoading: (loading: boolean) => void
@@ -20,7 +30,7 @@ export interface AISidebarSlice {
 }
 
 export const initialAISidebarState = {
-  activeAiTab: 'preview' as AiSidebarTab,
+  activeAiTab: "preview" as AiSidebarTab,
   chapterChats: {} as ChapterChats,
   chapterPreviews: {} as ChapterPreviews,
   previewLoading: false,
@@ -87,4 +97,3 @@ export const createAISidebarSlice: StateCreator<AISidebarSlice> = (set) => ({
 
   resetAISidebarState: () => set(initialAISidebarState),
 })
-

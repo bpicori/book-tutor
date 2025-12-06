@@ -1,6 +1,6 @@
-import { memo } from 'react'
-import { useStore } from '../../store/useStore'
-import { ProgressBar } from '../common'
+import { memo } from "react"
+import { useStore } from "../../store/useStore"
+import { ProgressBar } from "../common"
 
 export const Footer = memo(function Footer() {
   const { book, progress } = useStore()
@@ -13,7 +13,7 @@ export const Footer = memo(function Footer() {
       <div className="flex flex-col gap-2">
         <div className="flex gap-6 justify-between items-center">
           <p className="text-muted-gray-text text-sm font-medium leading-normal truncate">
-            {progress.tocLabel || 'Reading Progress'}
+            {progress.tocLabel || "Reading Progress"}
           </p>
           <div className="flex items-center gap-3 flex-shrink-0">
             {progress.location && (
@@ -29,4 +29,3 @@ export const Footer = memo(function Footer() {
     </footer>
   )
 })
-

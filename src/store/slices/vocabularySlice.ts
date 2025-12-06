@@ -1,5 +1,5 @@
-import type { StateCreator } from 'zustand'
-import type { SavedWord } from '../../types'
+import type { StateCreator } from "zustand"
+import type { SavedWord } from "../../types"
 
 export interface VocabularySlice {
   // State
@@ -11,7 +11,10 @@ export interface VocabularySlice {
   getWords: () => SavedWord[]
 }
 
-export const createVocabularySlice: StateCreator<VocabularySlice> = (set, get) => ({
+export const createVocabularySlice: StateCreator<VocabularySlice> = (
+  set,
+  get,
+) => ({
   // Initial state
   words: [],
 
@@ -30,4 +33,3 @@ export const createVocabularySlice: StateCreator<VocabularySlice> = (set, get) =
     return get().words
   },
 })
-

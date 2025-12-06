@@ -1,17 +1,20 @@
-import { useCallback, useRef, useState, useEffect } from 'react'
-import { getWordDefinition } from '../../services/llmService'
-import { useLLMTranslationSettings } from '../../hooks/useLLMSettings'
-import { ActionButton } from './ActionButton'
-import { TranslationPopup } from './TranslationPopup'
-import { useStore } from '../../store/useStore'
-import type { SelectionInfo } from '../../types'
+import { useCallback, useRef, useState, useEffect } from "react"
+import { getWordDefinition } from "../../services/llmService"
+import { useLLMTranslationSettings } from "../../hooks/useLLMSettings"
+import { ActionButton } from "./ActionButton"
+import { TranslationPopup } from "./TranslationPopup"
+import { useStore } from "../../store/useStore"
+import type { SelectionInfo } from "../../types"
 
 interface SelectionActionBarProps {
   selection: SelectionInfo | null
   onDismiss: () => void
 }
 
-export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarProps) {
+export function SelectionActionBar({
+  selection,
+  onDismiss,
+}: SelectionActionBarProps) {
   const barRef = useRef<HTMLDivElement>(null)
   const currentWordRef = useRef<string | null>(null)
   const [showTranslation, setShowTranslation] = useState(false)
@@ -20,9 +23,9 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
   const [error, setError] = useState<string | null>(null)
   const llmSettings = useLLMTranslationSettings()
   const { addWord, currentBookId, library } = useStore()
-  
+
   // Get current book title for context
-  const currentBook = library.find(b => b.id === currentBookId)
+  const currentBook = library.find((b) => b.id === currentBookId)
 
   const handleCopy = useCallback(() => {
     if (selection?.text) {
@@ -55,7 +58,9 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
     } catch (err) {
       // Only update error if this is still the current word
       if (currentWordRef.current === wordToTranslate) {
-        setError(err instanceof Error ? err.message : 'Failed to get definition')
+        setError(
+          err instanceof Error ? err.message : "Failed to get definition",
+        )
       }
     } finally {
       // Only update loading state if this is still the current word
@@ -99,10 +104,10 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
 
     try {
       const def = await getWordDefinition(wordToSave, llmSettings)
-      
+
       if (currentWordRef.current === wordToSave) {
         setDefinition(def)
-        
+
         // Save to vocabulary
         addWord({
           id: crypto.randomUUID(),
@@ -115,7 +120,9 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
       }
     } catch (err) {
       if (currentWordRef.current === wordToSave) {
-        setError(err instanceof Error ? err.message : 'Failed to get definition')
+        setError(
+          err instanceof Error ? err.message : "Failed to get definition",
+        )
       }
     } finally {
       if (currentWordRef.current === wordToSave) {
@@ -137,11 +144,12 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
   // Check if there's enough space above the selection
   const spaceAbove = selection.y
   const spaceNeededAbove = popupHeight + padding
-  const position: 'above' | 'below' = spaceAbove >= spaceNeededAbove ? 'above' : 'below'
+  const position: "above" | "below" =
+    spaceAbove >= spaceNeededAbove ? "above" : "below"
 
   // Calculate top position based on whether we show above or below
   let top: number
-  if (position === 'above') {
+  if (position === "above") {
     top = selection.y
   } else {
     // Position below the selection (add some offset for the selection height)
@@ -149,7 +157,10 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
   }
 
   // Clamp horizontal position to viewport bounds
-  left = Math.max(padding, Math.min(left, window.innerWidth - popupWidth - padding))
+  left = Math.max(
+    padding,
+    Math.min(left, window.innerWidth - popupWidth - padding),
+  )
 
   // Show translation popup
   if (showTranslation) {
@@ -177,13 +188,20 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
       style={{
         left: `${left}px`,
         top: `${top}px`,
-        transform: position === 'above' ? 'translateY(-100%)' : 'translateY(0)',
+        transform: position === "above" ? "translateY(-100%)" : "translateY(0)",
       }}
     >
       <ActionButton icon="content_copy" label="Copy" onClick={handleCopy} />
-      <ActionButton icon="translate" label="Translate" onClick={handleTranslate} />
-      <ActionButton icon="bookmark_add" label="New Word" onClick={handleNewWord} />
+      <ActionButton
+        icon="translate"
+        label="Translate"
+        onClick={handleTranslate}
+      />
+      <ActionButton
+        icon="bookmark_add"
+        label="New Word"
+        onClick={handleNewWord}
+      />
     </div>
   )
 }
-

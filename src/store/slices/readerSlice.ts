@@ -1,5 +1,5 @@
-import type { StateCreator } from 'zustand'
-import type { Book, ProgressInfo } from '../../types'
+import type { StateCreator } from "zustand"
+import type { Book, ProgressInfo } from "../../types"
 
 export interface ReaderSlice {
   // State
@@ -38,4 +38,3 @@ export const createReaderSlice: StateCreator<ReaderSlice> = (set) => ({
   setCurrentSectionIndex: (currentSectionIndex) => set({ currentSectionIndex }),
   resetReaderState: () => set(initialReaderState),
 })
-

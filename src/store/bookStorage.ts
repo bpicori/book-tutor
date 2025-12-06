@@ -4,7 +4,7 @@
  * while keeping metadata in localStorage via zustand persist.
  */
 
-import { DB_NAME, DB_VERSION, DB_STORE_NAME } from '../constants'
+import { DB_NAME, DB_VERSION, DB_STORE_NAME } from "../constants"
 
 const STORE_NAME = DB_STORE_NAME
 
@@ -33,7 +33,7 @@ function openDB(): Promise<IDBDatabase> {
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' })
+        db.createObjectStore(STORE_NAME, { keyPath: "id" })
       }
     }
   })
@@ -54,7 +54,7 @@ export async function saveBookFile(id: string, file: File): Promise<void> {
   const data = await file.arrayBuffer()
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readwrite')
+    const transaction = db.transaction(STORE_NAME, "readwrite")
     const store = transaction.objectStore(STORE_NAME)
 
     const request = store.put({ id, data } as StoredBook)
@@ -67,7 +67,7 @@ export async function getBookFile(id: string): Promise<File | null> {
   const db = await openDB()
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readonly')
+    const transaction = db.transaction(STORE_NAME, "readonly")
     const store = transaction.objectStore(STORE_NAME)
 
     const request = store.get(id)
@@ -76,8 +76,10 @@ export async function getBookFile(id: string): Promise<File | null> {
       const result = request.result as StoredBook | undefined
       if (result) {
         // Convert ArrayBuffer back to File
-        const blob = new Blob([result.data], { type: 'application/epub+zip' })
-        const file = new File([blob], `${id}.epub`, { type: 'application/epub+zip' })
+        const blob = new Blob([result.data], { type: "application/epub+zip" })
+        const file = new File([blob], `${id}.epub`, {
+          type: "application/epub+zip",
+        })
         resolve(file)
       } else {
         resolve(null)
@@ -90,7 +92,7 @@ export async function deleteBookFile(id: string): Promise<void> {
   const db = await openDB()
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readwrite')
+    const transaction = db.transaction(STORE_NAME, "readwrite")
     const store = transaction.objectStore(STORE_NAME)
 
     const request = store.delete(id)
@@ -103,7 +105,7 @@ export async function getAllBookIds(): Promise<string[]> {
   const db = await openDB()
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readonly')
+    const transaction = db.transaction(STORE_NAME, "readonly")
     const store = transaction.objectStore(STORE_NAME)
 
     const request = store.getAllKeys()
@@ -111,4 +113,3 @@ export async function getAllBookIds(): Promise<string[]> {
     request.onsuccess = () => resolve(request.result as string[])
   })
 }
-

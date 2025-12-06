@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-warm-off-white: #F7F3EB;
-  --color-sepia-panel: #FDF0D0;
+  --color-warm-off-white: #f7f3eb;
+  --color-sepia-panel: #fdf0d0;
   --color-forest-green: #225732;
-  --color-muted-gray-text: #544D45;
-  --color-light-gray-text: #6B6051;
-  --color-border-warm: #E8E0CE;
-  --color-hover-warm: #E8DEC2;
-  --color-active-green-light: #E0EEDA;
+  --color-muted-gray-text: #544d45;
+  --color-light-gray-text: #6b6051;
+  --color-border-warm: #e8e0ce;
+  --color-hover-warm: #e8dec2;
+  --color-active-green-light: #e0eeda;
 
   --font-family-serif-main: "Literata", serif;
   --font-family-sans-ui: "Source Sans Pro", sans-serif;
@@ -34,7 +34,11 @@ body {
 }
 
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
 }
 
 foliate-view {

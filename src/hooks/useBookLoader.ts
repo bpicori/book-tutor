@@ -1,18 +1,24 @@
-import { useRef, useCallback, useEffect, useState } from 'react'
-import type { FoliateView } from '../types'
-import { useStore } from '../store/useStore'
-import { useBookFile } from './useBookFile'
-import { loadBookCover, updateBookTitle, applyBookStyles } from '../utils/bookOpeners'
+import { useRef, useCallback, useEffect, useState } from "react"
+import type { FoliateView } from "../types"
+import { useStore } from "../store/useStore"
+import { useBookFile } from "./useBookFile"
+import {
+  loadBookCover,
+  updateBookTitle,
+  applyBookStyles,
+} from "../utils/bookOpeners"
 
 /**
  * Hook for loading and opening a book in the foliate view
  * Orchestrates file loading, book opening, cover loading, title updates, and style application
  */
-export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null>) {
+export function useBookLoader(
+  viewRef: React.MutableRefObject<FoliateView | null>,
+) {
   const { currentBookId, setBook, setCoverUrl, settings, library } = useStore()
-  
+
   // Get the saved location for the current book
-  const currentBook = library.find(b => b.id === currentBookId)
+  const currentBook = library.find((b) => b.id === currentBookId)
   const savedLocation = currentBook?.lastLocation || undefined
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -45,13 +51,13 @@ export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null
         setIsLoading(false)
         return true
       } catch (err) {
-        console.error('Failed to open book:', err)
-        setError('Failed to open book')
+        console.error("Failed to open book:", err)
+        setError("Failed to open book")
         setIsLoading(false)
         return false
       }
     },
-    [setBook, setCoverUrl, viewRef, settings]
+    [setBook, setCoverUrl, viewRef, settings],
   )
 
   useEffect(() => {
@@ -60,7 +66,7 @@ export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null
 
     async function loadBook() {
       if (!currentBookId) {
-        setError('No book selected')
+        setError("No book selected")
         setIsLoading(false)
         return
       }
@@ -68,7 +74,7 @@ export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null
       // Load file from storage
       const file = await loadBookFile(currentBookId)
       if (!file) {
-        setError('Book file not found')
+        setError("Book file not found")
         setIsLoading(false)
         return
       }
@@ -81,7 +87,7 @@ export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null
       }
 
       if (!viewRef.current) {
-        setError('Failed to initialize reader')
+        setError("Failed to initialize reader")
         setIsLoading(false)
         return
       }
@@ -94,4 +100,3 @@ export function useBookLoader(viewRef: React.MutableRefObject<FoliateView | null
 
   return { isLoading, error }
 }
-

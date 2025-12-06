@@ -1,8 +1,12 @@
-import { useCallback, useState } from 'react'
-import { useStore } from '../store/useStore'
-import { generateChapterPreview, LLMServiceError } from '../services/llmService'
-import { getBookTitle, getBookAuthor, extractTextFromDocument } from '../utils/bookHelpers'
-import { useLLMSettings } from './useLLMSettings'
+import { useCallback, useState } from "react"
+import { useStore } from "../store/useStore"
+import { generateChapterPreview, LLMServiceError } from "../services/llmService"
+import {
+  getBookTitle,
+  getBookAuthor,
+  extractTextFromDocument,
+} from "../utils/bookHelpers"
+import { useLLMSettings } from "./useLLMSettings"
 
 /**
  * Hook for managing chapter preview generation
@@ -25,7 +29,9 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
 
   const generatePreview = useCallback(async () => {
     if (!llmSettings) {
-      setError('Please configure your API key in Settings to generate previews.')
+      setError(
+        "Please configure your API key in Settings to generate previews.",
+      )
       return
     }
 
@@ -37,15 +43,19 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
 
     try {
       // Load chapter content from the book sections
-      let chapterContent = ''
-      if (book?.sections && currentSectionIndex !== null && currentSectionIndex >= 0) {
+      let chapterContent = ""
+      if (
+        book?.sections &&
+        currentSectionIndex !== null &&
+        currentSectionIndex >= 0
+      ) {
         const section = book.sections[currentSectionIndex]
         if (section?.createDocument) {
           try {
             const doc = await section.createDocument()
             chapterContent = extractTextFromDocument(doc)
           } catch (docErr) {
-            console.warn('Failed to load chapter content:', docErr)
+            console.warn("Failed to load chapter content:", docErr)
           }
         }
       }
@@ -60,7 +70,7 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
         bookAuthor,
         chapterLabel,
         chapterContent,
-        llmSettings
+        llmSettings,
       )
 
       setChapterPreview(chapterHref, {
@@ -73,7 +83,7 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
       if (err instanceof LLMServiceError) {
         setError(err.message)
       } else {
-        setError('Failed to generate preview. Please try again.')
+        setError("Failed to generate preview. Please try again.")
       }
     } finally {
       setPreviewLoading(false)
@@ -101,4 +111,3 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
     refreshPreview,
   }
 }
-

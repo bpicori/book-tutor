@@ -13,7 +13,7 @@
 export function createChatSystemPrompt(
   bookTitle: string,
   bookAuthor: string,
-  chapterLabel: string
+  chapterLabel: string,
 ): string {
   return `You are a helpful reading assistant. The user is currently reading "${bookTitle}" by ${bookAuthor}, specifically the chapter "${chapterLabel}". 
 
@@ -70,7 +70,7 @@ export function createChapterPreviewUserPrompt(
   bookTitle: string,
   bookAuthor: string,
   chapterLabel: string,
-  truncatedContent: string
+  truncatedContent: string,
 ): string {
   return `Generate a reading preview for:
 
@@ -94,4 +94,3 @@ Based on the chapter content above, create a preview that will help orient and p
 export function createWordDefinitionPrompt(word: string): string {
   return `Define "${word}". If non-English, provide English translation and definition. Plain text only.`
 }
-
