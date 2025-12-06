@@ -1,5 +1,6 @@
 import OpenAI from 'openai'
 import type { ChatMessage, ChapterPreview } from '../types'
+import { CHAPTER_PREVIEW_SYSTEM_PROMPT, createChapterPreviewUserPrompt } from './prompts'
 
 export interface LLMSettings {
   apiKey: string
@@ -114,56 +115,19 @@ export async function generateChapterPreview(
 ): Promise<Omit<ChapterPreview, 'chapterHref' | 'chapterLabel' | 'generatedAt'>> {
   const client = createClient(settings)
 
-  const systemPrompt = `You are an expert reading guide assistant. Your task is to analyze the provided chapter content and generate a reading preview that helps readers prepare for and engage more deeply with the material.
-
-IMPORTANT GUIDELINES:
-- For FICTION: Avoid plot spoilers. Focus on themes, tone, atmosphere, and what readers should pay attention to.
-- For NON-FICTION: Focus on key arguments, concepts, and frameworks introduced in this chapter.
-- Keep each item concise but meaningful (1-2 sentences max per item).
-- Generate content that primes the reader's attention without giving away key revelations.
-- Base your analysis on the actual chapter content provided.
-
-You must respond with a valid JSON object with the following structure:
-{
-  "themes": ["theme 1", "theme 2"],
-  "keyConcepts": ["concept 1", "concept 2"],
-  "toneAndStyle": "Optional: description of tone, pacing, or narrative style",
-  "characters": ["Optional: character introductions for fiction"],
-  "definitions": [{"term": "term", "definition": "definition"}],
-  "guidingQuestions": ["question 1", "question 2"]
-}
-
-Required fields: themes, keyConcepts, guidingQuestions
-Optional fields: toneAndStyle, characters, definitions
-
-Provide 2-4 items for themes, keyConcepts.
-Provide 1-2 guiding questions that help the reader think critically about the content.
-Only include characters for fiction works where new or important characters appear.
-Only include definitions if there are important terms or concepts that need explanation.`
-
   // Truncate chapter content if too long (aim for ~8000 tokens max, roughly 32000 chars)
   const maxContentLength = 32000
   const truncatedContent = chapterContent.length > maxContentLength
     ? chapterContent.slice(0, maxContentLength) + '\n\n[Content truncated for length...]'
     : chapterContent
 
-  const userPrompt = `Generate a reading preview for:
-
-Book: "${bookTitle}" by ${bookAuthor}
-Chapter: "${chapterLabel}"
-
-CHAPTER CONTENT:
----
-${truncatedContent}
----
-
-Based on the chapter content above, create a preview that will help orient and prime the reader. Remember to respond with valid JSON only.`
+  const userPrompt = createChapterPreviewUserPrompt(bookTitle, bookAuthor, chapterLabel, truncatedContent)
 
   try {
     const response = await client.chat.completions.create({
       model: settings.model,
       messages: [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: CHAPTER_PREVIEW_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
       ],
       response_format: { type: 'json_object' },

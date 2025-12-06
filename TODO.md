@@ -1,0 +1,7 @@
+- [ ] Cache the chapter preview in IndexedDB
+- [ ] Implement the copy action in the selection action bar
+- [ ] Implement the translate action in the selection action bar
+- [ ] Implement the new word action in the selection action bar
+  - [ ] Init the vocabulary entity in the database
+  - [ ] Define the entity schema
+
