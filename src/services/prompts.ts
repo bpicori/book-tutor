@@ -85,3 +85,13 @@ ${truncatedContent}
 Based on the chapter content above, create a preview that will help orient and prime the reader. Remember to respond with valid JSON only.`
 }
 
+/**
+ * Prompt for getting word definitions/translations.
+ * Used when the user selects a word and wants to see its definition or translation.
+ * @param word - The word or phrase to define/translate
+ * @returns The formatted prompt
+ */
+export function createWordDefinitionPrompt(word: string): string {
+  return `Define "${word}". If non-English, provide English translation and definition. Plain text only.`
+}
+

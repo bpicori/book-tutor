@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { ChatMessage, ChapterPreview } from '../types'
-import { STORAGE_KEY } from '../constants'
+import { STORAGE_KEY, DEFAULT_SETTINGS } from '../constants'
 import { createLibrarySlice, type LibrarySlice } from './slices/librarySlice'
 import { createReaderSlice, type ReaderSlice, initialReaderState } from './slices/readerSlice'
 import { createUISlice, type UISlice } from './slices/uiSlice'
@@ -85,6 +85,31 @@ export const useStore = create<AppState>()(
         isAiSidebarOpen: state.isAiSidebarOpen,
         settings: state.settings,
       }),
+      merge: (persistedState: any, currentState: AppState) => {
+        const merged = { ...currentState, ...persistedState } as AppState
+        
+        // Migrate settings: ensure translation settings exist (backward compatibility)
+        if (merged.settings && typeof merged.settings === 'object') {
+          const oldSettings = merged.settings as any
+          const needsMigration = 
+            !('llmTranslationApiKey' in oldSettings) ||
+            !('llmTranslationBaseUrl' in oldSettings) ||
+            !('llmTranslationModel' in oldSettings)
+          
+          if (needsMigration) {
+            merged.settings = {
+              ...DEFAULT_SETTINGS,
+              ...oldSettings,
+              // Migrate: use main settings as defaults for translation if not set
+              llmTranslationApiKey: oldSettings.llmTranslationApiKey || oldSettings.llmApiKey || '',
+              llmTranslationBaseUrl: oldSettings.llmTranslationBaseUrl || oldSettings.llmBaseUrl || DEFAULT_SETTINGS.llmTranslationBaseUrl,
+              llmTranslationModel: oldSettings.llmTranslationModel || oldSettings.llmModel || DEFAULT_SETTINGS.llmTranslationModel,
+            }
+          }
+        }
+        
+        return merged
+      },
     }
   )
 )

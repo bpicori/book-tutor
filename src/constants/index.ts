@@ -23,6 +23,9 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   llmApiKey: '',
   llmBaseUrl: 'https://api.openai.com/v1',
   llmModel: 'gpt-4o-mini',
+  llmTranslationApiKey: '',
+  llmTranslationBaseUrl: 'https://api.openai.com/v1',
+  llmTranslationModel: 'gpt-4o-mini',
 }
 
 /**

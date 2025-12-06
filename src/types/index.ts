@@ -169,6 +169,10 @@ export interface LLMSettings {
   llmApiKey: string
   llmBaseUrl: string
   llmModel: string
+  // Translation settings (separate API key, base URL, and model)
+  llmTranslationApiKey: string
+  llmTranslationBaseUrl: string
+  llmTranslationModel: string
 }
 
 /**

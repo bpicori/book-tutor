@@ -1,6 +1,6 @@
 import OpenAI from 'openai'
 import type { ChatMessage, ChapterPreview } from '../types'
-import { CHAPTER_PREVIEW_SYSTEM_PROMPT, createChapterPreviewUserPrompt, createChatSystemPrompt } from './prompts'
+import { CHAPTER_PREVIEW_SYSTEM_PROMPT, createChapterPreviewUserPrompt, createChatSystemPrompt, createWordDefinitionPrompt } from './prompts'
 
 export interface LLMSettings {
   apiKey: string
@@ -181,6 +181,64 @@ export async function generateChapterPreview(
       definitions: parsed.definitions,
       guidingQuestions: parsed.guidingQuestions,
     }
+  } catch (error) {
+    if (error instanceof LLMServiceError) {
+      throw error
+    }
+    handleOpenAIError(error, settings)
+  }
+}
+
+/**
+ * Gets a word definition or translation using the LLM.
+ * Returns a concise definition/translation of the word or phrase.
+ * @param word - The word or phrase to define/translate
+ * @param settings - LLM configuration settings
+ * @returns The definition/translation text
+ */
+export async function getWordDefinition(word: string, settings: LLMSettings): Promise<string> {
+  const client = createClient(settings)
+  const userPrompt = createWordDefinitionPrompt(word)
+
+  try {
+    const response = await client.chat.completions.create({
+      model: settings.model,
+      messages: [
+        { role: 'system', content: 'Dictionary assistant. Provide concise definitions and translations.' },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.3,
+    })
+
+    // Check if response has choices
+    if (!response.choices || response.choices.length === 0) {
+      throw new LLMServiceError('No response choices returned from AI. Please try again.', 'EMPTY_RESPONSE')
+    }
+
+    const choice = response.choices[0]
+    const finishReason = choice?.finish_reason
+    
+    // Check finish reason - if it's "length" or "content_filter", we might have an issue
+    if (finishReason === 'length') {
+      throw new LLMServiceError('Response was cut off. Please try again.', 'TRUNCATED_RESPONSE')
+    }
+    if (finishReason === 'content_filter') {
+      throw new LLMServiceError('Response was filtered. Please try again.', 'FILTERED_RESPONSE')
+    }
+
+    const message = choice?.message
+    if (!message) {
+      throw new LLMServiceError('No message in response. Please try again.', 'EMPTY_RESPONSE')
+    }
+
+    const content = message.content
+    if (!content || content.trim().length === 0) {
+      // If finish reason is stop but content is empty, this is unusual
+      const reasonMsg = finishReason ? ` (finish_reason: ${finishReason})` : ''
+      throw new LLMServiceError(`Empty response from AI${reasonMsg}. Please try again.`, 'EMPTY_RESPONSE')
+    }
+
+    return content.trim()
   } catch (error) {
     if (error instanceof LLMServiceError) {
       throw error
