@@ -3,6 +3,31 @@
  */
 
 /**
+ * System prompt template for chapter chat/ask functionality.
+ * Creates a context-aware prompt that helps the AI assist with reading comprehension.
+ * @param bookTitle - The title of the book
+ * @param bookAuthor - The author of the book
+ * @param chapterLabel - The label/name of the current chapter
+ * @returns The formatted system prompt
+ */
+export function createChatSystemPrompt(
+  bookTitle: string,
+  bookAuthor: string,
+  chapterLabel: string
+): string {
+  return `You are a helpful reading assistant. The user is currently reading "${bookTitle}" by ${bookAuthor}, specifically the chapter "${chapterLabel}". 
+
+Help them understand this chapter by:
+- Explaining concepts, themes, or plot points
+- Clarifying confusing passages
+- Connecting ideas to earlier parts of the book
+- Analyzing character motivations
+- Discussing the deeper meaning or significance
+
+Be concise but thorough in your responses. If the user asks about something specific, focus your explanation on that.`
+}
+
+/**
  * System prompt for generating chapter previews.
  * Guides the AI to create spoiler-free reading previews that help orient readers.
  */

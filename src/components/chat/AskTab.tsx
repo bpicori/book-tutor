@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, memo, useCallback } from 'react'
 import { useStore } from '../../store/useStore'
 import { ChatMessage } from './ChatMessage'
-import { streamChat, LLMServiceError } from '../../services/llmService'
+import { streamChapterChat, LLMServiceError } from '../../services/llmService'
 import { getBookTitle, getBookAuthor } from '../../utils/bookHelpers'
 
 const QUICK_ACTIONS = [
@@ -61,20 +61,9 @@ export const AskTab = memo(function AskTab() {
         model: settings.llmModel,
       }
 
-      // Build system prompt with book and chapter context
+      // Get book context
       const bookTitle = getBookTitle(book?.metadata)
       const bookAuthor = getBookAuthor(book?.metadata)
-
-      const systemPrompt = `You are a helpful reading assistant. The user is currently reading "${bookTitle}" by ${bookAuthor}, specifically the chapter "${chapterLabel}". 
-
-Help them understand this chapter by:
-- Explaining concepts, themes, or plot points
-- Clarifying confusing passages
-- Connecting ideas to earlier parts of the book
-- Analyzing character motivations
-- Discussing the deeper meaning or significance
-
-Be concise but thorough in your responses. If the user asks about something specific, focus your explanation on that.`
 
       // Get conversation history for this chapter (excluding the empty streaming message we just added)
       const conversationHistory = chatMessages.map((msg) => ({
@@ -87,7 +76,7 @@ Be concise but thorough in your responses. If the user asks about something spec
       try {
         let fullContent = ''
 
-        for await (const chunk of streamChat(conversationHistory, llmSettings, systemPrompt)) {
+        for await (const chunk of streamChapterChat(bookTitle, bookAuthor, chapterLabel, conversationHistory, llmSettings)) {
           fullContent += chunk
           updateLastChatMessage(chapterHref, fullContent, true)
         }

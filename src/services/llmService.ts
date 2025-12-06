@@ -1,6 +1,6 @@
 import OpenAI from 'openai'
 import type { ChatMessage, ChapterPreview } from '../types'
-import { CHAPTER_PREVIEW_SYSTEM_PROMPT, createChapterPreviewUserPrompt } from './prompts'
+import { CHAPTER_PREVIEW_SYSTEM_PROMPT, createChapterPreviewUserPrompt, createChatSystemPrompt } from './prompts'
 
 export interface LLMSettings {
   apiKey: string
@@ -95,6 +95,27 @@ export async function* streamChat(
   } catch (error) {
     handleOpenAIError(error, settings)
   }
+}
+
+/**
+ * Streams a chat conversation for a specific chapter with book context.
+ * Automatically creates a system prompt with book and chapter information.
+ * @param bookTitle - The title of the book
+ * @param bookAuthor - The author of the book
+ * @param chapterLabel - The label/name of the current chapter
+ * @param messages - The conversation history
+ * @param settings - LLM configuration settings
+ * @returns An async generator that yields streamed content chunks
+ */
+export async function* streamChapterChat(
+  bookTitle: string,
+  bookAuthor: string,
+  chapterLabel: string,
+  messages: ChatMessage[],
+  settings: LLMSettings
+): AsyncGenerator<string, void, unknown> {
+  const systemPrompt = createChatSystemPrompt(bookTitle, bookAuthor, chapterLabel)
+  yield* streamChat(messages, settings, systemPrompt)
 }
 
 interface PreviewResponse {
