@@ -145,18 +145,35 @@ export interface ProgressInfo {
 export type AppPage = 'library' | 'reader'
 
 // Settings Types
-export interface ReaderSettings {
-  // Typography
+
+/**
+ * Typography settings for the reader
+ */
+export interface TypographySettings {
   fontFamily: string
   fontSize: number // 12-24
   lineHeight: number // 1.2-2.0
-  
-  // Reading
+}
+
+/**
+ * Reader view mode settings
+ */
+export interface ViewSettings {
   viewMode: 'paginated' | 'scroll'
-  
-  // LLM Settings (OpenAI compatible)
+}
+
+/**
+ * LLM/API settings for AI features
+ */
+export interface LLMSettings {
   llmApiKey: string
   llmBaseUrl: string
   llmModel: string
 }
+
+/**
+ * Combined reader settings (composed of separate concerns)
+ * Maintained for backward compatibility with existing code
+ */
+export interface ReaderSettings extends TypographySettings, ViewSettings, LLMSettings {}
 

@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect, memo, useCallback } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 import { useStore } from '../../store/useStore'
 import { ChatMessage } from './ChatMessage'
-import { streamChapterChat, LLMServiceError } from '../../services/llmService'
-import { getBookTitle, getBookAuthor } from '../../utils/bookHelpers'
+import { useChapterChat } from '../../hooks/useChapterChat'
 
 const QUICK_ACTIONS = [
   { action: 'explain', label: 'Explain this chapter', message: 'Can you explain what happens in this chapter?' },
@@ -11,101 +10,24 @@ const QUICK_ACTIONS = [
 ]
 
 export const AskTab = memo(function AskTab() {
-  const {
-    book,
-    progress,
-    currentTocHref,
-    chapterChats,
-    addChatMessage,
-    updateLastChatMessage,
-    settings,
-  } = useStore()
+  const { progress, currentTocHref, book } = useStore()
 
   const [inputValue, setInputValue] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const chapterLabel = progress.tocLabel || 'Current Chapter'
   const chapterHref = currentTocHref || 'default'
-  const chatMessages = chapterChats[chapterHref] || []
+  const { chatMessages, sendMessage, isLoading } = useChapterChat(chapterHref, chapterLabel)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages])
 
-  const handleSubmit = useCallback(
-    async (message: string) => {
-      if (!message.trim() || isLoading) return
-
-      // Add user message
-      addChatMessage(chapterHref, { role: 'user', content: message })
-      setInputValue('')
-
-      // Check if API key is configured
-      if (!settings.llmApiKey) {
-        addChatMessage(chapterHref, {
-          role: 'assistant',
-          content: 'Please configure your API key in Settings to use the AI assistant.',
-        })
-        return
-      }
-
-      setIsLoading(true)
-
-      // Add empty assistant message for streaming
-      addChatMessage(chapterHref, { role: 'assistant', content: '', isStreaming: true })
-
-      const llmSettings = {
-        apiKey: settings.llmApiKey,
-        baseUrl: settings.llmBaseUrl,
-        model: settings.llmModel,
-      }
-
-      // Get book context
-      const bookTitle = getBookTitle(book?.metadata)
-      const bookAuthor = getBookAuthor(book?.metadata)
-
-      // Get conversation history for this chapter (excluding the empty streaming message we just added)
-      const conversationHistory = chatMessages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }))
-      // Add the new user message
-      conversationHistory.push({ role: 'user' as const, content: message })
-
-      try {
-        let fullContent = ''
-
-        for await (const chunk of streamChapterChat(bookTitle, bookAuthor, chapterLabel, conversationHistory, llmSettings)) {
-          fullContent += chunk
-          updateLastChatMessage(chapterHref, fullContent, true)
-        }
-
-        // Mark streaming as complete
-        updateLastChatMessage(chapterHref, fullContent, false)
-      } catch (error) {
-        let errorMessage = 'An unexpected error occurred. Please try again.'
-
-        if (error instanceof LLMServiceError) {
-          errorMessage = error.message
-        }
-
-        updateLastChatMessage(chapterHref, errorMessage, false)
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [
-      isLoading,
-      addChatMessage,
-      chapterHref,
-      settings,
-      book,
-      chapterLabel,
-      chatMessages,
-      updateLastChatMessage,
-    ]
-  )
+  const handleSubmit = async (message: string) => {
+    if (!message.trim() || isLoading) return
+    setInputValue('')
+    await sendMessage(message)
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -145,7 +67,10 @@ export const AskTab = memo(function AskTab() {
               {QUICK_ACTIONS.map(({ action, label, message }) => (
                 <button
                   key={action}
-                  onClick={() => handleSubmit(message)}
+                  onClick={() => {
+                    setInputValue('')
+                    sendMessage(message)
+                  }}
                   className="text-sm text-forest-green border border-forest-green/50 rounded-full px-3 py-1 hover:bg-forest-green/10 transition-colors"
                 >
                   {label}

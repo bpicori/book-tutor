@@ -1,7 +1,6 @@
-import { memo, useCallback, useState } from 'react'
+import { memo } from 'react'
 import { useStore } from '../../store/useStore'
-import { generateChapterPreview, LLMServiceError } from '../../services/llmService'
-import { getBookTitle, getBookAuthor, extractTextFromDocument } from '../../utils/bookHelpers'
+import { useChapterPreview } from '../../hooks/useChapterPreview'
 import type { ChapterPreview } from '../../types'
 
 // Skeleton loading component
@@ -178,92 +177,14 @@ const EmptyState = memo(function EmptyState({ chapterLabel, onGenerate, isLoadin
 })
 
 export const PreviewTab = memo(function PreviewTab() {
-  const {
-    book,
-    progress,
-    currentTocHref,
-    currentSectionIndex,
-    chapterPreviews,
-    previewLoading,
-    settings,
-    setChapterPreview,
-    setPreviewLoading,
-    clearChapterPreview,
-  } = useStore()
-
-  const [error, setError] = useState<string | null>(null)
+  const { progress, currentTocHref } = useStore()
 
   const chapterLabel = progress.tocLabel || 'Current Chapter'
   const chapterHref = currentTocHref || 'default'
-  const preview = chapterPreviews[chapterHref]
-
-  const handleGenerate = useCallback(async () => {
-    if (!settings.llmApiKey) {
-      setError('Please configure your API key in Settings to generate previews.')
-      return
-    }
-
-    setError(null)
-    setPreviewLoading(true)
-
-    const bookTitle = getBookTitle(book?.metadata)
-    const bookAuthor = getBookAuthor(book?.metadata)
-
-    const llmSettings = {
-      apiKey: settings.llmApiKey,
-      baseUrl: settings.llmBaseUrl,
-      model: settings.llmModel,
-    }
-
-    try {
-      // Load chapter content from the book sections
-      let chapterContent = ''
-      if (book?.sections && currentSectionIndex !== null && currentSectionIndex >= 0) {
-        const section = book.sections[currentSectionIndex]
-        if (section?.createDocument) {
-          try {
-            const doc = await section.createDocument()
-            chapterContent = extractTextFromDocument(doc)
-          } catch (docErr) {
-            console.warn('Failed to load chapter content:', docErr)
-          }
-        }
-      }
-
-      // Provide a fallback message if no content loaded
-      if (!chapterContent) {
-        chapterContent = `[Chapter content could not be loaded. Please generate based on the chapter title "${chapterLabel}" and book context.]`
-      }
-
-      const generatedPreview = await generateChapterPreview(
-        bookTitle,
-        bookAuthor,
-        chapterLabel,
-        chapterContent,
-        llmSettings
-      )
-
-      setChapterPreview(chapterHref, {
-        ...generatedPreview,
-        chapterHref,
-        chapterLabel,
-        generatedAt: Date.now(),
-      })
-    } catch (err) {
-      if (err instanceof LLMServiceError) {
-        setError(err.message)
-      } else {
-        setError('Failed to generate preview. Please try again.')
-      }
-    } finally {
-      setPreviewLoading(false)
-    }
-  }, [book, chapterHref, chapterLabel, currentSectionIndex, settings, setChapterPreview, setPreviewLoading])
-
-  const handleRefresh = useCallback(() => {
-    clearChapterPreview(chapterHref)
-    handleGenerate()
-  }, [chapterHref, clearChapterPreview, handleGenerate])
+  const { preview, isLoading, error, generatePreview, refreshPreview } = useChapterPreview(
+    chapterHref,
+    chapterLabel
+  )
 
   return (
     <div className="flex flex-col h-full">
@@ -273,9 +194,9 @@ export const PreviewTab = memo(function PreviewTab() {
           <span className="material-symbols-outlined text-forest-green text-lg shrink-0">menu_book</span>
           <span className="text-sm text-muted-gray-text font-medium truncate">{chapterLabel}</span>
         </div>
-        {preview && !previewLoading && (
+        {preview && !isLoading && (
           <button
-            onClick={handleRefresh}
+            onClick={refreshPreview}
             className="text-light-gray-text hover:text-forest-green transition-colors shrink-0"
             title="Regenerate preview"
           >
@@ -292,15 +213,15 @@ export const PreviewTab = memo(function PreviewTab() {
           </div>
         )}
 
-        {previewLoading ? (
+        {isLoading ? (
           <PreviewSkeleton />
         ) : preview ? (
           <PreviewContent preview={preview} />
         ) : (
           <EmptyState
             chapterLabel={chapterLabel}
-            onGenerate={handleGenerate}
-            isLoading={previewLoading}
+            onGenerate={generatePreview}
+            isLoading={isLoading}
           />
         )}
       </div>
