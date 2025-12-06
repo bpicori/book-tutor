@@ -3,7 +3,7 @@ import { getWordDefinition } from '../../services/llmService'
 import { useLLMTranslationSettings } from '../../hooks/useLLMSettings'
 import { ActionButton } from './ActionButton'
 import { TranslationPopup } from './TranslationPopup'
-import type { SelectionInfo } from './types'
+import type { SelectionInfo } from '../../types'
 
 interface SelectionActionBarProps {
   selection: SelectionInfo | null
@@ -93,11 +93,23 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
   // Ensure popup stays within viewport
   const padding = 8
   let left = selection.x - popupWidth / 2
-  let top = selection.y - popupHeight
 
-  // Clamp to viewport bounds
+  // Check if there's enough space above the selection
+  const spaceAbove = selection.y
+  const spaceNeededAbove = popupHeight + padding
+  const position: 'above' | 'below' = spaceAbove >= spaceNeededAbove ? 'above' : 'below'
+
+  // Calculate top position based on whether we show above or below
+  let top: number
+  if (position === 'above') {
+    top = selection.y
+  } else {
+    // Position below the selection (add some offset for the selection height)
+    top = selection.y + selection.height + padding
+  }
+
+  // Clamp horizontal position to viewport bounds
   left = Math.max(padding, Math.min(left, window.innerWidth - popupWidth - padding))
-  top = Math.max(padding, top)
 
   // Show translation popup
   if (showTranslation) {
@@ -111,6 +123,7 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
         left={left}
         top={top}
         width={popupWidth}
+        position={position}
         onClose={handleCloseTranslation}
       />
     )
@@ -124,7 +137,7 @@ export function SelectionActionBar({ selection, onDismiss }: SelectionActionBarP
       style={{
         left: `${left}px`,
         top: `${top}px`,
-        transform: 'translateY(-100%)',
+        transform: position === 'above' ? 'translateY(-100%)' : 'translateY(0)',
       }}
     >
       <ActionButton icon="content_copy" label="Copy" onClick={handleCopy} />

@@ -9,12 +9,13 @@ interface TranslationPopupProps {
   left: number
   top: number
   width: number
+  position: 'above' | 'below'
   onClose: () => void
 }
 
 export const TranslationPopup = forwardRef<HTMLDivElement, TranslationPopupProps>(
   function TranslationPopup(
-    { word, definition, isLoading, error, left, top, width, onClose },
+    { word, definition, isLoading, error, left, top, width, position, onClose },
     ref
   ) {
     return (
@@ -24,7 +25,7 @@ export const TranslationPopup = forwardRef<HTMLDivElement, TranslationPopupProps
         style={{
           left: `${left}px`,
           top: `${top}px`,
-          transform: 'translateY(-100%)',
+          transform: position === 'above' ? 'translateY(-100%)' : 'translateY(0)',
           width: `${width}px`,
         }}
       >

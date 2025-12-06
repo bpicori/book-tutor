@@ -144,6 +144,14 @@ export interface ProgressInfo {
 // App Types
 export type AppPage = 'library' | 'reader'
 
+// Selection Types
+export interface SelectionInfo {
+  text: string
+  x: number
+  y: number
+  height: number
+}
+
 // Settings Types
 
 /**

@@ -2,7 +2,8 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import type { FoliateView } from '../../types'
 import { useStore } from '../../store/useStore'
 import { generateReaderCSS } from '../../utils/readerStyles'
-import { SelectionActionBar, type SelectionInfo } from '../selection-action-bar'
+import { SelectionActionBar } from '../selection-action-bar'
+import type { SelectionInfo } from '../../types'
 import '../../foliate-js/view.js'
 
 interface ReaderProps {
@@ -75,6 +76,7 @@ export function Reader({ viewRef }: ReaderProps) {
           
           let x: number
           let y: number
+          let height: number = 20 // Default fallback height
           
           if (rects.length > 0 && iframeRect) {
             // Use the first rect of the selection for positioning
@@ -83,6 +85,7 @@ export function Reader({ viewRef }: ReaderProps) {
             x = iframeRect.left + firstRect.left + firstRect.width / 2
             // Position closer to the selection (add small offset to reduce gap)
             y = iframeRect.top + firstRect.top + 8
+            height = firstRect.height
           } else if (iframeRect) {
             // Fallback to mouse position within iframe + iframe offset
             x = iframeRect.left + e.clientX
@@ -94,7 +97,7 @@ export function Reader({ viewRef }: ReaderProps) {
             y = containerRect.top + e.clientY - 50
           }
           
-          setSelection({ text, x, y })
+          setSelection({ text, x, y, height })
         }, 20)
       }
 
