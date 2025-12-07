@@ -1,11 +1,11 @@
-import { memo } from "react"
-import type { TOCItem } from "../../types"
+import { memo } from "react";
+import type { TOCItem } from "../../types";
 
 interface TOCLinkProps {
-  item: TOCItem
-  level: number
-  currentHref: string | null
-  onNavigate: (href: string) => void
+  item: TOCItem;
+  level: number;
+  currentHref: string | null;
+  onNavigate: (href: string) => void;
 }
 
 export const TOCLink = memo(function TOCLink({
@@ -14,12 +14,12 @@ export const TOCLink = memo(function TOCLink({
   currentHref,
   onNavigate,
 }: TOCLinkProps) {
-  const isActive = currentHref === item.href
+  const isActive = currentHref === item.href;
 
   const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    onNavigate(item.href)
-  }
+    e.preventDefault();
+    onNavigate(item.href);
+  };
 
   return (
     <>
@@ -50,5 +50,5 @@ export const TOCLink = memo(function TOCLink({
         />
       ))}
     </>
-  )
-})
+  );
+});

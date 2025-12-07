@@ -1,15 +1,15 @@
-import { memo } from "react"
+import { memo } from "react";
 
 interface ProgressBarProps {
-  value: number // 0-1
-  height?: "sm" | "md"
+  value: number; // 0-1
+  height?: "sm" | "md";
 }
 
 export const ProgressBar = memo(function ProgressBar({
   value,
   height = "md",
 }: ProgressBarProps) {
-  const heightClass = height === "sm" ? "h-1" : "h-2"
+  const heightClass = height === "sm" ? "h-1" : "h-2";
 
   return (
     <div className={`w-full rounded-full bg-hover-warm ${heightClass}`}>
@@ -18,5 +18,5 @@ export const ProgressBar = memo(function ProgressBar({
         style={{ width: `${Math.round(value * 100)}%` }}
       />
     </div>
-  )
-})
+  );
+});

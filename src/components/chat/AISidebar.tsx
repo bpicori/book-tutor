@@ -1,14 +1,14 @@
-import { memo } from "react"
-import { useStore } from "../../store/useStore"
-import { PreviewTab } from "./PreviewTab"
-import { AskTab } from "./AskTab"
-import type { AiSidebarTab } from "../../types"
+import { memo } from "react";
+import { useStore } from "../../store/useStore";
+import { PreviewTab } from "./PreviewTab";
+import { AskTab } from "./AskTab";
+import type { AiSidebarTab } from "../../types";
 
 const TAB_CONFIG: {
-  id: AiSidebarTab
-  label: string
-  icon: string
-  description: string
+  id: AiSidebarTab;
+  label: string;
+  icon: string;
+  description: string;
 }[] = [
   {
     id: "preview",
@@ -17,13 +17,13 @@ const TAB_CONFIG: {
     description: "Orient before reading",
   },
   { id: "ask", label: "Ask", icon: "chat", description: "Q&A after reading" },
-]
+];
 
 export const AISidebar = memo(function AISidebar() {
   const { isAiSidebarOpen, toggleAiSidebar, activeAiTab, setActiveAiTab } =
-    useStore()
+    useStore();
 
-  if (!isAiSidebarOpen) return null
+  if (!isAiSidebarOpen) return null;
 
   return (
     <aside className="flex flex-col w-96 h-full bg-warm-off-white border-l border-border-warm overflow-hidden">
@@ -68,5 +68,5 @@ export const AISidebar = memo(function AISidebar() {
         {activeAiTab === "preview" ? <PreviewTab /> : <AskTab />}
       </div>
     </aside>
-  )
-})
+  );
+});

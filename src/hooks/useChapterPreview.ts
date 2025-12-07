@@ -1,12 +1,15 @@
-import { useCallback, useState } from "react"
-import { useStore } from "../store/useStore"
-import { generateChapterPreview, LLMServiceError } from "../services/llmService"
+import { useCallback, useState } from "react";
+import { useStore } from "../store/useStore";
+import {
+  generateChapterPreview,
+  LLMServiceError,
+} from "../services/llmService";
 import {
   getBookTitle,
   getBookAuthor,
   extractTextFromDocument,
-} from "../utils/bookHelpers"
-import { useLLMSettings } from "./useLLMSettings"
+} from "../utils/bookHelpers";
+import { useLLMSettings } from "./useLLMSettings";
 
 /**
  * Hook for managing chapter preview generation
@@ -21,48 +24,48 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
     setChapterPreview,
     setPreviewLoading,
     clearChapterPreview,
-  } = useStore()
+  } = useStore();
 
-  const llmSettings = useLLMSettings()
-  const [error, setError] = useState<string | null>(null)
-  const preview = chapterPreviews[chapterHref]
+  const llmSettings = useLLMSettings();
+  const [error, setError] = useState<string | null>(null);
+  const preview = chapterPreviews[chapterHref];
 
   const generatePreview = useCallback(async () => {
     if (!llmSettings) {
       setError(
-        "Please configure your API key in Settings to generate previews.",
-      )
-      return
+        "Please configure your API key in Settings to generate previews."
+      );
+      return;
     }
 
-    setError(null)
-    setPreviewLoading(true)
+    setError(null);
+    setPreviewLoading(true);
 
-    const bookTitle = getBookTitle(book?.metadata)
-    const bookAuthor = getBookAuthor(book?.metadata)
+    const bookTitle = getBookTitle(book?.metadata);
+    const bookAuthor = getBookAuthor(book?.metadata);
 
     try {
       // Load chapter content from the book sections
-      let chapterContent = ""
+      let chapterContent = "";
       if (
         book?.sections &&
         currentSectionIndex !== null &&
         currentSectionIndex >= 0
       ) {
-        const section = book.sections[currentSectionIndex]
+        const section = book.sections[currentSectionIndex];
         if (section?.createDocument) {
           try {
-            const doc = await section.createDocument()
-            chapterContent = extractTextFromDocument(doc)
+            const doc = await section.createDocument();
+            chapterContent = extractTextFromDocument(doc);
           } catch (docErr) {
-            console.warn("Failed to load chapter content:", docErr)
+            console.warn("Failed to load chapter content:", docErr);
           }
         }
       }
 
       // Provide a fallback message if no content loaded
       if (!chapterContent) {
-        chapterContent = `[Chapter content could not be loaded. Please generate based on the chapter title "${chapterLabel}" and book context.]`
+        chapterContent = `[Chapter content could not be loaded. Please generate based on the chapter title "${chapterLabel}" and book context.]`;
       }
 
       const generatedPreview = await generateChapterPreview(
@@ -70,23 +73,23 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
         bookAuthor,
         chapterLabel,
         chapterContent,
-        llmSettings,
-      )
+        llmSettings
+      );
 
       setChapterPreview(chapterHref, {
         ...generatedPreview,
         chapterHref,
         chapterLabel,
         generatedAt: Date.now(),
-      })
+      });
     } catch (err) {
       if (err instanceof LLMServiceError) {
-        setError(err.message)
+        setError(err.message);
       } else {
-        setError("Failed to generate preview. Please try again.")
+        setError("Failed to generate preview. Please try again.");
       }
     } finally {
-      setPreviewLoading(false)
+      setPreviewLoading(false);
     }
   }, [
     book,
@@ -96,12 +99,12 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
     llmSettings,
     setChapterPreview,
     setPreviewLoading,
-  ])
+  ]);
 
   const refreshPreview = useCallback(() => {
-    clearChapterPreview(chapterHref)
-    generatePreview()
-  }, [chapterHref, clearChapterPreview, generatePreview])
+    clearChapterPreview(chapterHref);
+    generatePreview();
+  }, [chapterHref, clearChapterPreview, generatePreview]);
 
   return {
     preview,
@@ -109,5 +112,5 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
     error,
     generatePreview,
     refreshPreview,
-  }
+  };
 }

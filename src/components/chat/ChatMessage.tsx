@@ -1,16 +1,16 @@
-import { memo } from "react"
-import Markdown from "react-markdown"
-import type { ChatMessage as ChatMessageType } from "../../types"
+import { memo } from "react";
+import Markdown from "react-markdown";
+import type { ChatMessage as ChatMessageType } from "../../types";
 
 interface ChatMessageProps {
-  message: ChatMessageType
+  message: ChatMessageType;
 }
 
 export const ChatMessage = memo(function ChatMessage({
   message,
 }: ChatMessageProps) {
-  const { role, content } = message
-  const isUser = role === "user"
+  const { role, content } = message;
+  const isUser = role === "user";
 
   return (
     <div className={`flex items-end gap-3 ${isUser ? "" : ""}`}>
@@ -56,7 +56,7 @@ export const ChatMessage = memo(function ChatMessage({
                 ),
                 // Style code blocks
                 code: ({ children, className }) => {
-                  const isBlock = className?.includes("language-")
+                  const isBlock = className?.includes("language-");
                   return isBlock ? (
                     <code className="block bg-sepia-bg/50 rounded p-2 my-2 text-sm overflow-x-auto">
                       {children}
@@ -65,7 +65,7 @@ export const ChatMessage = memo(function ChatMessage({
                     <code className="bg-sepia-bg/50 rounded px-1 py-0.5 text-sm">
                       {children}
                     </code>
-                  )
+                  );
                 },
                 // Style blockquotes
                 blockquote: ({ children }) => (
@@ -88,5 +88,5 @@ export const ChatMessage = memo(function ChatMessage({
         </div>
       )}
     </div>
-  )
-})
+  );
+});

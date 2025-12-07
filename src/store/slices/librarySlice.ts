@@ -1,21 +1,21 @@
-import type { StateCreator } from "zustand"
-import type { LibraryBook, AppPage } from "../../types"
+import type { StateCreator } from "zustand";
+import type { LibraryBook, AppPage } from "../../types";
 
 export interface LibrarySlice {
   // State
-  currentView: AppPage
-  currentBookId: string | null
-  library: LibraryBook[]
+  currentView: AppPage;
+  currentBookId: string | null;
+  library: LibraryBook[];
 
   // Actions
-  setCurrentView: (view: AppPage) => void
-  openBook: (bookId: string) => void
-  goToLibrary: () => void
-  goToVocabulary: () => void
-  addBookToLibrary: (book: LibraryBook) => void
-  removeBookFromLibrary: (bookId: string) => void
-  updateBookProgress: (bookId: string, progress: number) => void
-  updateBookLocation: (bookId: string, location: string) => void
+  setCurrentView: (view: AppPage) => void;
+  openBook: (bookId: string) => void;
+  goToLibrary: () => void;
+  goToVocabulary: () => void;
+  addBookToLibrary: (book: LibraryBook) => void;
+  removeBookFromLibrary: (bookId: string) => void;
+  updateBookProgress: (bookId: string, progress: number) => void;
+  updateBookLocation: (bookId: string, location: string) => void;
 }
 
 export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
@@ -32,7 +32,7 @@ export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
       currentView: "reader",
       currentBookId: bookId,
       library: state.library.map((b) =>
-        b.id === bookId ? { ...b, lastReadAt: Date.now() } : b,
+        b.id === bookId ? { ...b, lastReadAt: Date.now() } : b
       ),
     })),
 
@@ -57,14 +57,14 @@ export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
   updateBookProgress: (bookId, progress) =>
     set((state) => ({
       library: state.library.map((b) =>
-        b.id === bookId ? { ...b, progress } : b,
+        b.id === bookId ? { ...b, progress } : b
       ),
     })),
 
   updateBookLocation: (bookId, location) =>
     set((state) => ({
       library: state.library.map((b) =>
-        b.id === bookId ? { ...b, lastLocation: location } : b,
+        b.id === bookId ? { ...b, lastLocation: location } : b
       ),
     })),
-})
+});

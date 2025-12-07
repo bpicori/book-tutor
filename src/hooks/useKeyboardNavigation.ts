@@ -1,8 +1,8 @@
-import { useEffect } from "react"
-import type { FoliateView } from "../types"
+import { useEffect } from "react";
+import type { FoliateView } from "../types";
 
 export function useKeyboardNavigation(
-  viewRef: React.MutableRefObject<FoliateView | null>,
+  viewRef: React.MutableRefObject<FoliateView | null>
 ) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -11,14 +11,14 @@ export function useKeyboardNavigation(
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement
       ) {
-        return
+        return;
       }
 
-      if (e.key === "ArrowLeft") viewRef.current?.goLeft()
-      else if (e.key === "ArrowRight") viewRef.current?.goRight()
-    }
+      if (e.key === "ArrowLeft") viewRef.current?.goLeft();
+      else if (e.key === "ArrowRight") viewRef.current?.goRight();
+    };
 
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [viewRef])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [viewRef]);
 }

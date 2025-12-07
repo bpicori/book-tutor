@@ -1,16 +1,16 @@
-import { forwardRef } from "react"
-import Markdown from "react-markdown"
+import { forwardRef } from "react";
+import Markdown from "react-markdown";
 
 interface TranslationPopupProps {
-  word: string
-  definition: string | null
-  isLoading: boolean
-  error: string | null
-  left: number
-  top: number
-  width: number
-  position: "above" | "below"
-  onClose: () => void
+  word: string;
+  definition: string | null;
+  isLoading: boolean;
+  error: string | null;
+  left: number;
+  top: number;
+  width: number;
+  position: "above" | "below";
+  onClose: () => void;
 }
 
 export const TranslationPopup = forwardRef<
@@ -18,7 +18,7 @@ export const TranslationPopup = forwardRef<
   TranslationPopupProps
 >(function TranslationPopup(
   { word, definition, isLoading, error, left, top, width, position, onClose },
-  ref,
+  ref
 ) {
   return (
     <div
@@ -68,5 +68,5 @@ export const TranslationPopup = forwardRef<
         </div>
       </div>
     </div>
-  )
-})
+  );
+});

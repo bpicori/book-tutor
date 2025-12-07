@@ -1,16 +1,16 @@
-import { memo } from "react"
-import type { ReaderSettings } from "../../../types"
+import { memo } from "react";
+import type { ReaderSettings } from "../../../types";
 
 interface TypographyTabProps {
-  settings: ReaderSettings
-  onUpdate: (settings: Partial<ReaderSettings>) => void
+  settings: ReaderSettings;
+  onUpdate: (settings: Partial<ReaderSettings>) => void;
 }
 
 const fontFamilies = [
   { value: "Literata", label: "Literata" },
   { value: "Georgia", label: "Georgia" },
   { value: "Merriweather", label: "Merriweather" },
-]
+];
 
 export const TypographyTab = memo(function TypographyTab({
   settings,
@@ -72,5 +72,5 @@ export const TypographyTab = memo(function TypographyTab({
         </div>
       </div>
     </div>
-  )
-})
+  );
+});

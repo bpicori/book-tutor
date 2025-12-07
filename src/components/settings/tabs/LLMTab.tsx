@@ -1,23 +1,23 @@
-import { memo, useState } from "react"
-import type { ReaderSettings } from "../../../types"
+import { memo, useState } from "react";
+import type { ReaderSettings } from "../../../types";
 
 interface LLMTabProps {
-  settings: ReaderSettings
-  onUpdate: (settings: Partial<ReaderSettings>) => void
+  settings: ReaderSettings;
+  onUpdate: (settings: Partial<ReaderSettings>) => void;
 }
 
 const commonModels = [
   { value: "openai/gpt-5.1", label: "GPT-5.1" },
   { value: "openai/gpt-5-mini", label: "GPT-5 Mini" },
   { value: "anthropic/claude-sonnet-4-5-20250929", label: "Claude Sonnet 4.5" },
-]
+];
 
 export const LLMTab = memo(function LLMTab({
   settings,
   onUpdate,
 }: LLMTabProps) {
-  const [showApiKey, setShowApiKey] = useState(false)
-  const [showTranslationApiKey, setShowTranslationApiKey] = useState(false)
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [showTranslationApiKey, setShowTranslationApiKey] = useState(false);
 
   return (
     <div className="space-y-8">
@@ -183,5 +183,5 @@ export const LLMTab = memo(function LLMTab({
         </div>
       </div>
     </div>
-  )
-})
+  );
+});

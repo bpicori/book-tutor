@@ -1,19 +1,19 @@
-import type { StateCreator } from "zustand"
-import type { SavedWord } from "../../types"
+import type { StateCreator } from "zustand";
+import type { SavedWord } from "../../types";
 
 export interface VocabularySlice {
   // State
-  words: SavedWord[]
+  words: SavedWord[];
 
   // Actions
-  addWord: (word: SavedWord) => void
-  removeWord: (wordId: string) => void
-  getWords: () => SavedWord[]
+  addWord: (word: SavedWord) => void;
+  removeWord: (wordId: string) => void;
+  getWords: () => SavedWord[];
 }
 
 export const createVocabularySlice: StateCreator<VocabularySlice> = (
   set,
-  get,
+  get
 ) => ({
   // Initial state
   words: [],
@@ -30,6 +30,6 @@ export const createVocabularySlice: StateCreator<VocabularySlice> = (
     })),
 
   getWords: () => {
-    return get().words
+    return get().words;
   },
-})
+});

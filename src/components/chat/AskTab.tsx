@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect, memo } from "react"
-import { useStore } from "../../store/useStore"
-import { ChatMessage } from "./ChatMessage"
-import { useChapterChat } from "../../hooks/useChapterChat"
+import { useState, useRef, useEffect, memo } from "react";
+import { useStore } from "../../store/useStore";
+import { ChatMessage } from "./ChatMessage";
+import { useChapterChat } from "../../hooks/useChapterChat";
 
 const QUICK_ACTIONS = [
   {
@@ -19,40 +19,40 @@ const QUICK_ACTIONS = [
     label: "Connect to earlier",
     message: "How does this chapter connect to what came before?",
   },
-]
+];
 
 export const AskTab = memo(function AskTab() {
-  const { progress, currentTocHref, book } = useStore()
+  const { progress, currentTocHref, book } = useStore();
 
-  const [inputValue, setInputValue] = useState("")
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [inputValue, setInputValue] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const chapterLabel = progress.tocLabel || "Current Chapter"
-  const chapterHref = currentTocHref || "default"
+  const chapterLabel = progress.tocLabel || "Current Chapter";
+  const chapterHref = currentTocHref || "default";
   const { chatMessages, sendMessage, clearMessages, isLoading } =
-    useChapterChat(chapterHref, chapterLabel)
+    useChapterChat(chapterHref, chapterLabel);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [chatMessages])
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
 
   const handleSubmit = async (message: string) => {
-    if (!message.trim() || isLoading) return
-    setInputValue("")
-    await sendMessage(message)
-  }
+    if (!message.trim() || isLoading) return;
+    setInputValue("");
+    await sendMessage(message);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter") {
       // Cmd+Enter or Shift+Enter: insert new line (let default behavior happen)
       if (e.metaKey || e.ctrlKey || e.shiftKey) {
-        return
+        return;
       }
       // Enter alone: submit
-      e.preventDefault()
-      handleSubmit(inputValue)
+      e.preventDefault();
+      handleSubmit(inputValue);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -104,8 +104,8 @@ export const AskTab = memo(function AskTab() {
                 <button
                   key={action}
                   onClick={() => {
-                    setInputValue("")
-                    sendMessage(message)
+                    setInputValue("");
+                    sendMessage(message);
                   }}
                   className="text-sm text-forest-green border border-forest-green/50 rounded-full px-3 py-1 hover:bg-forest-green/10 transition-colors"
                 >
@@ -156,5 +156,5 @@ export const AskTab = memo(function AskTab() {
         </div>
       </div>
     </div>
-  )
-})
+  );
+});

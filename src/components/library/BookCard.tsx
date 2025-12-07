@@ -1,11 +1,11 @@
-import { memo, useState } from "react"
-import type { LibraryBook } from "../../types"
-import { ProgressBar } from "../common"
+import { memo, useState } from "react";
+import type { LibraryBook } from "../../types";
+import { ProgressBar } from "../common";
 
 interface BookCardProps {
-  book: LibraryBook
-  onOpen: () => void
-  onDelete: () => void
+  book: LibraryBook;
+  onOpen: () => void;
+  onDelete: () => void;
 }
 
 export const BookCard = memo(function BookCard({
@@ -13,7 +13,7 @@ export const BookCard = memo(function BookCard({
   onOpen,
   onDelete,
 }: BookCardProps) {
-  const [showMenu, setShowMenu] = useState(false)
+  const [showMenu, setShowMenu] = useState(false);
 
   return (
     <div className="group relative flex flex-col">
@@ -60,8 +60,8 @@ export const BookCard = memo(function BookCard({
       <div className="absolute top-2 right-2">
         <button
           onClick={(e) => {
-            e.stopPropagation()
-            setShowMenu(!showMenu)
+            e.stopPropagation();
+            setShowMenu(!showMenu);
           }}
           className="w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
         >
@@ -77,9 +77,9 @@ export const BookCard = memo(function BookCard({
             <div className="absolute top-full right-0 mt-1 z-20 bg-white rounded-lg shadow-lg py-1 min-w-[120px]">
               <button
                 onClick={(e) => {
-                  e.stopPropagation()
-                  onDelete()
-                  setShowMenu(false)
+                  e.stopPropagation();
+                  onDelete();
+                  setShowMenu(false);
                 }}
                 className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
               >
@@ -93,5 +93,5 @@ export const BookCard = memo(function BookCard({
         )}
       </div>
     </div>
-  )
-})
+  );
+});

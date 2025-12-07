@@ -1,20 +1,20 @@
-import type { StateCreator } from "zustand"
-import type { ReaderSettings } from "../../types"
-import { DEFAULT_SETTINGS } from "../../constants"
+import type { StateCreator } from "zustand";
+import type { ReaderSettings } from "../../types";
+import { DEFAULT_SETTINGS } from "../../constants";
 
 export interface UISlice {
   // State
-  isAiSidebarOpen: boolean
-  isSidebarCollapsed: boolean
-  isSettingsOpen: boolean
-  settings: ReaderSettings
+  isAiSidebarOpen: boolean;
+  isSidebarCollapsed: boolean;
+  isSettingsOpen: boolean;
+  settings: ReaderSettings;
 
   // Actions
-  toggleAiSidebar: (open?: boolean) => void
-  toggleSidebar: (collapsed?: boolean) => void
-  toggleSettings: (open?: boolean) => void
-  updateSettings: (settings: Partial<ReaderSettings>) => void
-  resetSettings: () => void
+  toggleAiSidebar: (open?: boolean) => void;
+  toggleSidebar: (collapsed?: boolean) => void;
+  toggleSettings: (open?: boolean) => void;
+  updateSettings: (settings: Partial<ReaderSettings>) => void;
+  resetSettings: () => void;
 }
 
 export const createUISlice: StateCreator<UISlice> = (set) => ({
@@ -46,4 +46,4 @@ export const createUISlice: StateCreator<UISlice> = (set) => ({
     })),
 
   resetSettings: () => set({ settings: DEFAULT_SETTINGS }),
-})
+});

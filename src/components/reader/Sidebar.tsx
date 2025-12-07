@@ -1,10 +1,10 @@
-import { memo } from "react"
-import { useStore } from "../../store/useStore"
-import { formatLanguageMap, formatContributor } from "../../utils/formatters"
-import { TOCLink } from "./TOCLink"
+import { memo } from "react";
+import { useStore } from "../../store/useStore";
+import { formatLanguageMap, formatContributor } from "../../utils/formatters";
+import { TOCLink } from "./TOCLink";
 
 interface SidebarProps {
-  onNavigate: (href: string) => void
+  onNavigate: (href: string) => void;
 }
 
 export const Sidebar = memo(function Sidebar({ onNavigate }: SidebarProps) {
@@ -14,17 +14,17 @@ export const Sidebar = memo(function Sidebar({ onNavigate }: SidebarProps) {
     isSidebarCollapsed,
     currentTocHref,
     setCurrentTocHref,
-  } = useStore()
+  } = useStore();
 
-  const title = formatLanguageMap(book?.metadata?.title) || "Table of Contents"
-  const author = formatContributor(book?.metadata?.author) || ""
+  const title = formatLanguageMap(book?.metadata?.title) || "Table of Contents";
+  const author = formatContributor(book?.metadata?.author) || "";
 
   const handleNavigate = (href: string) => {
-    onNavigate(href)
-    setCurrentTocHref(href)
-  }
+    onNavigate(href);
+    setCurrentTocHref(href);
+  };
 
-  if (isSidebarCollapsed) return null
+  if (isSidebarCollapsed) return null;
 
   return (
     <aside className="flex flex-col w-72 h-full bg-warm-off-white border-r border-border-warm overflow-hidden">
@@ -75,5 +75,5 @@ export const Sidebar = memo(function Sidebar({ onNavigate }: SidebarProps) {
         </div>
       </div>
     </aside>
-  )
-})
+  );
+});

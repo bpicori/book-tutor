@@ -8,14 +8,21 @@
  * @param bookTitle - The title of the book
  * @param bookAuthor - The author of the book
  * @param chapterLabel - The label/name of the current chapter
+ * @param chapterContent - The content of the current chapter
  * @returns The formatted system prompt
  */
 export function createChatSystemPrompt(
   bookTitle: string,
   bookAuthor: string,
   chapterLabel: string,
+  chapterContent: string
 ): string {
-  return `You are a helpful reading assistant. The user is currently reading "${bookTitle}" by ${bookAuthor}, specifically the chapter "${chapterLabel}". 
+  return `You are a helpful reading assistant. The user is currently reading "${bookTitle}" by ${bookAuthor}, specifically the chapter "${chapterLabel}".
+
+CHAPTER CONTENT:
+---
+${chapterContent}
+---
 
 Help them understand this chapter by:
 - Explaining concepts, themes, or plot points
@@ -24,7 +31,7 @@ Help them understand this chapter by:
 - Analyzing character motivations
 - Discussing the deeper meaning or significance
 
-Be concise but thorough in your responses. If the user asks about something specific, focus your explanation on that.`
+Be concise but thorough in your responses. If the user asks about something specific, focus your explanation on that. Use the chapter content above as your primary reference when answering questions.`;
 }
 
 /**
@@ -56,7 +63,7 @@ Optional fields: toneAndStyle, characters, definitions
 Provide 2-4 items for themes, keyConcepts.
 Provide 1-2 guiding questions that help the reader think critically about the content.
 Only include characters for fiction works where new or important characters appear.
-Only include definitions if there are important terms or concepts that need explanation.`
+Only include definitions if there are important terms or concepts that need explanation.`;
 
 /**
  * User prompt template for generating chapter previews.
@@ -70,7 +77,7 @@ export function createChapterPreviewUserPrompt(
   bookTitle: string,
   bookAuthor: string,
   chapterLabel: string,
-  truncatedContent: string,
+  truncatedContent: string
 ): string {
   return `Generate a reading preview for:
 
@@ -82,7 +89,7 @@ CHAPTER CONTENT:
 ${truncatedContent}
 ---
 
-Based on the chapter content above, create a preview that will help orient and prime the reader. Remember to respond with valid JSON only.`
+Based on the chapter content above, create a preview that will help orient and prime the reader. Remember to respond with valid JSON only.`;
 }
 
 /**
@@ -92,5 +99,5 @@ Based on the chapter content above, create a preview that will help orient and p
  * @returns The formatted prompt
  */
 export function createWordDefinitionPrompt(word: string): string {
-  return `Define "${word}". If non-English, provide English translation and definition. Plain text only.`
+  return `Define "${word}". If non-English, provide English translation and definition. Plain text only.`;
 }

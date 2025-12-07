@@ -1,7 +1,7 @@
 interface ActionButtonProps {
-  icon: string
-  label: string
-  onClick: () => void
+  icon: string;
+  label: string;
+  onClick: () => void;
 }
 
 export function ActionButton({ icon, label, onClick }: ActionButtonProps) {
@@ -13,5 +13,5 @@ export function ActionButton({ icon, label, onClick }: ActionButtonProps) {
     >
       <span className="material-symbols-outlined text-xl">{icon}</span>
     </button>
-  )
+  );
 }

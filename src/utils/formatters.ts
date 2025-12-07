@@ -1,7 +1,7 @@
 /**
  * Type for language map objects: { en: "Title", de: "Titel" }
  */
-type LanguageMap = Record<string, string>
+type LanguageMap = Record<string, string>;
 
 /**
  * Type for metadata values that can be formatted
@@ -12,7 +12,7 @@ type MetadataValue =
   | Array<string | { name?: string | LanguageMap }>
   | { name?: string | LanguageMap }
   | null
-  | undefined
+  | undefined;
 
 /**
  * Format language map objects (e.g., { en: "Title" } → "Title")
@@ -27,29 +27,29 @@ type MetadataValue =
  * ```
  */
 export const formatLanguageMap = (x: MetadataValue): string => {
-  if (!x) return ""
-  if (typeof x === "string") return x
+  if (!x) return "";
+  if (typeof x === "string") return x;
   if (typeof x === "object" && !Array.isArray(x)) {
-    const keys = Object.keys(x)
-    return (x as LanguageMap)[keys[0]] || ""
+    const keys = Object.keys(x);
+    return (x as LanguageMap)[keys[0]] || "";
   }
-  return ""
-}
+  return "";
+};
 
 /**
  * Format a single contributor (string or object with name)
  */
 const formatOneContributor = (contributor: MetadataValue): string => {
-  if (typeof contributor === "string") return contributor
+  if (typeof contributor === "string") return contributor;
   if (
     typeof contributor === "object" &&
     contributor !== null &&
     !Array.isArray(contributor)
   ) {
-    return formatLanguageMap((contributor as { name?: MetadataValue }).name)
+    return formatLanguageMap((contributor as { name?: MetadataValue }).name);
   }
-  return ""
-}
+  return "";
+};
 
 /**
  * Format contributor(s) - handles both single and array
@@ -66,10 +66,10 @@ const formatOneContributor = (contributor: MetadataValue): string => {
  */
 export const formatContributor = (contributor: MetadataValue): string => {
   if (Array.isArray(contributor)) {
-    return contributor.map(formatOneContributor).filter(Boolean).join(", ")
+    return contributor.map(formatOneContributor).filter(Boolean).join(", ");
   }
-  return formatOneContributor(contributor)
-}
+  return formatOneContributor(contributor);
+};
 
 /**
  * Convert blob to data URL for storage
@@ -79,11 +79,11 @@ export const formatContributor = (contributor: MetadataValue): string => {
  */
 export const blobToDataUrl = (blob: Blob): Promise<string> =>
   new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(blob)
-  })
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 
 /**
  * Generate a unique book ID
@@ -92,4 +92,4 @@ export const blobToDataUrl = (blob: Blob): Promise<string> =>
  * @example "book-1234567890-abc123"
  */
 export const generateBookId = (): string =>
-  `book-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+  `book-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;

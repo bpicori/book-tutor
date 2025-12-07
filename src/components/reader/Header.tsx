@@ -1,11 +1,11 @@
-import { memo } from "react"
-import { useStore } from "../../store/useStore"
-import { formatLanguageMap } from "../../utils/formatters"
-import { IconButton, Logo } from "../common"
+import { memo } from "react";
+import { useStore } from "../../store/useStore";
+import { formatLanguageMap } from "../../utils/formatters";
+import { IconButton, Logo } from "../common";
 
 interface HeaderProps {
-  onPrev: () => void
-  onNext: () => void
+  onPrev: () => void;
+  onNext: () => void;
 }
 
 export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
@@ -17,8 +17,8 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
     goToLibrary,
     toggleSettings,
     goToVocabulary,
-  } = useStore()
-  const title = formatLanguageMap(book?.metadata?.title) || "Read with AI"
+  } = useStore();
+  const title = formatLanguageMap(book?.metadata?.title) || "Read with AI";
 
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-warm px-8 py-3 bg-sepia-panel">
@@ -60,5 +60,5 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
         />
       </div>
     </header>
-  )
-})
+  );
+});

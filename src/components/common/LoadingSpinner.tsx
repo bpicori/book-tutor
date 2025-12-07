@@ -1,6 +1,6 @@
 interface LoadingSpinnerProps {
-  message?: string
-  fullScreen?: boolean
+  message?: string;
+  fullScreen?: boolean;
 }
 
 export function LoadingSpinner({ message, fullScreen }: LoadingSpinnerProps) {
@@ -9,14 +9,14 @@ export function LoadingSpinner({ message, fullScreen }: LoadingSpinnerProps) {
       <div className="w-8 h-8 border-3 border-forest-green border-t-transparent rounded-full animate-spin" />
       {message && <span className="text-muted-gray-text">{message}</span>}
     </div>
-  )
+  );
 
   if (fullScreen) {
     return (
       <div className="absolute inset-0 z-50 flex items-center justify-center bg-warm-off-white">
         {content}
       </div>
-    )
+    );
   }
 
   return (
@@ -26,5 +26,5 @@ export function LoadingSpinner({ message, fullScreen }: LoadingSpinnerProps) {
         {message && <span className="text-muted-gray-text">{message}</span>}
       </div>
     </div>
-  )
+  );
 }

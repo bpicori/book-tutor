@@ -1,21 +1,21 @@
-import { memo, useRef } from "react"
+import { memo, useRef } from "react";
 
 interface AddBookCardProps {
-  onFileSelect: (file: File) => void
+  onFileSelect: (file: File) => void;
 }
 
 export const AddBookCard = memo(function AddBookCard({
   onFileSelect,
 }: AddBookCardProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      onFileSelect(file)
-      e.target.value = ""
+      onFileSelect(file);
+      e.target.value = "";
     }
-  }
+  };
 
   return (
     <div className="flex flex-col">
@@ -40,5 +40,5 @@ export const AddBookCard = memo(function AddBookCard({
         />
       </button>
     </div>
-  )
-})
+  );
+});

@@ -1,40 +1,40 @@
-import { memo, useState } from "react"
-import { useStore } from "../../store/useStore"
-import { Modal } from "../../components/common"
-import { TypographyTab, LLMTab } from "../../components/settings"
+import { memo, useState } from "react";
+import { useStore } from "../../store/useStore";
+import { Modal } from "../../components/common";
+import { TypographyTab, LLMTab } from "../../components/settings";
 
-type TabId = "typography" | "llm"
+type TabId = "typography" | "llm";
 
 interface Tab {
-  id: TabId
-  label: string
-  icon: string
+  id: TabId;
+  label: string;
+  icon: string;
 }
 
 const tabs: Tab[] = [
   { id: "typography", label: "Typography", icon: "text_fields" },
   { id: "llm", label: "LLM", icon: "smart_toy" },
-]
+];
 
 export const SettingsPage = memo(function SettingsPage() {
   const { isSettingsOpen, toggleSettings, settings, updateSettings } =
-    useStore()
-  const [activeTab, setActiveTab] = useState<TabId>("typography")
+    useStore();
+  const [activeTab, setActiveTab] = useState<TabId>("typography");
 
   const handleClose = () => {
-    toggleSettings(false)
-  }
+    toggleSettings(false);
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "typography":
-        return <TypographyTab settings={settings} onUpdate={updateSettings} />
+        return <TypographyTab settings={settings} onUpdate={updateSettings} />;
       case "llm":
-        return <LLMTab settings={settings} onUpdate={updateSettings} />
+        return <LLMTab settings={settings} onUpdate={updateSettings} />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <Modal isOpen={isSettingsOpen} onClose={handleClose} title="Settings">
@@ -65,5 +65,5 @@ export const SettingsPage = memo(function SettingsPage() {
         </div>
       </div>
     </Modal>
-  )
-})
+  );
+});

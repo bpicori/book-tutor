@@ -1,7 +1,7 @@
-import { memo } from "react"
-import { useStore } from "../../store/useStore"
-import { useChapterPreview } from "../../hooks/useChapterPreview"
-import type { ChapterPreview } from "../../types"
+import { memo } from "react";
+import { useStore } from "../../store/useStore";
+import { useChapterPreview } from "../../hooks/useChapterPreview";
+import type { ChapterPreview } from "../../types";
 
 // Skeleton loading component
 const PreviewSkeleton = memo(function PreviewSkeleton() {
@@ -19,14 +19,14 @@ const PreviewSkeleton = memo(function PreviewSkeleton() {
         <div className="h-3 bg-border-warm rounded w-3/4" />
       </div>
     </div>
-  )
-})
+  );
+});
 
 // Preview section component
 interface PreviewSectionProps {
-  title: string
-  icon: string
-  children: React.ReactNode
+  title: string;
+  icon: string;
+  children: React.ReactNode;
 }
 
 const PreviewSection = memo(function PreviewSection({
@@ -46,12 +46,12 @@ const PreviewSection = memo(function PreviewSection({
       </div>
       {children}
     </div>
-  )
-})
+  );
+});
 
 // Preview content component
 interface PreviewContentProps {
-  preview: ChapterPreview
+  preview: ChapterPreview;
 }
 
 const PreviewContent = memo(function PreviewContent({
@@ -160,14 +160,14 @@ const PreviewContent = memo(function PreviewContent({
         </div>
       )}
     </div>
-  )
-})
+  );
+});
 
 // Empty state component
 interface EmptyStateProps {
-  chapterLabel: string
-  onGenerate: () => void
-  isLoading: boolean
+  chapterLabel: string;
+  onGenerate: () => void;
+  isLoading: boolean;
 }
 
 const EmptyState = memo(function EmptyState({
@@ -213,16 +213,16 @@ const EmptyState = memo(function EmptyState({
         )}
       </button>
     </div>
-  )
-})
+  );
+});
 
 export const PreviewTab = memo(function PreviewTab() {
-  const { progress, currentTocHref } = useStore()
+  const { progress, currentTocHref } = useStore();
 
-  const chapterLabel = progress.tocLabel || "Current Chapter"
-  const chapterHref = currentTocHref || "default"
+  const chapterLabel = progress.tocLabel || "Current Chapter";
+  const chapterHref = currentTocHref || "default";
   const { preview, isLoading, error, generatePreview, refreshPreview } =
-    useChapterPreview(chapterHref, chapterLabel)
+    useChapterPreview(chapterHref, chapterLabel);
 
   return (
     <div className="flex flex-col h-full">
@@ -268,5 +268,5 @@ export const PreviewTab = memo(function PreviewTab() {
         )}
       </div>
     </div>
-  )
-})
+  );
+});

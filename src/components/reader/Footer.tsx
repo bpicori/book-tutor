@@ -1,12 +1,12 @@
-import { memo } from "react"
-import { useStore } from "../../store/useStore"
-import { ProgressBar } from "../common"
+import { memo } from "react";
+import { useStore } from "../../store/useStore";
+import { ProgressBar } from "../common";
 
 export const Footer = memo(function Footer() {
-  const { book, progress } = useStore()
-  const percent = Math.round(progress.fraction * 100)
+  const { book, progress } = useStore();
+  const percent = Math.round(progress.fraction * 100);
 
-  if (!book) return null
+  if (!book) return null;
 
   return (
     <footer className="p-6 border-t border-border-warm bg-sepia-panel">
@@ -27,5 +27,5 @@ export const Footer = memo(function Footer() {
         <ProgressBar value={progress.fraction} />
       </div>
     </footer>
-  )
-})
+  );
+});

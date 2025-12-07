@@ -1,27 +1,27 @@
-import { memo, useState, useMemo } from "react"
-import Markdown from "react-markdown"
-import { useStore } from "../../store/useStore"
-import { Logo, IconButton } from "../../components/common"
+import { memo, useState, useMemo } from "react";
+import Markdown from "react-markdown";
+import { useStore } from "../../store/useStore";
+import { Logo, IconButton } from "../../components/common";
 
-const WORDS_PER_PAGE = 10
+const WORDS_PER_PAGE = 10;
 
 export const VocabularyPage = memo(function VocabularyPage() {
-  const { words, removeWord, goToLibrary, toggleSettings } = useStore()
-  const [currentPage, setCurrentPage] = useState(1)
+  const { words, removeWord, goToLibrary, toggleSettings } = useStore();
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(words.length / WORDS_PER_PAGE)
+  const totalPages = Math.ceil(words.length / WORDS_PER_PAGE);
   const displayedWords = useMemo(() => {
-    const start = (currentPage - 1) * WORDS_PER_PAGE
-    return words.slice(start, start + WORDS_PER_PAGE)
-  }, [words, currentPage])
+    const start = (currentPage - 1) * WORDS_PER_PAGE;
+    return words.slice(start, start + WORDS_PER_PAGE);
+  }, [words, currentPage]);
 
   const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(1, prev - 1))
-  }
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  };
 
   const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-  }
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  };
 
   return (
     <div className="min-h-screen bg-warm-off-white flex flex-col">
@@ -167,5 +167,5 @@ export const VocabularyPage = memo(function VocabularyPage() {
         )}
       </main>
     </div>
-  )
-})
+  );
+});

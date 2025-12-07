@@ -1,0 +1,6 @@
+dist
+node_modules
+src/foliate-js
+*.md
+package-lock.json
+

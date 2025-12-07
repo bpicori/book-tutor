@@ -1,10 +1,10 @@
-import { memo, useEffect } from "react"
+import { memo, useEffect } from "react";
 
 interface ModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title?: string
-  children: React.ReactNode
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  children: React.ReactNode;
 }
 
 export const Modal = memo(function Modal({
@@ -17,19 +17,19 @@ export const Modal = memo(function Modal({
     if (isOpen) {
       const handleEscape = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
-          onClose()
+          onClose();
         }
-      }
-      document.addEventListener("keydown", handleEscape)
-      document.body.style.overflow = "hidden"
+      };
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
       return () => {
-        document.removeEventListener("keydown", handleEscape)
-        document.body.style.overflow = ""
-      }
+        document.removeEventListener("keydown", handleEscape);
+        document.body.style.overflow = "";
+      };
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div
@@ -57,5 +57,5 @@ export const Modal = memo(function Modal({
         </div>
       </div>
     </div>
-  )
-})
+  );
+});

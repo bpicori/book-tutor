@@ -1,11 +1,11 @@
-import { memo } from "react"
+import { memo } from "react";
 
 interface LogoProps {
-  size?: "sm" | "md"
+  size?: "sm" | "md";
 }
 
 export const Logo = memo(function Logo({ size = "md" }: LogoProps) {
-  const sizeClass = size === "sm" ? "size-4" : "size-8"
+  const sizeClass = size === "sm" ? "size-4" : "size-8";
 
   return (
     <div className={`${sizeClass} text-forest-green`}>
@@ -16,5 +16,5 @@ export const Logo = memo(function Logo({ size = "md" }: LogoProps) {
         />
       </svg>
     </div>
-  )
-})
+  );
+});

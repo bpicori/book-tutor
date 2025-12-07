@@ -1,10 +1,10 @@
-import type { ReaderSettings } from "../types"
+import type { ReaderSettings } from "../types";
 
 /**
  * Generates CSS styles for the foliate-view reader with typography settings
  */
 export function generateReaderCSS(settings: ReaderSettings): string {
-  const { fontFamily, fontSize, lineHeight } = settings
+  const { fontFamily, fontSize, lineHeight } = settings;
 
   return `
     @namespace epub "http://www.idpf.org/2007/ops";
@@ -46,5 +46,5 @@ export function generateReaderCSS(settings: ReaderSettings): string {
     aside[epub|type~="rearnote"] {
         display: none;
     }
-  `
+  `;
 }

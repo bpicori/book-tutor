@@ -1,11 +1,11 @@
-import { memo } from "react"
+import { memo } from "react";
 
 interface IconButtonProps {
-  icon: string
-  label: string
-  onClick: () => void
-  text?: string
-  variant?: "default" | "circle"
+  icon: string;
+  label: string;
+  onClick: () => void;
+  text?: string;
+  variant?: "default" | "circle";
 }
 
 export const IconButton = memo(function IconButton({
@@ -16,12 +16,12 @@ export const IconButton = memo(function IconButton({
   variant = "default",
 }: IconButtonProps) {
   const baseClasses =
-    "flex cursor-pointer items-center justify-center overflow-hidden bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 transition-colors"
+    "flex cursor-pointer items-center justify-center overflow-hidden bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 transition-colors";
 
   const variantClasses =
     variant === "circle"
       ? "rounded-full h-10 w-10"
-      : `rounded-lg h-10 ${text ? "gap-2 px-3" : "w-10"}`
+      : `rounded-lg h-10 ${text ? "gap-2 px-3" : "w-10"}`;
 
   return (
     <button
@@ -34,5 +34,5 @@ export const IconButton = memo(function IconButton({
         <span className="hidden sm:inline text-sm font-medium">{text}</span>
       )}
     </button>
-  )
-})
+  );
+});

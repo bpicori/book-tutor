@@ -4,39 +4,39 @@
  * while keeping metadata in localStorage via zustand persist.
  */
 
-import { DB_NAME, DB_VERSION, DB_STORE_NAME } from "../constants"
+import { DB_NAME, DB_VERSION, DB_STORE_NAME } from "../constants";
 
-const STORE_NAME = DB_STORE_NAME
+const STORE_NAME = DB_STORE_NAME;
 
 interface StoredBook {
-  id: string
-  data: ArrayBuffer
+  id: string;
+  data: ArrayBuffer;
 }
 
-let dbCache: IDBDatabase | null = null
+let dbCache: IDBDatabase | null = null;
 
 function openDB(): Promise<IDBDatabase> {
   // Return cached connection if available
   if (dbCache) {
-    return Promise.resolve(dbCache)
+    return Promise.resolve(dbCache);
   }
 
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION)
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onerror = () => reject(request.error)
+    request.onerror = () => reject(request.error);
     request.onsuccess = () => {
-      dbCache = request.result
-      resolve(dbCache)
-    }
+      dbCache = request.result;
+      resolve(dbCache);
+    };
 
     request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result
+      const db = (event.target as IDBOpenDBRequest).result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: "id" })
+        db.createObjectStore(STORE_NAME, { keyPath: "id" });
       }
-    }
-  })
+    };
+  });
 }
 
 /**
@@ -44,72 +44,72 @@ function openDB(): Promise<IDBDatabase> {
  */
 export function closeDB(): void {
   if (dbCache) {
-    dbCache.close()
-    dbCache = null
+    dbCache.close();
+    dbCache = null;
   }
 }
 
 export async function saveBookFile(id: string, file: File): Promise<void> {
-  const db = await openDB()
-  const data = await file.arrayBuffer()
+  const db = await openDB();
+  const data = await file.arrayBuffer();
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, "readwrite")
-    const store = transaction.objectStore(STORE_NAME)
+    const transaction = db.transaction(STORE_NAME, "readwrite");
+    const store = transaction.objectStore(STORE_NAME);
 
-    const request = store.put({ id, data } as StoredBook)
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve()
-  })
+    const request = store.put({ id, data } as StoredBook);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
 }
 
 export async function getBookFile(id: string): Promise<File | null> {
-  const db = await openDB()
+  const db = await openDB();
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, "readonly")
-    const store = transaction.objectStore(STORE_NAME)
+    const transaction = db.transaction(STORE_NAME, "readonly");
+    const store = transaction.objectStore(STORE_NAME);
 
-    const request = store.get(id)
-    request.onerror = () => reject(request.error)
+    const request = store.get(id);
+    request.onerror = () => reject(request.error);
     request.onsuccess = () => {
-      const result = request.result as StoredBook | undefined
+      const result = request.result as StoredBook | undefined;
       if (result) {
         // Convert ArrayBuffer back to File
-        const blob = new Blob([result.data], { type: "application/epub+zip" })
+        const blob = new Blob([result.data], { type: "application/epub+zip" });
         const file = new File([blob], `${id}.epub`, {
           type: "application/epub+zip",
-        })
-        resolve(file)
+        });
+        resolve(file);
       } else {
-        resolve(null)
+        resolve(null);
       }
-    }
-  })
+    };
+  });
 }
 
 export async function deleteBookFile(id: string): Promise<void> {
-  const db = await openDB()
+  const db = await openDB();
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, "readwrite")
-    const store = transaction.objectStore(STORE_NAME)
+    const transaction = db.transaction(STORE_NAME, "readwrite");
+    const store = transaction.objectStore(STORE_NAME);
 
-    const request = store.delete(id)
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve()
-  })
+    const request = store.delete(id);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
 }
 
 export async function getAllBookIds(): Promise<string[]> {
-  const db = await openDB()
+  const db = await openDB();
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, "readonly")
-    const store = transaction.objectStore(STORE_NAME)
+    const transaction = db.transaction(STORE_NAME, "readonly");
+    const store = transaction.objectStore(STORE_NAME);
 
-    const request = store.getAllKeys()
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve(request.result as string[])
-  })
+    const request = store.getAllKeys();
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result as string[]);
+  });
 }
