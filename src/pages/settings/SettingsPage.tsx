@@ -1,9 +1,9 @@
 import { memo, useState } from "react";
 import { useStore } from "../../store/useStore";
 import { Modal } from "../../components/common";
-import { TypographyTab, LLMTab } from "../../components/settings";
+import { TypographyTab, LLMTab, BackupTab } from "../../components/settings";
 
-type TabId = "typography" | "llm";
+type TabId = "typography" | "llm" | "backup";
 
 interface Tab {
   id: TabId;
@@ -14,6 +14,7 @@ interface Tab {
 const tabs: Tab[] = [
   { id: "typography", label: "Typography", icon: "text_fields" },
   { id: "llm", label: "LLM", icon: "smart_toy" },
+  { id: "backup", label: "Backup", icon: "cloud_sync" },
 ];
 
 export const SettingsPage = memo(function SettingsPage() {
@@ -31,6 +32,8 @@ export const SettingsPage = memo(function SettingsPage() {
         return <TypographyTab settings={settings} onUpdate={updateSettings} />;
       case "llm":
         return <LLMTab settings={settings} onUpdate={updateSettings} />;
+      case "backup":
+        return <BackupTab />;
       default:
         return null;
     }
