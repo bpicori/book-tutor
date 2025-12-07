@@ -30,6 +30,40 @@ Got stuck on a passage? Wondering how something connects to earlier chapters? As
 
 The AI has context about the book and your current chapter, so you can have a focused conversation about what you're reading.
 
+### Instant Word Lookup
+
+Select any text while reading to:
+
+- **Translate/Define** — Get instant definitions powered by AI
+- **Save to Vocabulary** — Add words to your personal vocabulary list with auto-generated definitions
+- **Copy** — Quick copy to clipboard
+
+### Build Your Vocabulary
+
+All saved words go to a dedicated Vocabulary page where you can:
+
+- Review words with their AI-generated definitions
+- See which book each word came from
+- Track when words were added
+- Remove words you've mastered
+
+### Customize Your Reading
+
+Adjust typography settings to match your preferences:
+
+- Font family (Literata, Georgia, Merriweather)
+- Font size (12-24px)
+- Line height (1.2-2.0)
+
+### Backup & Sync
+
+Export your entire library to transfer between devices. Backups include:
+
+- All your books 
+- Reading progress and positions
+- Saved vocabulary words
+- App settings (typography, LLM configuration)
+
 ## Setup
 
 ```bash
