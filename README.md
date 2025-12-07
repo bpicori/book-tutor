@@ -1,6 +1,6 @@
-# Read with AI
+# BookTutor
 
-An EPUB reader with AI assistance for deeper reading comprehension.
+An AI-powered book reader for deeper reading comprehension. Currently supports EPUB files.
 
 ![Library](./assets/library.png)
 
@@ -59,7 +59,7 @@ Adjust typography settings to match your preferences:
 
 Export your entire library to transfer between devices. Backups include:
 
-- All your books 
+- All your EPUB files
 - Reading progress and positions
 - Saved vocabulary words
 - App settings (typography, LLM configuration)
