@@ -1,1 +1,0 @@
-- [ ] Cache the chapter preview in IndexedDB

@@ -18,11 +18,10 @@ import {
   type VocabularySlice,
 } from "./slices/vocabularySlice";
 
-// Import initial states directly
-const initialAISidebarState = {
+// Initial state for AI sidebar reset (excludes chapterPreviews to preserve them)
+const initialAISidebarStateWithoutPreviews = {
   activeAiTab: "preview" as const,
   chapterChats: {},
-  chapterPreviews: {},
   previewLoading: false,
 };
 
@@ -54,7 +53,7 @@ export const useStore = create<AppState>()(
         ...aiSidebarSlice,
         ...vocabularySlice,
 
-        // Override openBook to reset reader and AI sidebar state
+        // Override openBook to reset reader and AI sidebar state (preserves chapterPreviews)
         openBook: (bookId) => {
           set((state) => {
             const updatedLibrary = state.library.map((b) =>
@@ -65,28 +64,44 @@ export const useStore = create<AppState>()(
               currentBookId: bookId,
               library: updatedLibrary,
               ...initialReaderState,
-              ...initialAISidebarState,
+              ...initialAISidebarStateWithoutPreviews,
             };
           });
         },
 
-        // Override goToLibrary to reset reader and AI sidebar state
+        // Override goToLibrary to reset reader and AI sidebar state (preserves chapterPreviews)
         goToLibrary: () => {
           set({
             currentView: "library",
             currentBookId: null,
             ...initialReaderState,
-            ...initialAISidebarState,
+            ...initialAISidebarStateWithoutPreviews,
           });
         },
 
-        // Override goToVocabulary to reset reader and AI sidebar state
+        // Override goToVocabulary to reset reader and AI sidebar state (preserves chapterPreviews)
         goToVocabulary: () => {
           set({
             currentView: "vocabulary",
             currentBookId: null,
             ...initialReaderState,
-            ...initialAISidebarState,
+            ...initialAISidebarStateWithoutPreviews,
+          });
+        },
+
+        // Override removeBookFromLibrary to also clean up previews for the deleted book
+        removeBookFromLibrary: (bookId) => {
+          set((state) => {
+            // Filter out previews for this book (keys start with "bookId:")
+            const filteredPreviews = Object.fromEntries(
+              Object.entries(state.chapterPreviews).filter(
+                ([key]) => !key.startsWith(`${bookId}:`)
+              )
+            );
+            return {
+              library: state.library.filter((b) => b.id !== bookId),
+              chapterPreviews: filteredPreviews,
+            };
           });
         },
 
@@ -110,6 +125,7 @@ export const useStore = create<AppState>()(
         isAiSidebarOpen: state.isAiSidebarOpen,
         settings: state.settings,
         words: state.words,
+        chapterPreviews: state.chapterPreviews,
       }),
       merge: (persistedState: any, currentState: AppState) => {
         return { ...currentState, ...persistedState } as AppState;

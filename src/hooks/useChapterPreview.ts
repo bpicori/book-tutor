@@ -18,6 +18,7 @@ import { useLLMSettings } from "./useLLMSettings";
 export function useChapterPreview(chapterHref: string, chapterLabel: string) {
   const {
     book,
+    currentBookId,
     currentSectionIndex,
     chapterPreviews,
     previewLoading,
@@ -28,7 +29,10 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
 
   const llmSettings = useLLMSettings();
   const [error, setError] = useState<string | null>(null);
-  const preview = chapterPreviews[chapterHref];
+
+  // Use composite key (bookId:chapterHref) to avoid conflicts between different books
+  const previewKey = currentBookId ? `${currentBookId}:${chapterHref}` : chapterHref;
+  const preview = chapterPreviews[previewKey];
 
   const generatePreview = useCallback(async () => {
     if (!llmSettings) {
@@ -76,9 +80,9 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
         llmSettings
       );
 
-      setChapterPreview(chapterHref, {
+      setChapterPreview(previewKey, {
         ...generatedPreview,
-        chapterHref,
+        chapterHref: previewKey,
         chapterLabel,
         generatedAt: Date.now(),
       });
@@ -93,7 +97,7 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
     }
   }, [
     book,
-    chapterHref,
+    previewKey,
     chapterLabel,
     currentSectionIndex,
     llmSettings,
@@ -102,9 +106,9 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
   ]);
 
   const refreshPreview = useCallback(() => {
-    clearChapterPreview(chapterHref);
+    clearChapterPreview(previewKey);
     generatePreview();
-  }, [chapterHref, clearChapterPreview, generatePreview]);
+  }, [previewKey, clearChapterPreview, generatePreview]);
 
   return {
     preview,

@@ -26,6 +26,7 @@ export interface AISidebarSlice {
   setChapterPreview: (chapterHref: string, preview: ChapterPreview) => void;
   setPreviewLoading: (loading: boolean) => void;
   clearChapterPreview: (chapterHref: string) => void;
+  clearBookPreviews: (bookId: string) => void;
   resetAISidebarState: () => void;
 }
 
@@ -93,6 +94,17 @@ export const createAISidebarSlice: StateCreator<AISidebarSlice> = (set) => ({
     set((state) => {
       const { [chapterHref]: _, ...rest } = state.chapterPreviews;
       return { chapterPreviews: rest };
+    }),
+
+  clearBookPreviews: (bookId) =>
+    set((state) => {
+      // Filter out all previews for the specified book (keys start with "bookId:")
+      const filteredPreviews = Object.fromEntries(
+        Object.entries(state.chapterPreviews).filter(
+          ([key]) => !key.startsWith(`${bookId}:`)
+        )
+      );
+      return { chapterPreviews: filteredPreviews };
     }),
 
   resetAISidebarState: () => set(initialAISidebarState),
