@@ -25,6 +25,7 @@ function fixPdfjsGlobPattern() {
 }
 
 export default defineConfig({
+  base: "/book-tutor/",
   plugins: [
     fixPdfjsGlobPattern(),
     react(),
@@ -38,8 +39,8 @@ export default defineConfig({
         theme_color: "#ffffff",
         background_color: "#ffffff",
         display: "standalone",
-        scope: "/",
-        start_url: "/",
+        scope: "/book-tutor/",
+        start_url: "/book-tutor/",
         icons: [
           {
             src: "icons/icon-192x192.svg",
