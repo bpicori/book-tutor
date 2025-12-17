@@ -129,6 +129,12 @@ export interface ChatMessage {
 // AI Sidebar Types
 export type AiSidebarTab = "preview" | "ask";
 
+export interface ChapterSummary {
+  range: string;
+  position: { start: number; end: number };
+  summary: string;
+}
+
 export interface ChapterPreview {
   chapterHref: string;
   chapterLabel: string;
@@ -139,6 +145,10 @@ export interface ChapterPreview {
   definitions?: Array<{ term: string; definition: string }>;
   guidingQuestions: string[];
   generatedAt: number;
+  // Summarization fields
+  summaries?: ChapterSummary[];
+  fullSummary?: string; // Final rolling summary with complete context
+  chunkingApplied?: boolean;
 }
 
 export type ChapterChats = Record<string, ChatMessage[]>;

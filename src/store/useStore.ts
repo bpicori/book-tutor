@@ -127,8 +127,8 @@ export const useStore = create<AppState>()(
         words: state.words,
         chapterPreviews: state.chapterPreviews,
       }),
-      merge: (persistedState: any, currentState: AppState) => {
-        return { ...currentState, ...persistedState } as AppState;
+      merge: (persistedState: unknown, currentState: AppState) => {
+        return { ...currentState, ...(persistedState as AppState) } as AppState;
       },
     }
   )

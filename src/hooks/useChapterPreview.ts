@@ -29,6 +29,11 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
 
   const llmSettings = useLLMSettings();
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{
+    step: string;
+    current?: number;
+    total?: number;
+  } | null>(null);
 
   // Use composite key (bookId:chapterHref) to avoid conflicts between different books
   const previewKey = currentBookId ? `${currentBookId}:${chapterHref}` : chapterHref;
@@ -77,7 +82,14 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
         bookAuthor,
         chapterLabel,
         chapterContent,
-        llmSettings
+        llmSettings,
+        (step, progressInfo) => {
+          setProgress({
+            step,
+            current: progressInfo?.current,
+            total: progressInfo?.total,
+          });
+        }
       );
 
       setChapterPreview(previewKey, {
@@ -94,6 +106,7 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
       }
     } finally {
       setPreviewLoading(false);
+      setProgress(null);
     }
   }, [
     book,
@@ -114,6 +127,7 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
     preview,
     isLoading: previewLoading,
     error,
+    progress,
     generatePreview,
     refreshPreview,
   };

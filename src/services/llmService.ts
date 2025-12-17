@@ -5,7 +5,15 @@ import {
   createChapterPreviewUserPrompt,
   createChatSystemPrompt,
   createWordDefinitionPrompt,
+  ROLLING_SUMMARY_SYSTEM_PROMPT,
+  createRollingSummaryPrompt,
 } from "./prompts";
+import type { ChapterSummary } from "../types";
+import {
+  calculateOptimalChunks,
+  splitChapterIntoChunks,
+  type Chunk,
+} from "../utils/chapterChunker";
 
 export interface LLMSettings {
   apiKey: string;
@@ -161,6 +169,73 @@ export async function* streamChapterChat(
   yield* streamChat(messages, settings, systemPrompt);
 }
 
+/**
+ * Generates rolling summaries for chapter chunks.
+ * Each summary builds on the previous one to maintain narrative context.
+ * @param chunks - Array of chapter chunks to summarize
+ * @param settings - LLM configuration settings
+ * @param onProgress - Optional callback for progress updates (chunkIndex, totalChunks)
+ * @returns Array of summaries with metadata
+ */
+export async function generateChapterSummaries(
+  chunks: Chunk[],
+  settings: LLMSettings,
+  onProgress?: (chunkIndex: number, totalChunks: number) => void
+): Promise<ChapterSummary[]> {
+  const client = createClient(settings);
+  const summaries: ChapterSummary[] = [];
+  let previousSummary: string | null = null;
+
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    onProgress?.(i + 1, chunks.length);
+
+    const userPrompt = createRollingSummaryPrompt(
+      chunk.content,
+      previousSummary,
+      chunk.range
+    );
+
+    try {
+      const response = await client.chat.completions.create({
+        model: settings.model,
+        messages: [
+          { role: "system", content: ROLLING_SUMMARY_SYSTEM_PROMPT },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0.5, // Lower temperature for more consistent summaries
+      });
+
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new LLMServiceError(
+          `Empty response from AI for chunk ${i + 1}. Please try again.`,
+          "EMPTY_RESPONSE"
+        );
+      }
+
+      const summary: ChapterSummary = {
+        range: chunk.range,
+        position: {
+          start: chunk.startIndex,
+          end: chunk.endIndex,
+        },
+        summary: content.trim(),
+      };
+
+      summaries.push(summary);
+      previousSummary = content.trim(); // Use this summary as context for next chunk
+    } catch (error) {
+      if (error instanceof LLMServiceError) {
+        throw error;
+      }
+      handleOpenAIError(error, settings);
+    }
+  }
+
+  return summaries;
+}
+
 interface PreviewResponse {
   themes: string[];
   keyConcepts: string[];
@@ -175,25 +250,52 @@ export async function generateChapterPreview(
   bookAuthor: string,
   chapterLabel: string,
   chapterContent: string,
-  settings: LLMSettings
+  settings: LLMSettings,
+  onProgress?: (
+    step: string,
+    progress?: { current: number; total: number }
+  ) => void
 ): Promise<
   Omit<ChapterPreview, "chapterHref" | "chapterLabel" | "generatedAt">
 > {
   const client = createClient(settings);
 
-  // Truncate chapter content if too long (aim for ~8000 tokens max, roughly 32000 chars)
-  const maxContentLength = 32000;
-  const truncatedContent =
-    chapterContent.length > maxContentLength
-      ? chapterContent.slice(0, maxContentLength) +
-        "\n\n[Content truncated for length...]"
-      : chapterContent;
+  // Determine if chunking is needed
+  const numChunks = calculateOptimalChunks(chapterContent.length);
+  const needsChunking = numChunks > 1;
 
+  let contentForPreview: string;
+  let summaries: ChapterSummary[] | undefined;
+  let fullSummary: string | undefined;
+
+  if (needsChunking) {
+    // Generate rolling summaries
+    onProgress?.("Chunking chapter...");
+    const chunks = splitChapterIntoChunks(chapterContent, numChunks);
+
+    onProgress?.("Generating summaries...");
+    summaries = await generateChapterSummaries(
+      chunks,
+      settings,
+      (current, total) => {
+        onProgress?.("Generating summaries...", { current, total });
+      }
+    );
+
+    // Use the final summary (which includes all previous context) for preview generation
+    fullSummary = summaries[summaries.length - 1]?.summary || chapterContent;
+    contentForPreview = fullSummary;
+  } else {
+    // Use full content for short chapters
+    contentForPreview = chapterContent;
+  }
+
+  onProgress?.("Generating preview...");
   const userPrompt = createChapterPreviewUserPrompt(
     bookTitle,
     bookAuthor,
     chapterLabel,
-    truncatedContent
+    contentForPreview
   );
 
   try {
@@ -235,6 +337,9 @@ export async function generateChapterPreview(
       characters: parsed.characters,
       definitions: parsed.definitions,
       guidingQuestions: parsed.guidingQuestions,
+      summaries: needsChunking ? summaries : undefined,
+      fullSummary: needsChunking ? fullSummary : undefined,
+      chunkingApplied: needsChunking,
     };
   } catch (error) {
     if (error instanceof LLMServiceError) {

@@ -4,19 +4,52 @@ import { useChapterPreview } from "../../hooks/useChapterPreview";
 import type { ChapterPreview } from "../../types";
 
 // Skeleton loading component
-const PreviewSkeleton = memo(function PreviewSkeleton() {
+interface PreviewSkeletonProps {
+  progress?: { step: string; current?: number; total?: number } | null;
+}
+
+const PreviewSkeleton = memo(function PreviewSkeleton({
+  progress,
+}: PreviewSkeletonProps) {
   return (
-    <div className="flex flex-col gap-4 animate-pulse">
-      <div className="h-4 bg-border-warm rounded w-3/4" />
-      <div className="h-4 bg-border-warm rounded w-1/2" />
-      <div className="space-y-2 mt-4">
-        <div className="h-3 bg-border-warm rounded w-full" />
-        <div className="h-3 bg-border-warm rounded w-5/6" />
-        <div className="h-3 bg-border-warm rounded w-4/6" />
-      </div>
-      <div className="space-y-2 mt-4">
-        <div className="h-3 bg-border-warm rounded w-full" />
-        <div className="h-3 bg-border-warm rounded w-3/4" />
+    <div className="flex flex-col gap-4">
+      {progress && (
+        <div className="mb-4 p-3 bg-active-green-light rounded-lg border border-forest-green/20">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="material-symbols-outlined text-forest-green animate-spin">
+              progress_activity
+            </span>
+            <span className="text-sm text-muted-gray-text font-medium">
+              {progress.step}
+              {progress.current && progress.total
+                ? ` (${progress.current} of ${progress.total})`
+                : ""}
+            </span>
+          </div>
+          {progress.current && progress.total && (
+            <div className="w-full bg-white/20 rounded-full h-2">
+              <div
+                className="bg-forest-green h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${(progress.current / progress.total) * 100}%`,
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+      <div className="flex flex-col gap-4 animate-pulse">
+        <div className="h-4 bg-border-warm rounded w-3/4" />
+        <div className="h-4 bg-border-warm rounded w-1/2" />
+        <div className="space-y-2 mt-4">
+          <div className="h-3 bg-border-warm rounded w-full" />
+          <div className="h-3 bg-border-warm rounded w-5/6" />
+          <div className="h-3 bg-border-warm rounded w-4/6" />
+        </div>
+        <div className="space-y-2 mt-4">
+          <div className="h-3 bg-border-warm rounded w-full" />
+          <div className="h-3 bg-border-warm rounded w-3/4" />
+        </div>
       </div>
     </div>
   );
@@ -163,18 +196,27 @@ const PreviewContent = memo(function PreviewContent({
   );
 });
 
-// Empty state component
 interface EmptyStateProps {
   chapterLabel: string;
   onGenerate: () => void;
   isLoading: boolean;
+  progress?: { step: string; current?: number; total?: number } | null;
 }
 
 const EmptyState = memo(function EmptyState({
   chapterLabel,
   onGenerate,
   isLoading,
+  progress,
 }: EmptyStateProps) {
+  const getProgressText = () => {
+    if (!progress) return "Generating...";
+    if (progress.current && progress.total) {
+      return `${progress.step} (${progress.current} of ${progress.total})`;
+    }
+    return progress.step;
+  };
+
   return (
     <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
       <div className="bg-active-green-light rounded-full w-16 h-16 flex items-center justify-center mb-4">
@@ -194,14 +236,26 @@ const EmptyState = memo(function EmptyState({
       <button
         onClick={onGenerate}
         disabled={isLoading}
-        className="flex items-center gap-2 bg-forest-green text-white px-5 py-2.5 rounded-lg hover:bg-forest-green/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+        className="flex flex-col items-center gap-2 bg-forest-green text-white px-5 py-2.5 rounded-lg hover:bg-forest-green/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
       >
         {isLoading ? (
           <>
-            <span className="material-symbols-outlined animate-spin text-lg">
-              progress_activity
-            </span>
-            <span>Generating...</span>
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined animate-spin text-lg">
+                progress_activity
+              </span>
+              <span>{getProgressText()}</span>
+            </div>
+            {progress?.current && progress?.total && (
+              <div className="w-full bg-white/20 rounded-full h-1.5 mt-2">
+                <div
+                  className="bg-white h-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${(progress.current / progress.total) * 100}%`,
+                  }}
+                />
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -221,8 +275,14 @@ export const PreviewTab = memo(function PreviewTab() {
 
   const chapterLabel = progress.tocLabel || "Current Chapter";
   const chapterHref = currentTocHref || "default";
-  const { preview, isLoading, error, generatePreview, refreshPreview } =
-    useChapterPreview(chapterHref, chapterLabel);
+  const {
+    preview,
+    isLoading,
+    error,
+    progress: previewProgress,
+    generatePreview,
+    refreshPreview,
+  } = useChapterPreview(chapterHref, chapterLabel);
 
   return (
     <div className="flex flex-col h-full">
@@ -256,7 +316,7 @@ export const PreviewTab = memo(function PreviewTab() {
         )}
 
         {isLoading ? (
-          <PreviewSkeleton />
+          <PreviewSkeleton progress={previewProgress} />
         ) : preview ? (
           <PreviewContent preview={preview} />
         ) : (
@@ -264,6 +324,7 @@ export const PreviewTab = memo(function PreviewTab() {
             chapterLabel={chapterLabel}
             onGenerate={generatePreview}
             isLoading={isLoading}
+            progress={previewProgress}
           />
         )}
       </div>

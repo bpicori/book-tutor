@@ -101,3 +101,55 @@ Based on the chapter content above, create a preview that will help orient and p
 export function createWordDefinitionPrompt(word: string): string {
   return `Define "${word}". If non-English, provide English translation and definition. Plain text only.`;
 }
+
+/**
+ * System prompt for generating rolling summaries of chapter chunks.
+ * Each summary builds on the previous one to maintain narrative context.
+ */
+export const ROLLING_SUMMARY_SYSTEM_PROMPT = `You are a reading assistant that creates concise summaries of book chapters. Your task is to summarize the provided section of text, incorporating context from previous sections when available.
+
+IMPORTANT GUIDELINES:
+- Create a clear, coherent summary that captures the main ideas, events, and themes
+- If previous context is provided, incorporate it naturally to show how this section builds on what came before
+- Maintain narrative flow and continuity
+- Focus on key plot points, character development, concepts, or arguments
+- Keep summaries concise but comprehensive (aim for 200-400 words)
+- Preserve important details that will be needed for understanding later sections
+- Use clear, readable prose`;
+
+/**
+ * User prompt template for generating rolling summaries.
+ * @param chunkContent - The content of the current chunk to summarize
+ * @param previousSummary - The summary of all previous chunks (null for first chunk)
+ * @param position - Position indicator (e.g., "0-20%", "20-40%")
+ * @returns The formatted user prompt
+ */
+export function createRollingSummaryPrompt(
+  chunkContent: string,
+  previousSummary: string | null,
+  position: string
+): string {
+  if (previousSummary) {
+    return `Summarize the following section of text (${position} of the chapter), building on the previous context:
+
+PREVIOUS CONTEXT:
+---
+${previousSummary}
+---
+
+CURRENT SECTION TO SUMMARIZE:
+---
+${chunkContent}
+---
+
+Create a comprehensive summary that incorporates both the previous context and the new section. The summary should flow naturally and show how this section builds on what came before.`;
+  }
+
+  return `Summarize the following section of text (${position} of the chapter):
+
+---
+${chunkContent}
+---
+
+Create a clear, comprehensive summary that captures the main ideas, events, themes, and important details.`;
+}

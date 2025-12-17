@@ -15,8 +15,10 @@ import { useLLMSettings } from "./useLLMSettings";
 export function useChapterChat(chapterHref: string, chapterLabel: string) {
   const {
     book,
+    currentBookId,
     currentSectionIndex,
     chapterChats,
+    chapterPreviews,
     addChatMessage,
     updateLastChatMessage,
     clearChapterChat,
@@ -25,6 +27,12 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
   const llmSettings = useLLMSettings();
   const chatMessages = chapterChats[chapterHref] || [];
   const [chapterContent, setChapterContent] = useState<string>("");
+
+  // Check if preview with summaries exists for this chapter
+  const previewKey = currentBookId
+    ? `${currentBookId}:${chapterHref}`
+    : chapterHref;
+  const preview = chapterPreviews[previewKey];
 
   // Load chapter content when the chapter changes
   useEffect(() => {
@@ -78,13 +86,25 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
       const bookTitle = getBookTitle(book?.metadata);
       const bookAuthor = getBookAuthor(book?.metadata);
 
-      // Truncate chapter content if too long (aim for ~8000 tokens max, roughly 32000 chars)
-      const maxContentLength = 32000;
-      const truncatedContent =
-        chapterContent.length > maxContentLength
-          ? chapterContent.slice(0, maxContentLength) +
-            "\n\n[Content truncated for length...]"
-          : chapterContent || `[Chapter content could not be loaded]`;
+      // Use summaries if available, otherwise fallback to truncation
+      let contentForChat: string;
+      if (preview?.fullSummary) {
+        // Use the full rolling summary which has complete context
+        contentForChat = preview.fullSummary;
+      } else if (preview?.summaries && preview.summaries.length > 0) {
+        // Fallback: concatenate all summaries if fullSummary not available
+        contentForChat = preview.summaries
+          .map((s) => s.summary)
+          .join("\n\n");
+      } else {
+        // Fallback to truncation if no summaries exist
+        const maxContentLength = 32000;
+        contentForChat =
+          chapterContent.length > maxContentLength
+            ? chapterContent.slice(0, maxContentLength) +
+              "\n\n[Content truncated for length...]"
+            : chapterContent || `[Chapter content could not be loaded]`;
+      }
 
       // Get conversation history for this chapter (excluding the empty streaming message we just added)
       const conversationHistory = chatMessages.map((msg) => ({
@@ -101,7 +121,7 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
           bookTitle,
           bookAuthor,
           chapterLabel,
-          truncatedContent,
+          contentForChat,
           conversationHistory,
           llmSettings
         )) {
@@ -126,7 +146,9 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
       chapterLabel,
       chapterContent,
       book,
+      currentBookId,
       chatMessages,
+      preview,
       llmSettings,
       addChatMessage,
       updateLastChatMessage,
