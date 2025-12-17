@@ -26,19 +26,57 @@ export const AskTab = memo(function AskTab() {
 
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
 
   const chapterLabel = progress.tocLabel || "Current Chapter";
   const chapterHref = currentTocHref || "default";
   const { chatMessages, sendMessage, clearMessages, isLoading } =
     useChapterChat(chapterHref, chapterLabel);
 
+  // Check if user is near bottom of scroll container
+  const isNearBottom = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+    const threshold = 100; // pixels from bottom
+    return (
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      threshold
+    );
+  };
+
+  // Handle scroll events to track if user manually scrolled up
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      shouldAutoScrollRef.current = isNearBottom();
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Auto-scroll only if user is near bottom
+  useEffect(() => {
+    if (!shouldAutoScrollRef.current) return;
+
+    const container = messagesContainerRef.current;
+    const endElement = messagesEndRef.current;
+    if (!container || !endElement) return;
+
+    // Use scrollTop for smoother, more controlled scrolling
+    requestAnimationFrame(() => {
+      container.scrollTop = container.scrollHeight;
+    });
   }, [chatMessages]);
 
   const handleSubmit = async (message: string) => {
     if (!message.trim() || isLoading) return;
     setInputValue("");
+    // Reset auto-scroll when sending a new message
+    shouldAutoScrollRef.current = true;
     await sendMessage(message);
   };
 
@@ -77,7 +115,10 @@ export const AskTab = memo(function AskTab() {
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin p-4">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto scrollbar-thin p-4"
+      >
         <div className="flex flex-col gap-4">
           {/* Welcome Message */}
           <div className="flex items-end gap-3">
