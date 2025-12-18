@@ -319,24 +319,54 @@ export async function generateChapterPreview(
 
     const parsed: PreviewResponse = JSON.parse(content);
 
-    // Validate required fields
-    if (!parsed.themes || !Array.isArray(parsed.themes)) {
-      parsed.themes = [];
-    }
-    if (!parsed.keyConcepts || !Array.isArray(parsed.keyConcepts)) {
-      parsed.keyConcepts = [];
-    }
-    if (!parsed.guidingQuestions || !Array.isArray(parsed.guidingQuestions)) {
-      parsed.guidingQuestions = [];
+    // Helper to ensure an array contains only strings
+    // If an element is an object with term/definition, extract the term
+    // Otherwise convert to string or filter out
+    const ensureStringArray = (arr: unknown): string[] => {
+      if (!Array.isArray(arr)) return [];
+      return arr
+        .map((item) => {
+          if (typeof item === "string") return item;
+          if (item && typeof item === "object") {
+            // Handle {term, definition} objects - extract term
+            const obj = item as Record<string, unknown>;
+            if (typeof obj.term === "string") return obj.term;
+            if (typeof obj.name === "string") return obj.name;
+            // Try to convert to meaningful string
+            if (typeof obj.value === "string") return obj.value;
+          }
+          return null;
+        })
+        .filter((item): item is string => item !== null && item.length > 0);
+    };
+
+    // Validate and sanitize required fields
+    const themes = ensureStringArray(parsed.themes);
+    const keyConcepts = ensureStringArray(parsed.keyConcepts);
+    const guidingQuestions = ensureStringArray(parsed.guidingQuestions);
+    const characters = parsed.characters ? ensureStringArray(parsed.characters) : undefined;
+
+    // Validate definitions - should be array of {term, definition} objects
+    let definitions: Array<{ term: string; definition: string }> | undefined;
+    if (Array.isArray(parsed.definitions)) {
+      definitions = parsed.definitions
+        .filter(
+          (def): def is { term: string; definition: string } =>
+            def &&
+            typeof def === "object" &&
+            typeof def.term === "string" &&
+            typeof def.definition === "string"
+        );
+      if (definitions.length === 0) definitions = undefined;
     }
 
     return {
-      themes: parsed.themes,
-      keyConcepts: parsed.keyConcepts,
+      themes,
+      keyConcepts,
       toneAndStyle: parsed.toneAndStyle,
-      characters: parsed.characters,
-      definitions: parsed.definitions,
-      guidingQuestions: parsed.guidingQuestions,
+      characters: characters && characters.length > 0 ? characters : undefined,
+      definitions,
+      guidingQuestions,
       summaries: needsChunking ? summaries : undefined,
       fullSummary: needsChunking ? fullSummary : undefined,
       chunkingApplied: needsChunking,
