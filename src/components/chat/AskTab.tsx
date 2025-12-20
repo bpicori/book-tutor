@@ -141,16 +141,15 @@ export const AskTab = memo(function AskTab() {
 
           {/* Quick Actions */}
           {book && !isLoading && chatMessages.length === 0 && (
-            <div className="flex flex-col items-start gap-2 pt-2">
+            <div className="flex flex-wrap items-start gap-2 pt-2">
               {QUICK_ACTIONS.map(({ action, label, message }) => (
                 <Button
                   key={action}
-                  variant="ghost"
+                  variant="pill"
                   onClick={() => {
                     setInputValue("");
                     sendMessage(message);
                   }}
-                  className="text-sm text-forest-green border border-forest-green/50 rounded-full px-3 py-1 hover:bg-forest-green/10"
                 >
                   {label}
                 </Button>
@@ -187,10 +186,15 @@ export const AskTab = memo(function AskTab() {
             variant="icon"
             onClick={() => handleSubmit(inputValue)}
             disabled={isLoading || !inputValue.trim()}
-            icon={isLoading ? "progress_activity" : "send"}
-            className={`absolute bottom-0 right-0 w-12 h-12 ${
+            icon={isLoading ? "progress_activity" : "arrow_upward"}
+            className={`absolute right-2 w-9 h-9 hover:translate-y-0 ${
               isLoading ? "[&_span]:animate-spin" : ""
             }`}
+            style={{ 
+              top: "50%", 
+              transform: "translateY(-50%)",
+              marginTop: 0
+            }}
             aria-label="Send message"
           />
         </div>
