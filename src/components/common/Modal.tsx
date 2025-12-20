@@ -34,21 +34,21 @@ export const Modal = memo(function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-0 md:p-4"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl h-[600px] bg-sepia-panel rounded-lg shadow-xl border border-border-warm overflow-hidden flex flex-col"
+        className="relative w-full h-full md:w-full md:max-w-2xl md:h-[600px] bg-sepia-panel md:rounded-lg shadow-xl border-0 md:border border-border-warm overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border-warm flex-shrink-0">
-            <h2 className="text-xl font-bold text-muted-gray-text">{title}</h2>
+          <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-border-warm flex-shrink-0">
+            <h2 className="text-lg md:text-xl font-bold text-muted-gray-text">{title}</h2>
             <Button
               variant="icon"
               onClick={onClose}
               icon="close"
-              className="w-8 h-8"
+              className="w-10 h-10 md:w-8 md:h-8"
               aria-label="Close"
             />
           </div>

@@ -65,7 +65,7 @@ export function Reader({ viewRef }: ReaderProps) {
     const documentListeners: Array<{ doc: Document; cleanup: () => void }> = [];
 
     const setupDocumentListeners = (doc: Document) => {
-      const handleMouseUp = (e: MouseEvent) => {
+      const handleSelection = (clientX?: number, clientY?: number) => {
         setTimeout(() => {
           const sel = doc.getSelection();
 
@@ -96,23 +96,51 @@ export function Reader({ viewRef }: ReaderProps) {
             // Position closer to the selection (add small offset to reduce gap)
             y = iframeRect.top + firstRect.top + 8;
             height = firstRect.height;
-          } else if (iframeRect) {
-            // Fallback to mouse position within iframe + iframe offset
-            x = iframeRect.left + e.clientX;
-            y = iframeRect.top + e.clientY - 50;
+          } else if (iframeRect && clientX !== undefined && clientY !== undefined) {
+            // Fallback to touch/mouse position within iframe + iframe offset
+            x = iframeRect.left + clientX;
+            y = iframeRect.top + clientY - 50;
           } else {
             // Last resort: use container position
             const containerRect = container.getBoundingClientRect();
-            x = containerRect.left + e.clientX;
-            y = containerRect.top + e.clientY - 50;
+            if (clientX !== undefined && clientY !== undefined) {
+              x = containerRect.left + clientX;
+              y = containerRect.top + clientY - 50;
+            } else {
+              // Center position as fallback
+              x = containerRect.left + containerRect.width / 2;
+              y = containerRect.top + containerRect.height / 2;
+            }
           }
 
           setSelection({ text, x, y, height });
         }, 20);
       };
 
-      // Dismiss selection bar when clicking inside the document (without selecting)
+      const handleMouseUp = (e: MouseEvent) => {
+        handleSelection(e.clientX, e.clientY);
+      };
+
+      const handleTouchEnd = (e: TouchEvent) => {
+        // Prevent default to avoid triggering mouse events
+        e.preventDefault();
+        const touch = e.changedTouches[0];
+        if (touch) {
+          handleSelection(touch.clientX, touch.clientY);
+        }
+      };
+
+      // Dismiss selection bar when clicking/touching inside the document (without selecting)
       const handleMouseDown = () => {
+        setTimeout(() => {
+          const sel = doc.getSelection();
+          if (!sel || sel.isCollapsed || !sel.toString().trim()) {
+            setSelection(null);
+          }
+        }, 10);
+      };
+
+      const handleTouchStart = () => {
         setTimeout(() => {
           const sel = doc.getSelection();
           if (!sel || sel.isCollapsed || !sel.toString().trim()) {
@@ -123,10 +151,14 @@ export function Reader({ viewRef }: ReaderProps) {
 
       doc.addEventListener("mouseup", handleMouseUp);
       doc.addEventListener("mousedown", handleMouseDown);
+      doc.addEventListener("touchend", handleTouchEnd, { passive: false });
+      doc.addEventListener("touchstart", handleTouchStart);
 
       const cleanup = () => {
         doc.removeEventListener("mouseup", handleMouseUp);
         doc.removeEventListener("mousedown", handleMouseDown);
+        doc.removeEventListener("touchend", handleTouchEnd);
+        doc.removeEventListener("touchstart", handleTouchStart);
       };
 
       documentListeners.push({ doc, cleanup });
@@ -142,8 +174,8 @@ export function Reader({ viewRef }: ReaderProps) {
 
     view.addEventListener("load", handleLoad);
 
-    // Handle clicks outside to dismiss selection bar (for clicks outside iframe)
-    const handleClickOutside = (e: MouseEvent) => {
+    // Handle clicks/touches outside to dismiss selection bar (for clicks outside iframe)
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Node;
       const selectionBar = document.querySelector("[data-selection-bar]");
       if (selectionBar?.contains(target)) {
@@ -154,11 +186,13 @@ export function Reader({ viewRef }: ReaderProps) {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
 
     return () => {
       view.removeEventListener("relocate", handleRelocate);
       view.removeEventListener("load", handleLoad);
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
       for (const { cleanup } of documentListeners) {
         cleanup();
       }

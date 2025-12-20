@@ -44,15 +44,15 @@ export const SettingsPage = memo(function SettingsPage() {
 
   return (
     <Modal isOpen={isSettingsOpen} onClose={handleClose} title="Settings">
-      <div className="flex flex-col h-full px-6 py-4">
+      <div className="flex flex-col h-full px-4 md:px-6 py-4">
         {/* Tab Navigation */}
-        <div className="flex gap-1 mb-4 -mx-6 px-6 flex-shrink-0 border-b border-border-warm/50 pb-px">
+        <div className="flex gap-1 mb-4 -mx-4 md:-mx-6 px-4 md:px-6 flex-shrink-0 border-b border-border-warm/50 pb-px overflow-x-auto scrollbar-thin scrollbar-thumb-border-warm">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                flex items-center gap-2 px-4 py-2.5 rounded-t-lg
+                flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2.5 rounded-t-lg min-w-[44px] md:min-w-0 min-h-[44px] md:min-h-0 flex-shrink-0
                 transition-all duration-300 ease-out
                 border-b-2 -mb-px
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-green/40 focus-visible:ring-offset-1
@@ -62,11 +62,12 @@ export const SettingsPage = memo(function SettingsPage() {
                     : "border-transparent text-light-gray-text hover:text-muted-gray-text hover:bg-hover-warm/30"
                 }
               `.trim().replace(/\s+/g, ' ')}
+              title={tab.label}
             >
-              <span className="material-symbols-outlined text-xl">
+              <span className="material-symbols-outlined text-xl md:text-xl">
                 {tab.icon}
               </span>
-              <span className="text-sm font-medium tracking-wide">{tab.label}</span>
+              <span className="hidden sm:inline text-sm font-medium tracking-wide whitespace-nowrap">{tab.label}</span>
             </button>
           ))}
         </div>

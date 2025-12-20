@@ -27,7 +27,7 @@ export const Button = memo(function Button({
   const variantClasses = {
     // Primary: Elegant filled button with glow effect
     primary: `
-      px-5 py-2.5 
+      px-5 py-3 md:py-2.5 min-h-[44px] md:min-h-0
       bg-gradient-to-b from-forest-green to-forest-green/90
       text-white text-sm
       rounded-xl
@@ -44,7 +44,7 @@ export const Button = memo(function Button({
 
     // Secondary: Frosted glass with subtle border
     secondary: `
-      px-5 py-2.5
+      px-5 py-3 md:py-2.5 min-h-[44px] md:min-h-0
       bg-warm-off-white/60 backdrop-blur-sm
       text-muted-gray-text text-sm
       rounded-xl
@@ -77,7 +77,7 @@ export const Button = memo(function Button({
 
     // Icon: Square/circular icon button with depth
     icon: `
-      w-10 h-10
+      w-11 h-11 md:w-10 md:h-10 min-w-[44px] md:min-w-0 min-h-[44px] md:min-h-0
       text-light-gray-text
       rounded-xl
       bg-warm-off-white/40 backdrop-blur-sm

@@ -9,7 +9,7 @@ export function ActionButton({ icon, label, onClick }: ActionButtonProps) {
     <button
       onClick={onClick}
       className={`
-        flex items-center justify-center w-9 h-9
+        flex items-center justify-center w-11 h-11 md:w-9 md:h-9 min-w-[44px] md:min-w-0 min-h-[44px] md:min-h-0
         rounded-lg
         text-warm-off-white/90
         bg-white/5 backdrop-blur-sm
@@ -23,10 +23,15 @@ export function ActionButton({ icon, label, onClick }: ActionButtonProps) {
         hover:scale-105
         active:scale-100 active:bg-white/10
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-1 focus-visible:ring-offset-muted-gray-text
-      `.trim().replace(/\s+/g, ' ')}
+      `
+        .trim()
+        .replace(/\s+/g, " ")}
       title={label}
+      aria-label={label}
     >
-      <span className="material-symbols-outlined text-lg">{icon}</span>
+      <span className="material-symbols-outlined text-lg md:text-base">
+        {icon}
+      </span>
     </button>
   );
 }

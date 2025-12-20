@@ -26,9 +26,9 @@ export const VocabularyPage = memo(function VocabularyPage() {
   return (
     <div className="min-h-screen bg-warm-off-white flex flex-col">
       <header className="sticky top-0 z-10 bg-warm-off-white/95 backdrop-blur-sm border-b border-border-warm">
-        <div className="max-w-7xl mx-auto px-6 py-5">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4 min-w-0">
               <IconButton
                 icon="arrow_back"
                 label="Back to Library"
@@ -36,7 +36,7 @@ export const VocabularyPage = memo(function VocabularyPage() {
                 onClick={goToLibrary}
               />
               <Logo size="sm" />
-              <h1 className="text-xl font-bold text-muted-gray-text tracking-tight">
+              <h1 className="text-lg md:text-xl font-bold text-muted-gray-text tracking-tight truncate">
                 Vocabulary
               </h1>
             </div>
@@ -49,8 +49,8 @@ export const VocabularyPage = memo(function VocabularyPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-8">
-        <div className="mb-6 flex items-center justify-between">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 md:px-6 py-6 md:py-8">
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="text-sm text-light-gray-text">
             {words.length === 0
               ? 'No words saved yet. Select text in a book and click "New Word" to add one.'
@@ -58,23 +58,23 @@ export const VocabularyPage = memo(function VocabularyPage() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <button
                 onClick={handlePrevPage}
                 disabled={currentPage === 1}
-                className="p-1 rounded-full hover:bg-hover-warm disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                className="p-2 md:p-1 rounded-full hover:bg-hover-warm disabled:opacity-30 disabled:hover:bg-transparent transition-colors min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center"
               >
                 <span className="material-symbols-outlined text-muted-gray-text">
                   chevron_left
                 </span>
               </button>
-              <span className="text-sm text-muted-gray-text font-medium">
+              <span className="text-sm text-muted-gray-text font-medium whitespace-nowrap">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
-                className="p-1 rounded-full hover:bg-hover-warm disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                className="p-2 md:p-1 rounded-full hover:bg-hover-warm disabled:opacity-30 disabled:hover:bg-transparent transition-colors min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center"
               >
                 <span className="material-symbols-outlined text-muted-gray-text">
                   chevron_right
@@ -139,26 +139,26 @@ export const VocabularyPage = memo(function VocabularyPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className="mt-8 flex justify-center items-center gap-4">
+          <div className="mt-6 md:mt-8 flex justify-center items-center gap-3 md:gap-4">
             <button
               onClick={handlePrevPage}
               disabled={currentPage === 1}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-muted-gray-text hover:bg-hover-warm disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              className="flex items-center gap-1 px-4 py-2.5 rounded-lg text-sm font-medium text-muted-gray-text hover:bg-hover-warm disabled:opacity-30 disabled:hover:bg-transparent transition-colors min-h-[44px]"
             >
               <span className="material-symbols-outlined text-lg">
                 arrow_back
               </span>
-              Previous
+              <span className="hidden sm:inline">Previous</span>
             </button>
-            <span className="text-sm text-light-gray-text">
+            <span className="text-sm text-light-gray-text whitespace-nowrap">
               {currentPage} / {totalPages}
             </span>
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-muted-gray-text hover:bg-hover-warm disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              className="flex items-center gap-1 px-4 py-2.5 rounded-lg text-sm font-medium text-muted-gray-text hover:bg-hover-warm disabled:opacity-30 disabled:hover:bg-transparent transition-colors min-h-[44px]"
             >
-              Next
+              <span className="hidden sm:inline">Next</span>
               <span className="material-symbols-outlined text-lg">
                 arrow_forward
               </span>

@@ -123,15 +123,15 @@ export function LibraryPage() {
   return (
     <div className="min-h-screen bg-warm-off-white">
       <header className="sticky top-0 z-10 bg-warm-off-white/95 backdrop-blur-sm border-b border-border-warm">
-        <div className="max-w-7xl mx-auto px-6 py-5">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0">
               <Logo />
-              <h1 className="text-2xl font-bold text-muted-gray-text tracking-tight">
+              <h1 className="text-lg md:text-2xl font-bold text-muted-gray-text tracking-tight truncate">
                 Read with AI
               </h1>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
               <IconButton
                 icon="book_2"
                 label="Vocabulary"
@@ -147,9 +147,9 @@ export function LibraryPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-muted-gray-text mb-1">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+        <div className="mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-semibold text-muted-gray-text mb-1">
             Your Library
           </h2>
           <p className="text-light-gray-text text-sm">
@@ -161,7 +161,7 @@ export function LibraryPage() {
 
         {isLoading && <LoadingSpinner message="Adding book..." />}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
           <AddBookCard onFileSelect={handleFileSelect} />
           {sortedLibrary.map((book) => (
             <BookCard

@@ -23,7 +23,7 @@ export const IconButton = memo(function IconButton({
 
   const variantStyles = {
     default: `
-      rounded-xl h-10 ${text ? "gap-2.5 px-4" : "w-10"}
+      rounded-xl h-11 md:h-10 ${text ? "gap-2.5 px-4 min-h-[44px]" : "w-11 md:w-10 min-w-[44px] md:min-w-0"}
       bg-hover-warm/60 backdrop-blur-sm
       text-muted-gray-text
       border border-border-warm/60
@@ -37,7 +37,7 @@ export const IconButton = memo(function IconButton({
     `.trim().replace(/\s+/g, ' '),
 
     circle: `
-      rounded-full h-10 w-10
+      rounded-full h-11 w-11 md:h-10 md:w-10 min-w-[44px] md:min-w-0 min-h-[44px] md:min-h-0
       bg-hover-warm/60 backdrop-blur-sm
       text-muted-gray-text
       border border-border-warm/60
@@ -51,7 +51,7 @@ export const IconButton = memo(function IconButton({
     `.trim().replace(/\s+/g, ' '),
 
     flat: `
-      rounded-lg h-9 ${text ? "gap-2 px-3" : "w-9"}
+      rounded-lg h-11 md:h-9 ${text ? "gap-2 px-3 min-h-[44px] md:min-h-0" : "w-11 md:w-9 min-w-[44px] md:min-w-0"}
       bg-transparent
       text-light-gray-text
       hover:bg-hover-warm/50
