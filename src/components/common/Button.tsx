@@ -1,4 +1,4 @@
-import { memo, ButtonHTMLAttributes } from "react";
+import { memo, type ButtonHTMLAttributes } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "icon" | "pill";
@@ -20,7 +20,9 @@ export const Button = memo(function Button({
     transition-all duration-300 ease-out
     focus-visible:outline-none
     disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none
-  `.trim().replace(/\s+/g, ' ');
+  `
+    .trim()
+    .replace(/\s+/g, " ");
 
   const variantClasses = {
     // Primary: Elegant filled button with glow effect
@@ -36,7 +38,9 @@ export const Button = memo(function Button({
       hover:-translate-y-px
       active:translate-y-0 active:shadow-[0_1px_2px_rgba(0,0,0,0.1),inset_0_1px_2px_rgba(0,0,0,0.1)]
       focus-visible:ring-2 focus-visible:ring-forest-green/50 focus-visible:ring-offset-2 focus-visible:ring-offset-warm-off-white
-    `.trim().replace(/\s+/g, ' '),
+    `
+      .trim()
+      .replace(/\s+/g, " "),
 
     // Secondary: Frosted glass with subtle border
     secondary: `
@@ -53,7 +57,9 @@ export const Button = memo(function Button({
       hover:-translate-y-px
       active:translate-y-0 active:bg-hover-warm/90 active:shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]
       focus-visible:ring-2 focus-visible:ring-forest-green/40 focus-visible:ring-offset-2 focus-visible:ring-offset-warm-off-white
-    `.trim().replace(/\s+/g, ' '),
+    `
+      .trim()
+      .replace(/\s+/g, " "),
 
     // Ghost: Minimal, text-only with elegant hover
     ghost: `
@@ -65,7 +71,9 @@ export const Button = memo(function Button({
       hover:text-forest-green
       active:bg-hover-warm/70
       focus-visible:ring-2 focus-visible:ring-forest-green/30 focus-visible:ring-offset-1
-    `.trim().replace(/\s+/g, ' '),
+    `
+      .trim()
+      .replace(/\s+/g, " "),
 
     // Icon: Square/circular icon button with depth
     icon: `
@@ -82,7 +90,9 @@ export const Button = memo(function Button({
       hover:-translate-y-0.5
       active:translate-y-0 active:shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]
       focus-visible:ring-2 focus-visible:ring-forest-green/40 focus-visible:ring-offset-1
-    `.trim().replace(/\s+/g, ' '),
+    `
+      .trim()
+      .replace(/\s+/g, " "),
 
     // Pill: Rounded pill for tags/actions
     pill: `
@@ -97,7 +107,9 @@ export const Button = memo(function Button({
       hover:shadow-[0_2px_6px_rgba(34,87,50,0.1),inset_0_1px_0_rgba(255,255,255,0.5)]
       active:bg-forest-green/15
       focus-visible:ring-2 focus-visible:ring-forest-green/30 focus-visible:ring-offset-1
-    `.trim().replace(/\s+/g, ' '),
+    `
+      .trim()
+      .replace(/\s+/g, " "),
   };
 
   const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${className}`;

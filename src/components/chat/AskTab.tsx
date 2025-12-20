@@ -190,10 +190,10 @@ export const AskTab = memo(function AskTab() {
             className={`absolute right-2 w-9 h-9 hover:translate-y-0 ${
               isLoading ? "[&_span]:animate-spin" : ""
             }`}
-            style={{ 
-              top: "50%", 
+            style={{
+              top: "50%",
               transform: "translateY(-50%)",
-              marginTop: 0
+              marginTop: 0,
             }}
             aria-label="Send message"
           />

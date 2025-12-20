@@ -31,29 +31,29 @@ export const TranslationPopup = forwardRef<
         width: `${width}px`,
       }}
     >
-      <div className="relative p-4">
+      <div className="relative p-2.5">
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded text-muted-gray-text hover:bg-hover-warm transition-colors"
+          className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 rounded text-muted-gray-text hover:bg-hover-warm transition-colors"
           aria-label="Close"
         >
-          <span className="material-symbols-outlined text-lg">close</span>
+          <span className="material-symbols-outlined text-sm">close</span>
         </button>
 
-        <div className="pr-6">
-          <div className="text-lg font-semibold text-muted-gray-text mb-2">
+        <div className="pr-4">
+          <div className="text-sm font-semibold text-muted-gray-text mb-1.5">
             {word}
           </div>
 
-          <div className="border-t border-border-warm pt-2">
+          <div className="border-t border-border-warm pt-1.5">
             {isLoading && (
-              <div className="text-light-gray-text text-sm">
+              <div className="text-light-gray-text text-xs">
                 Loading definition...
               </div>
             )}
-            {error && <div className="text-red-600 text-sm">{error}</div>}
+            {error && <div className="text-red-600 text-xs">{error}</div>}
             {definition && (
-              <div className="text-muted-gray-text text-sm leading-relaxed">
+              <div className="text-muted-gray-text text-xs leading-relaxed">
                 <Markdown
                   components={{
                     // Render inline without wrapping <p> tags
