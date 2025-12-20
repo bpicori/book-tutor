@@ -1,8 +1,10 @@
 import { useStore } from "./store/useStore";
 import { LibraryPage, ReaderPage, SettingsPage, VocabularyPage } from "./pages";
+import { useTheme } from "./hooks/useTheme";
 
 export function App() {
   const { currentView } = useStore();
+  useTheme();
 
   const renderView = () => {
     switch (currentView) {

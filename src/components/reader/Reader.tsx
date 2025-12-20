@@ -41,7 +41,7 @@ export function Reader({ viewRef }: ReaderProps) {
     setSelection(null);
   }, []);
 
-  // Apply font settings when they change
+  // Apply reader styles (typography and theme) when settings change
   useEffect(() => {
     const view = viewRef.current;
     if (!view?.book || !view.renderer) return;

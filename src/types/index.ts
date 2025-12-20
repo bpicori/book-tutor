@@ -221,8 +221,17 @@ export interface LLMSettings {
 }
 
 /**
+ * Theme settings for the application
+ */
+export type Theme = "sepia" | "solarized" | "nord" | "dark";
+
+export interface ThemeSettings {
+  theme: Theme;
+}
+
+/**
  * Combined reader settings (composed of separate concerns)
  * Maintained for backward compatibility with existing code
  */
 export interface ReaderSettings
-  extends TypographySettings, ViewSettings, LLMSettings {}
+  extends TypographySettings, ViewSettings, LLMSettings, ThemeSettings {}

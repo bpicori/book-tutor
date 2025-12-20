@@ -344,19 +344,20 @@ export async function generateChapterPreview(
     const themes = ensureStringArray(parsed.themes);
     const keyConcepts = ensureStringArray(parsed.keyConcepts);
     const guidingQuestions = ensureStringArray(parsed.guidingQuestions);
-    const characters = parsed.characters ? ensureStringArray(parsed.characters) : undefined;
+    const characters = parsed.characters
+      ? ensureStringArray(parsed.characters)
+      : undefined;
 
     // Validate definitions - should be array of {term, definition} objects
     let definitions: Array<{ term: string; definition: string }> | undefined;
     if (Array.isArray(parsed.definitions)) {
-      definitions = parsed.definitions
-        .filter(
-          (def): def is { term: string; definition: string } =>
-            def &&
-            typeof def === "object" &&
-            typeof def.term === "string" &&
-            typeof def.definition === "string"
-        );
+      definitions = parsed.definitions.filter(
+        (def): def is { term: string; definition: string } =>
+          def &&
+          typeof def === "object" &&
+          typeof def.term === "string" &&
+          typeof def.definition === "string"
+      );
       if (definitions.length === 0) definitions = undefined;
     }
 

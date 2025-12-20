@@ -128,7 +128,16 @@ export const useStore = create<AppState>()(
         chapterPreviews: state.chapterPreviews,
       }),
       merge: (persistedState: unknown, currentState: AppState) => {
-        return { ...currentState, ...(persistedState as AppState) } as AppState;
+        const persisted = persistedState as Partial<AppState>;
+        return {
+          ...currentState,
+          ...persisted,
+          // Merge settings to ensure new fields (like theme) are preserved
+          settings: {
+            ...currentState.settings,
+            ...(persisted.settings || {}),
+          },
+        } as AppState;
       },
     }
   )
