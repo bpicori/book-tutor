@@ -16,7 +16,7 @@ export const IconButton = memo(function IconButton({
   variant = "default",
 }: IconButtonProps) {
   const baseClasses =
-    "flex cursor-pointer items-center justify-center overflow-hidden bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 transition-colors";
+    "flex cursor-pointer items-center justify-center overflow-hidden bg-hover-warm text-muted-gray-text hover:bg-hover-warm/70 transition-all duration-200 ease-out shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-green focus-visible:ring-offset-2";
 
   const variantClasses =
     variant === "circle"

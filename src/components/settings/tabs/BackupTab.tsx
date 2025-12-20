@@ -4,6 +4,7 @@ import {
   importBackup,
   getBackupSizeEstimate,
 } from "../../../services/backupService";
+import { Button } from "../../common";
 
 interface BackupInfo {
   booksCount: number;
@@ -133,27 +134,15 @@ export const BackupTab = memo(function BackupTab() {
         <h3 className="text-sm font-medium text-light-gray-text">
           Export Backup
         </h3>
-        <button
+        <Button
+          variant="primary"
           onClick={handleExport}
           disabled={isExporting || isImporting}
-          className="flex items-center gap-2 px-4 py-2.5 bg-forest-green hover:bg-forest-green/90 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          icon={isExporting ? "progress_activity" : "download"}
+          className={isExporting ? "[&_span]:animate-spin" : ""}
         >
-          {isExporting ? (
-            <>
-              <span className="material-symbols-outlined animate-spin text-lg">
-                progress_activity
-              </span>
-              <span>Exporting...</span>
-            </>
-          ) : (
-            <>
-              <span className="material-symbols-outlined text-lg">
-                download
-              </span>
-              <span>Download Backup</span>
-            </>
-          )}
-        </button>
+          {isExporting ? "Exporting..." : "Download Backup"}
+        </Button>
       </div>
 
       {/* Import Section */}
@@ -172,25 +161,15 @@ export const BackupTab = memo(function BackupTab() {
             </p>
           </div>
         </div>
-        <button
+        <Button
+          variant="secondary"
           onClick={handleImportClick}
           disabled={isExporting || isImporting}
-          className="flex items-center gap-2 px-4 py-2.5 bg-paper-dark hover:bg-paper-dark/80 text-light-gray-text border border-border-warm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          icon={isImporting ? "progress_activity" : "upload"}
+          className={isImporting ? "[&_span]:animate-spin" : ""}
         >
-          {isImporting ? (
-            <>
-              <span className="material-symbols-outlined animate-spin text-lg">
-                progress_activity
-              </span>
-              <span>Importing...</span>
-            </>
-          ) : (
-            <>
-              <span className="material-symbols-outlined text-lg">upload</span>
-              <span>Select Backup File</span>
-            </>
-          )}
-        </button>
+          {isImporting ? "Importing..." : "Select Backup File"}
+        </Button>
         <input
           ref={fileInputRef}
           type="file"

@@ -1,5 +1,6 @@
 import { memo, useState } from "react";
 import type { ReaderSettings } from "../../../types";
+import { Button } from "../../common";
 
 interface LLMTabProps {
   settings: ReaderSettings;
@@ -39,16 +40,14 @@ export const LLMTab = memo(function LLMTab({
                 className="w-full px-4 py-2 rounded-lg border border-border-warm bg-warm-off-white text-muted-gray-text focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent pr-12"
                 placeholder="sk-..."
               />
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => setShowApiKey(!showApiKey)}
-                className="absolute inset-y-0 right-0 flex items-center justify-center w-12 text-light-gray-text hover:text-forest-green transition-colors"
+                icon={showApiKey ? "visibility_off" : "visibility"}
+                className="absolute inset-y-0 right-0 w-12 h-full rounded-l-none hover:text-forest-green"
                 aria-label={showApiKey ? "Hide API key" : "Show API key"}
-              >
-                <span className="material-symbols-outlined text-xl">
-                  {showApiKey ? "visibility_off" : "visibility"}
-                </span>
-              </button>
+              />
             </div>
             <p className="mt-2 text-xs text-light-gray-text">
               Your API key is stored locally and never shared.
@@ -117,18 +116,16 @@ export const LLMTab = memo(function LLMTab({
                 className="w-full px-4 py-2 rounded-lg border border-border-warm bg-warm-off-white text-muted-gray-text focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent pr-12"
                 placeholder="sk-..."
               />
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => setShowTranslationApiKey(!showTranslationApiKey)}
-                className="absolute inset-y-0 right-0 flex items-center justify-center w-12 text-light-gray-text hover:text-forest-green transition-colors"
+                icon={showTranslationApiKey ? "visibility_off" : "visibility"}
+                className="absolute inset-y-0 right-0 w-12 h-full rounded-l-none hover:text-forest-green"
                 aria-label={
                   showTranslationApiKey ? "Hide API key" : "Show API key"
                 }
-              >
-                <span className="material-symbols-outlined text-xl">
-                  {showTranslationApiKey ? "visibility_off" : "visibility"}
-                </span>
-              </button>
+              />
             </div>
             <p className="mt-2 text-xs text-light-gray-text">
               API key for translation service. Leave empty to use Preview & Ask

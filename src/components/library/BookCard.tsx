@@ -63,7 +63,7 @@ export const BookCard = memo(function BookCard({
             e.stopPropagation();
             setShowMenu(!showMenu);
           }}
-          className="w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+          className="w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out hover:bg-black/70 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-green focus-visible:ring-offset-2"
         >
           <span className="material-symbols-outlined text-lg">more_vert</span>
         </button>
@@ -81,7 +81,7 @@ export const BookCard = memo(function BookCard({
                   onDelete();
                   setShowMenu(false);
                 }}
-                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 rounded"
               >
                 <span className="material-symbols-outlined text-lg">
                   delete

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, memo } from "react";
 import { useStore } from "../../store/useStore";
 import { ChatMessage } from "./ChatMessage";
 import { useChapterChat } from "../../hooks/useChapterChat";
+import { Button } from "../common";
 
 const QUICK_ACTIONS = [
   {
@@ -103,14 +104,14 @@ export const AskTab = memo(function AskTab() {
           {chapterLabel}
         </span>
         {chatMessages.length > 0 && (
-          <button
+          <Button
+            variant="ghost"
             onClick={clearMessages}
             disabled={isLoading}
-            className="flex items-center justify-center w-7 h-7 rounded text-light-gray-text hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            icon="delete"
+            className="w-7 h-7 p-0 hover:text-red-500 hover:bg-red-500/10"
             title="Clear chat"
-          >
-            <span className="material-symbols-outlined text-lg">delete</span>
-          </button>
+          />
         )}
       </div>
 
@@ -142,16 +143,17 @@ export const AskTab = memo(function AskTab() {
           {book && !isLoading && chatMessages.length === 0 && (
             <div className="flex flex-col items-start gap-2 pt-2">
               {QUICK_ACTIONS.map(({ action, label, message }) => (
-                <button
+                <Button
                   key={action}
+                  variant="ghost"
                   onClick={() => {
                     setInputValue("");
                     sendMessage(message);
                   }}
-                  className="text-sm text-forest-green border border-forest-green/50 rounded-full px-3 py-1 hover:bg-forest-green/10 transition-colors"
+                  className="text-sm text-forest-green border border-forest-green/50 rounded-full px-3 py-1 hover:bg-forest-green/10"
                 >
                   {label}
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -181,19 +183,16 @@ export const AskTab = memo(function AskTab() {
             }
             style={{ fieldSizing: "content" } as React.CSSProperties}
           />
-          <button
+          <Button
+            variant="icon"
             onClick={() => handleSubmit(inputValue)}
             disabled={isLoading || !inputValue.trim()}
-            className="absolute bottom-0 right-0 flex items-center justify-center w-12 h-12 text-light-gray-text hover:text-forest-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <span className="material-symbols-outlined animate-spin">
-                progress_activity
-              </span>
-            ) : (
-              <span className="material-symbols-outlined">send</span>
-            )}
-          </button>
+            icon={isLoading ? "progress_activity" : "send"}
+            className={`absolute bottom-0 right-0 w-12 h-12 ${
+              isLoading ? "[&_span]:animate-spin" : ""
+            }`}
+            aria-label="Send message"
+          />
         </div>
       </div>
     </div>

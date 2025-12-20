@@ -51,10 +51,10 @@ export const SettingsPage = memo(function SettingsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all duration-200 ease-out ${
                 activeTab === tab.id
-                  ? "border-forest-green text-forest-green"
-                  : "border-transparent text-light-gray-text hover:text-muted-gray-text"
+                  ? "border-forest-green text-forest-green shadow-sm"
+                  : "border-transparent text-light-gray-text hover:text-muted-gray-text hover:border-border-warm"
               }`}
             >
               <span className="material-symbols-outlined text-xl">

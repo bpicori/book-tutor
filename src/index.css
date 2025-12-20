@@ -101,3 +101,27 @@ foliate-view {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: var(--color-hover-warm);
 }
+
+/* Button focus ring utilities - theme-aware */
+@layer utilities {
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-green focus-visible:ring-offset-2;
+  }
+
+  /* Smooth press animation */
+  @keyframes press {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(1px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  .press-animation {
+    animation: press 0.15s ease-out;
+  }
+}

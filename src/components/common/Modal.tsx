@@ -1,4 +1,5 @@
 import { memo, useEffect } from "react";
+import { Button } from "./Button";
 
 interface ModalProps {
   isOpen: boolean;
@@ -43,13 +44,13 @@ export const Modal = memo(function Modal({
         {title && (
           <div className="flex items-center justify-between px-6 py-4 border-b border-border-warm flex-shrink-0">
             <h2 className="text-xl font-bold text-muted-gray-text">{title}</h2>
-            <button
+            <Button
+              variant="icon"
               onClick={onClose}
-              className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-gray-text hover:bg-hover-warm transition-colors"
+              icon="close"
+              className="w-8 h-8"
               aria-label="Close"
-            >
-              <span className="material-symbols-outlined text-xl">close</span>
-            </button>
+            />
           </div>
         )}
         <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0">
