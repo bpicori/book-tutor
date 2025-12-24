@@ -70,6 +70,12 @@ export const DEFAULT_LLM_ASSIGNMENTS: LLMProviderAssignments = {
 };
 
 /**
+ * Default LLM settings (derived from DEFAULT_LLM_PROVIDER)
+ */
+export const DEFAULT_LLM_BASE_URL = DEFAULT_LLM_PROVIDER.baseUrl;
+export const DEFAULT_LLM_MODEL = DEFAULT_LLM_PROVIDER.model;
+
+/**
  * Default reader settings
  */
 export const DEFAULT_SETTINGS: ReaderSettings = {
@@ -80,18 +86,12 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   theme: "sepia",
   // Legacy fields (kept for migration)
   llmApiKey: "",
-  llmBaseUrl: "https://api.openai.com/v1",
-  llmModel: "gpt-4o-mini",
+  llmBaseUrl: DEFAULT_LLM_BASE_URL,
+  llmModel: DEFAULT_LLM_MODEL,
   llmTranslationApiKey: "",
-  llmTranslationBaseUrl: "https://api.openai.com/v1",
-  llmTranslationModel: "gpt-4o-mini",
+  llmTranslationBaseUrl: DEFAULT_LLM_BASE_URL,
+  llmTranslationModel: DEFAULT_LLM_MODEL,
   // New provider-based system
   llmProviders: [DEFAULT_LLM_PROVIDER],
   llmAssignments: DEFAULT_LLM_ASSIGNMENTS,
 };
-
-/**
- * Default LLM settings
- */
-export const DEFAULT_LLM_BASE_URL = "https://api.openai.com/v1";
-export const DEFAULT_LLM_MODEL = "gpt-4o-mini";

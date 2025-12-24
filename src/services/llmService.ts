@@ -245,6 +245,128 @@ interface PreviewResponse {
   guidingQuestions: string[];
 }
 
+interface PreparedContent {
+  content: string;
+  summaries?: ChapterSummary[];
+  fullSummary?: string;
+  chunkingApplied: boolean;
+}
+
+/**
+ * Prepares chapter content for preview generation.
+ * Handles chunking and summary generation for long chapters.
+ */
+async function prepareContentForPreview(
+  chapterContent: string,
+  settings: LLMSettings,
+  onProgress?: (
+    step: string,
+    progress?: { current: number; total: number }
+  ) => void
+): Promise<PreparedContent> {
+  const numChunks = calculateOptimalChunks(chapterContent.length);
+  const needsChunking = numChunks > 1;
+
+  if (needsChunking) {
+    // Generate rolling summaries
+    onProgress?.("Chunking chapter...");
+    const chunks = splitChapterIntoChunks(chapterContent, numChunks);
+
+    onProgress?.("Generating summaries...");
+    const summaries = await generateChapterSummaries(
+      chunks,
+      settings,
+      (current, total) => {
+        onProgress?.("Generating summaries...", { current, total });
+      }
+    );
+
+    // Use the final summary (which includes all previous context) for preview generation
+    const fullSummary =
+      summaries[summaries.length - 1]?.summary || chapterContent;
+
+    return {
+      content: fullSummary,
+      summaries,
+      fullSummary,
+      chunkingApplied: true,
+    };
+  }
+
+  // Use full content for short chapters
+  return {
+    content: chapterContent,
+    chunkingApplied: false,
+  };
+}
+
+/**
+ * Validates and sanitizes preview response data.
+ * Ensures arrays contain only strings and definitions are properly formatted.
+ */
+function validatePreviewResponse(
+  parsed: PreviewResponse
+): Omit<
+  ChapterPreview,
+  | "chapterHref"
+  | "chapterLabel"
+  | "generatedAt"
+  | "summaries"
+  | "fullSummary"
+  | "chunkingApplied"
+> {
+  // Helper to ensure an array contains only strings
+  // If an element is an object with term/definition, extract the term
+  // Otherwise convert to string or filter out
+  const ensureStringArray = (arr: unknown): string[] => {
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item && typeof item === "object") {
+          // Handle {term, definition} objects - extract term
+          const obj = item as Record<string, unknown>;
+          if (typeof obj.term === "string") return obj.term;
+          if (typeof obj.name === "string") return obj.name;
+          // Try to convert to meaningful string
+          if (typeof obj.value === "string") return obj.value;
+        }
+        return null;
+      })
+      .filter((item): item is string => item !== null && item.length > 0);
+  };
+
+  // Validate and sanitize required fields
+  const themes = ensureStringArray(parsed.themes);
+  const keyConcepts = ensureStringArray(parsed.keyConcepts);
+  const guidingQuestions = ensureStringArray(parsed.guidingQuestions);
+  const characters = parsed.characters
+    ? ensureStringArray(parsed.characters)
+    : undefined;
+
+  // Validate definitions - should be array of {term, definition} objects
+  let definitions: Array<{ term: string; definition: string }> | undefined;
+  if (Array.isArray(parsed.definitions)) {
+    definitions = parsed.definitions.filter(
+      (def): def is { term: string; definition: string } =>
+        def &&
+        typeof def === "object" &&
+        typeof def.term === "string" &&
+        typeof def.definition === "string"
+    );
+    if (definitions.length === 0) definitions = undefined;
+  }
+
+  return {
+    themes,
+    keyConcepts,
+    toneAndStyle: parsed.toneAndStyle,
+    characters: characters && characters.length > 0 ? characters : undefined,
+    definitions,
+    guidingQuestions,
+  };
+}
+
 export async function generateChapterPreview(
   bookTitle: string,
   bookAuthor: string,
@@ -260,42 +382,20 @@ export async function generateChapterPreview(
 > {
   const client = createClient(settings);
 
-  // Determine if chunking is needed
-  const numChunks = calculateOptimalChunks(chapterContent.length);
-  const needsChunking = numChunks > 1;
+  // Prepare content (chunking and summarization if needed)
+  const preparedContent = await prepareContentForPreview(
+    chapterContent,
+    settings,
+    onProgress
+  );
 
-  let contentForPreview: string;
-  let summaries: ChapterSummary[] | undefined;
-  let fullSummary: string | undefined;
-
-  if (needsChunking) {
-    // Generate rolling summaries
-    onProgress?.("Chunking chapter...");
-    const chunks = splitChapterIntoChunks(chapterContent, numChunks);
-
-    onProgress?.("Generating summaries...");
-    summaries = await generateChapterSummaries(
-      chunks,
-      settings,
-      (current, total) => {
-        onProgress?.("Generating summaries...", { current, total });
-      }
-    );
-
-    // Use the final summary (which includes all previous context) for preview generation
-    fullSummary = summaries[summaries.length - 1]?.summary || chapterContent;
-    contentForPreview = fullSummary;
-  } else {
-    // Use full content for short chapters
-    contentForPreview = chapterContent;
-  }
-
+  // Generate preview from prepared content
   onProgress?.("Generating preview...");
   const userPrompt = createChapterPreviewUserPrompt(
     bookTitle,
     bookAuthor,
     chapterLabel,
-    contentForPreview
+    preparedContent.content
   );
 
   try {
@@ -318,59 +418,13 @@ export async function generateChapterPreview(
     }
 
     const parsed: PreviewResponse = JSON.parse(content);
-
-    // Helper to ensure an array contains only strings
-    // If an element is an object with term/definition, extract the term
-    // Otherwise convert to string or filter out
-    const ensureStringArray = (arr: unknown): string[] => {
-      if (!Array.isArray(arr)) return [];
-      return arr
-        .map((item) => {
-          if (typeof item === "string") return item;
-          if (item && typeof item === "object") {
-            // Handle {term, definition} objects - extract term
-            const obj = item as Record<string, unknown>;
-            if (typeof obj.term === "string") return obj.term;
-            if (typeof obj.name === "string") return obj.name;
-            // Try to convert to meaningful string
-            if (typeof obj.value === "string") return obj.value;
-          }
-          return null;
-        })
-        .filter((item): item is string => item !== null && item.length > 0);
-    };
-
-    // Validate and sanitize required fields
-    const themes = ensureStringArray(parsed.themes);
-    const keyConcepts = ensureStringArray(parsed.keyConcepts);
-    const guidingQuestions = ensureStringArray(parsed.guidingQuestions);
-    const characters = parsed.characters
-      ? ensureStringArray(parsed.characters)
-      : undefined;
-
-    // Validate definitions - should be array of {term, definition} objects
-    let definitions: Array<{ term: string; definition: string }> | undefined;
-    if (Array.isArray(parsed.definitions)) {
-      definitions = parsed.definitions.filter(
-        (def): def is { term: string; definition: string } =>
-          def &&
-          typeof def === "object" &&
-          typeof def.term === "string" &&
-          typeof def.definition === "string"
-      );
-      if (definitions.length === 0) definitions = undefined;
-    }
+    const validated = validatePreviewResponse(parsed);
 
     return {
-      themes,
-      keyConcepts,
-      toneAndStyle: parsed.toneAndStyle,
-      characters: characters && characters.length > 0 ? characters : undefined,
-      definitions,
-      guidingQuestions,
-      summaries: needsChunking ? summaries : undefined,
-      fullSummary: needsChunking ? fullSummary : undefined,
-      chunkingApplied: needsChunking,
+      ...validated,
+      summaries: preparedContent.summaries,
+      fullSummary: preparedContent.fullSummary,
+      chunkingApplied: preparedContent.chunkingApplied,
     };
   } catch (error) {
     if (error instanceof LLMServiceError) {
