@@ -19,7 +19,9 @@ export const IconButton = memo(function IconButton({
     flex cursor-pointer items-center justify-center overflow-hidden
     transition-all duration-300 ease-out
     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-green/40 focus-visible:ring-offset-2
-  `.trim().replace(/\s+/g, ' ');
+  `
+    .trim()
+    .replace(/\s+/g, " ");
 
   const variantStyles = {
     default: `
@@ -34,7 +36,9 @@ export const IconButton = memo(function IconButton({
       hover:shadow-[0_3px_10px_rgba(0,0,0,0.06),0_0_0_1px_rgba(34,87,50,0.08)]
       hover:-translate-y-0.5
       active:translate-y-0 active:shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]
-    `.trim().replace(/\s+/g, ' '),
+    `
+      .trim()
+      .replace(/\s+/g, " "),
 
     circle: `
       rounded-full h-11 w-11 md:h-10 md:w-10 min-w-[44px] md:min-w-0 min-h-[44px] md:min-h-0
@@ -48,7 +52,9 @@ export const IconButton = memo(function IconButton({
       hover:shadow-[0_4px_12px_rgba(0,0,0,0.08),0_0_0_1px_rgba(34,87,50,0.1)]
       hover:scale-105
       active:scale-100 active:shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]
-    `.trim().replace(/\s+/g, ' '),
+    `
+      .trim()
+      .replace(/\s+/g, " "),
 
     flat: `
       rounded-lg h-11 md:h-9 ${text ? "gap-2 px-3 min-h-[44px] md:min-h-0" : "w-11 md:w-9 min-w-[44px] md:min-w-0"}
@@ -57,7 +63,9 @@ export const IconButton = memo(function IconButton({
       hover:bg-hover-warm/50
       hover:text-forest-green
       active:bg-hover-warm/70
-    `.trim().replace(/\s+/g, ' '),
+    `
+      .trim()
+      .replace(/\s+/g, " "),
   };
 
   return (
@@ -68,7 +76,9 @@ export const IconButton = memo(function IconButton({
     >
       <span className="material-symbols-outlined text-xl">{icon}</span>
       {text && (
-        <span className="hidden sm:inline text-sm font-medium tracking-wide">{text}</span>
+        <span className="hidden sm:inline text-sm font-medium tracking-wide">
+          {text}
+        </span>
       )}
     </button>
   );

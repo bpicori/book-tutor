@@ -10,12 +10,8 @@ interface HeaderProps {
 }
 
 export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
-  const {
-    book,
-    toggleAiSidebar,
-    toggleSidebar,
-    isSidebarCollapsed,
-  } = useStore();
+  const { book, toggleAiSidebar, toggleSidebar, isSidebarCollapsed } =
+    useStore();
   const { goToLibrary, goToVocabulary, goToSettings } = useNavigation();
   const title = formatLanguageMap(book?.metadata?.title) || "Read with AI";
   const [showMenu, setShowMenu] = useState(false);
@@ -31,7 +27,8 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
 
     if (showMenu) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [showMenu]);
 
@@ -73,11 +70,7 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
             label="Vocabulary"
             onClick={goToVocabulary}
           />
-          <IconButton
-            icon="settings"
-            label="Settings"
-            onClick={goToSettings}
-          />
+          <IconButton icon="settings" label="Settings" onClick={goToSettings} />
           <IconButton
             icon="smart_toy"
             label="Toggle AI Assistant"

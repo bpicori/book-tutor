@@ -8,7 +8,10 @@ interface ThemeTabProps {
 }
 
 // Theme color previews for visual selection
-const themeColors: Record<Theme, { bg: string; panel: string; primary: string; text: string; border: string }> = {
+const themeColors: Record<
+  Theme,
+  { bg: string; panel: string; primary: string; text: string; border: string }
+> = {
   sepia: {
     bg: "#f7f3eb",
     panel: "#fdf0d0",
@@ -130,4 +133,3 @@ export const ThemeTab = memo(function ThemeTab({
     </div>
   );
 });
-

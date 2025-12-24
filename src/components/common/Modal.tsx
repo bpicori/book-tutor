@@ -43,7 +43,9 @@ export const Modal = memo(function Modal({
       >
         {title && (
           <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-border-warm flex-shrink-0">
-            <h2 className="text-lg md:text-xl font-bold text-muted-gray-text">{title}</h2>
+            <h2 className="text-lg md:text-xl font-bold text-muted-gray-text">
+              {title}
+            </h2>
             <Button
               variant="icon"
               onClick={onClose}

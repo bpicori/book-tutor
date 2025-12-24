@@ -242,12 +242,15 @@ export async function getBackupSizeEstimate(): Promise<{
   estimatedSizeMB: number;
 }> {
   const bookFiles = await getAllBookFiles();
-  const totalBytes = bookFiles.reduce((acc, book) => acc + book.data.byteLength, 0);
+  const totalBytes = bookFiles.reduce(
+    (acc, book) => acc + book.data.byteLength,
+    0
+  );
 
   return {
     booksCount: bookFiles.length,
     // Base64 encoding increases size by ~33%, plus some overhead for JSON
-    estimatedSizeMB: Math.round(((totalBytes * 1.33) / (1024 * 1024)) * 10) / 10,
+    estimatedSizeMB:
+      Math.round(((totalBytes * 1.33) / (1024 * 1024)) * 10) / 10,
   };
 }
-

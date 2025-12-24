@@ -51,7 +51,9 @@ export function useLLMAskSettings(): LLMServiceSettings | null {
   const settings = useStore((state) => state.settings);
 
   return useMemo(() => {
-    const providerId = settings.llmAssignments.askProvider || settings.llmAssignments.previewProvider;
+    const providerId =
+      settings.llmAssignments.askProvider ||
+      settings.llmAssignments.previewProvider;
     if (!providerId) {
       // Fallback to legacy settings for backward compatibility
       if (settings.llmApiKey) {

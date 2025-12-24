@@ -11,7 +11,7 @@ export function useTheme() {
 
   useEffect(() => {
     const root = document.documentElement;
-    
+
     if (theme === "sepia") {
       // Sepia is the default, remove data-theme attribute
       root.removeAttribute("data-theme");
@@ -21,4 +21,3 @@ export function useTheme() {
     }
   }, [theme]);
 }
-

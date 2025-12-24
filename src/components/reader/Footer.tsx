@@ -21,7 +21,9 @@ export const Footer = memo(function Footer() {
                 {progress.location.current + 1} / {progress.location.total}
               </p>
             )}
-            <p className="text-light-gray-text text-xs md:text-sm whitespace-nowrap">{percent}%</p>
+            <p className="text-light-gray-text text-xs md:text-sm whitespace-nowrap">
+              {percent}%
+            </p>
           </div>
         </div>
         <ProgressBar value={progress.fraction} />

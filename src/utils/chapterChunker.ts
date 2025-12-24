@@ -54,11 +54,7 @@ export function splitChapterIntoChunks(
       : currentIndex + targetChunkSize;
 
     // Find a good split point near the target
-    let splitIndex = findSmartSplitPoint(
-      content,
-      currentIndex,
-      targetEndIndex
-    );
+    let splitIndex = findSmartSplitPoint(content, currentIndex, targetEndIndex);
 
     const chunkContent = content.slice(currentIndex, splitIndex);
     const startPercent = Math.round((currentIndex / content.length) * 100);
@@ -123,4 +119,3 @@ function findSmartSplitPoint(
   // If all else fails, use the target index
   return targetIndex;
 }
-

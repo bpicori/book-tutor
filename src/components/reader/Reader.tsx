@@ -96,7 +96,11 @@ export function Reader({ viewRef }: ReaderProps) {
             // Position closer to the selection (add small offset to reduce gap)
             y = iframeRect.top + firstRect.top + 8;
             height = firstRect.height;
-          } else if (iframeRect && clientX !== undefined && clientY !== undefined) {
+          } else if (
+            iframeRect &&
+            clientX !== undefined &&
+            clientY !== undefined
+          ) {
             // Fallback to touch/mouse position within iframe + iframe offset
             x = iframeRect.left + clientX;
             y = iframeRect.top + clientY - 50;

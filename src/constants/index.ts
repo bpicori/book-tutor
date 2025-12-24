@@ -1,4 +1,9 @@
-import type { ReaderSettings, Theme, LLMProvider, LLMProviderAssignments } from "../types";
+import type {
+  ReaderSettings,
+  Theme,
+  LLMProvider,
+  LLMProviderAssignments,
+} from "../types";
 
 /**
  * Storage key for Zustand persist middleware

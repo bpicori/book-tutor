@@ -12,7 +12,7 @@ export function ReaderPage() {
   const viewRef = useRef<FoliateView | null>(null);
   const currentBookId = useCurrentBookId();
   const { updateBookProgress, updateBookLocation, progress } = useStore();
-  
+
   // Update store's currentBookId when URL changes
   useEffect(() => {
     if (currentBookId) {

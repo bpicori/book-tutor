@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { useStore } from "../store/useStore";
 import { streamChapterChat, LLMServiceError } from "../services/llmService";
 import {
@@ -25,7 +25,10 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
   } = useStore();
 
   const llmSettings = useLLMAskSettings();
-  const chatMessages = chapterChats[chapterHref] || [];
+  const chatMessages = useMemo(
+    () => chapterChats[chapterHref] || [],
+    [chapterChats, chapterHref]
+  );
   const [chapterContent, setChapterContent] = useState<string>("");
 
   // Check if preview with summaries exists for this chapter
@@ -93,9 +96,7 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
         contentForChat = preview.fullSummary;
       } else if (preview?.summaries && preview.summaries.length > 0) {
         // Fallback: concatenate all summaries if fullSummary not available
-        contentForChat = preview.summaries
-          .map((s) => s.summary)
-          .join("\n\n");
+        contentForChat = preview.summaries.map((s) => s.summary).join("\n\n");
       } else {
         // Fallback to truncation if no summaries exist
         const maxContentLength = 32000;
@@ -146,7 +147,6 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
       chapterLabel,
       chapterContent,
       book,
-      currentBookId,
       chatMessages,
       preview,
       llmSettings,

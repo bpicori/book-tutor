@@ -45,7 +45,7 @@ export const AISidebar = memo(function AISidebar() {
       />
 
       {/* Sidebar */}
-      <aside className="flex flex-col w-96 max-w-[85vw] h-full bg-warm-off-white border-l border-border-warm overflow-hidden fixed md:relative right-0 top-0 z-50 md:z-auto transform transition-transform md:translate-x-0">
+      <aside className="flex flex-col w-[32rem] max-w-[85vw] h-full bg-warm-off-white border-l border-border-warm overflow-hidden fixed md:relative right-0 top-0 z-50 md:z-auto transform transition-transform md:translate-x-0">
         {/* Header */}
         <header className="flex-shrink-0 p-4 border-b border-border-warm">
           <div className="flex items-center justify-between mb-3">

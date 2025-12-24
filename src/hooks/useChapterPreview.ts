@@ -36,7 +36,9 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
   } | null>(null);
 
   // Use composite key (bookId:chapterHref) to avoid conflicts between different books
-  const previewKey = currentBookId ? `${currentBookId}:${chapterHref}` : chapterHref;
+  const previewKey = currentBookId
+    ? `${currentBookId}:${chapterHref}`
+    : chapterHref;
   const preview = chapterPreviews[previewKey];
 
   const generatePreview = useCallback(async () => {
