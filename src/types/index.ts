@@ -208,7 +208,28 @@ export interface ViewSettings {
 }
 
 /**
- * LLM/API settings for AI features
+ * LLM Provider configuration
+ */
+export interface LLMProvider {
+  id: string;
+  name: string; // User-friendly name (e.g., "My OpenAI", "Claude Sonnet")
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+}
+
+/**
+ * LLM Provider assignments for different use cases
+ */
+export interface LLMProviderAssignments {
+  previewProvider: string | null; // Provider ID
+  askProvider: string | null; // Provider ID
+  translationProvider: string | null; // Provider ID
+}
+
+/**
+ * LLM/API settings for AI features (deprecated - use LLMProvider system)
+ * Kept for backward compatibility during migration
  */
 export interface LLMSettings {
   llmApiKey: string;
@@ -218,6 +239,9 @@ export interface LLMSettings {
   llmTranslationApiKey: string;
   llmTranslationBaseUrl: string;
   llmTranslationModel: string;
+  // New provider-based system
+  llmProviders: LLMProvider[];
+  llmAssignments: LLMProviderAssignments;
 }
 
 /**

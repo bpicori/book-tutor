@@ -6,13 +6,11 @@ export interface UISlice {
   // State
   isAiSidebarOpen: boolean;
   isSidebarCollapsed: boolean;
-  isSettingsOpen: boolean;
   settings: ReaderSettings;
 
   // Actions
   toggleAiSidebar: (open?: boolean) => void;
   toggleSidebar: (collapsed?: boolean) => void;
-  toggleSettings: (open?: boolean) => void;
   updateSettings: (settings: Partial<ReaderSettings>) => void;
   resetSettings: () => void;
 }
@@ -21,7 +19,6 @@ export const createUISlice: StateCreator<UISlice> = (set) => ({
   // Initial state
   isAiSidebarOpen: true,
   isSidebarCollapsed: false,
-  isSettingsOpen: false,
   settings: DEFAULT_SETTINGS,
 
   // Actions
@@ -33,11 +30,6 @@ export const createUISlice: StateCreator<UISlice> = (set) => ({
   toggleSidebar: (collapsed) =>
     set((state) => ({
       isSidebarCollapsed: collapsed ?? !state.isSidebarCollapsed,
-    })),
-
-  toggleSettings: (open) =>
-    set((state) => ({
-      isSettingsOpen: open ?? !state.isSettingsOpen,
     })),
 
   updateSettings: (newSettings) =>

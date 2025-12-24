@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { FoliateView } from "../../types";
 import { useStore } from "../../store/useStore";
+import { useCurrentBookId } from "../../hooks/useNavigation";
 import { useBookLoader } from "../../hooks/useBookLoader";
 import { useKeyboardNavigation } from "../../hooks/useKeyboardNavigation";
 import { LoadingSpinner } from "../../components/common";
@@ -9,8 +10,15 @@ import { AISidebar } from "../../components/chat";
 
 export function ReaderPage() {
   const viewRef = useRef<FoliateView | null>(null);
-  const { currentBookId, updateBookProgress, updateBookLocation, progress } =
-    useStore();
+  const currentBookId = useCurrentBookId();
+  const { updateBookProgress, updateBookLocation, progress } = useStore();
+  
+  // Update store's currentBookId when URL changes
+  useEffect(() => {
+    if (currentBookId) {
+      useStore.setState({ currentBookId });
+    }
+  }, [currentBookId]);
   const { isLoading, error } = useBookLoader(viewRef);
 
   useKeyboardNavigation(viewRef);

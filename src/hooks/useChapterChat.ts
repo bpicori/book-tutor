@@ -6,7 +6,7 @@ import {
   getBookAuthor,
   extractTextFromDocument,
 } from "../utils/bookHelpers";
-import { useLLMSettings } from "./useLLMSettings";
+import { useLLMAskSettings } from "./useLLMSettings";
 
 /**
  * Hook for managing chapter chat functionality
@@ -24,7 +24,7 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
     clearChapterChat,
   } = useStore();
 
-  const llmSettings = useLLMSettings();
+  const llmSettings = useLLMAskSettings();
   const chatMessages = chapterChats[chapterHref] || [];
   const [chapterContent, setChapterContent] = useState<string>("");
 

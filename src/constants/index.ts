@@ -1,4 +1,4 @@
-import type { ReaderSettings, Theme } from "../types";
+import type { ReaderSettings, Theme, LLMProvider, LLMProviderAssignments } from "../types";
 
 /**
  * Storage key for Zustand persist middleware
@@ -45,6 +45,26 @@ export const THEMES: ThemeInfo[] = [
 ];
 
 /**
+ * Default LLM provider
+ */
+export const DEFAULT_LLM_PROVIDER: LLMProvider = {
+  id: "default",
+  name: "Default",
+  apiKey: "",
+  baseUrl: "https://api.openai.com/v1",
+  model: "gpt-4o-mini",
+};
+
+/**
+ * Default LLM provider assignments
+ */
+export const DEFAULT_LLM_ASSIGNMENTS: LLMProviderAssignments = {
+  previewProvider: null,
+  askProvider: null,
+  translationProvider: null,
+};
+
+/**
  * Default reader settings
  */
 export const DEFAULT_SETTINGS: ReaderSettings = {
@@ -53,12 +73,16 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   lineHeight: 1.6,
   viewMode: "paginated",
   theme: "sepia",
+  // Legacy fields (kept for migration)
   llmApiKey: "",
   llmBaseUrl: "https://api.openai.com/v1",
   llmModel: "gpt-4o-mini",
   llmTranslationApiKey: "",
   llmTranslationBaseUrl: "https://api.openai.com/v1",
   llmTranslationModel: "gpt-4o-mini",
+  // New provider-based system
+  llmProviders: [DEFAULT_LLM_PROVIDER],
+  llmAssignments: DEFAULT_LLM_ASSIGNMENTS,
 };
 
 /**

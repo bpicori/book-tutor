@@ -1,5 +1,6 @@
 import { memo, useState, useRef, useEffect } from "react";
 import { useStore } from "../../store/useStore";
+import { useNavigation } from "../../hooks/useNavigation";
 import { formatLanguageMap } from "../../utils/formatters";
 import { IconButton, Logo } from "../common";
 
@@ -14,10 +15,8 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
     toggleAiSidebar,
     toggleSidebar,
     isSidebarCollapsed,
-    goToLibrary,
-    toggleSettings,
-    goToVocabulary,
   } = useStore();
+  const { goToLibrary, goToVocabulary, goToSettings } = useNavigation();
   const title = formatLanguageMap(book?.metadata?.title) || "Read with AI";
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -77,7 +76,7 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
           <IconButton
             icon="settings"
             label="Settings"
-            onClick={() => toggleSettings()}
+            onClick={goToSettings}
           />
           <IconButton
             icon="smart_toy"
@@ -110,7 +109,7 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
               </button>
               <button
                 onClick={() => {
-                  toggleSettings();
+                  goToSettings();
                   setShowMenu(false);
                 }}
                 className="w-full px-4 py-2 text-left text-sm text-muted-gray-text hover:bg-hover-warm flex items-center gap-2 transition-colors"

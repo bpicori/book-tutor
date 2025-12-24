@@ -1,12 +1,14 @@
 import { memo, useState, useMemo } from "react";
 import Markdown from "react-markdown";
 import { useStore } from "../../store/useStore";
+import { useNavigation } from "../../hooks/useNavigation";
 import { Logo, IconButton } from "../../components/common";
 
 const WORDS_PER_PAGE = 10;
 
 export const VocabularyPage = memo(function VocabularyPage() {
-  const { words, removeWord, goToLibrary, toggleSettings } = useStore();
+  const { words, removeWord } = useStore();
+  const { goToLibrary, goToSettings } = useNavigation();
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(words.length / WORDS_PER_PAGE);
@@ -43,7 +45,7 @@ export const VocabularyPage = memo(function VocabularyPage() {
             <IconButton
               icon="settings"
               label="Settings"
-              onClick={() => toggleSettings()}
+              onClick={goToSettings}
             />
           </div>
         </div>

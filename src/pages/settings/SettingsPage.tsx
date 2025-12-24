@@ -1,7 +1,13 @@
 import { memo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useStore } from "../../store/useStore";
-import { Modal } from "../../components/common";
-import { TypographyTab, LLMTab, BackupTab, ThemeTab } from "../../components/settings";
+import { IconButton, Logo } from "../../components/common";
+import {
+  TypographyTab,
+  LLMTab,
+  BackupTab,
+  ThemeTab,
+} from "../../components/settings";
 
 type TabId = "typography" | "theme" | "llm" | "backup";
 
@@ -19,12 +25,12 @@ const tabs: Tab[] = [
 ];
 
 export const SettingsPage = memo(function SettingsPage() {
-  const { isSettingsOpen, toggleSettings, settings, updateSettings } =
-    useStore();
+  const { settings, updateSettings } = useStore();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>("typography");
 
-  const handleClose = () => {
-    toggleSettings(false);
+  const handleBack = () => {
+    navigate(-1); // Go back to previous page
   };
 
   const renderTabContent = () => {
@@ -43,10 +49,29 @@ export const SettingsPage = memo(function SettingsPage() {
   };
 
   return (
-    <Modal isOpen={isSettingsOpen} onClose={handleClose} title="Settings">
-      <div className="flex flex-col h-full px-4 md:px-6 py-4">
+    <div className="min-h-screen bg-warm-off-white flex flex-col">
+      <header className="sticky top-0 z-10 bg-warm-off-white/95 backdrop-blur-sm border-b border-border-warm">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 md:gap-4 min-w-0">
+              <IconButton
+                icon="arrow_back"
+                label="Back"
+                text="Back"
+                onClick={handleBack}
+              />
+              <Logo size="sm" />
+              <h1 className="text-lg md:text-xl font-bold text-muted-gray-text tracking-tight truncate">
+                Settings
+              </h1>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 md:px-6 py-6 md:py-8">
         {/* Tab Navigation */}
-        <div className="flex gap-1 mb-4 -mx-4 md:-mx-6 px-4 md:px-6 flex-shrink-0 border-b border-border-warm/50 pb-px overflow-x-auto scrollbar-thin scrollbar-thumb-border-warm">
+        <div className="flex gap-1 mb-6 flex-shrink-0 border-b border-border-warm/50 pb-px overflow-x-auto scrollbar-thin scrollbar-thumb-border-warm">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -61,22 +86,24 @@ export const SettingsPage = memo(function SettingsPage() {
                     ? "border-forest-green text-forest-green bg-warm-off-white/80 shadow-[0_-2px_8px_rgba(34,87,50,0.08)]"
                     : "border-transparent text-light-gray-text hover:text-muted-gray-text hover:bg-hover-warm/30"
                 }
-              `.trim().replace(/\s+/g, ' ')}
+              `
+                .trim()
+                .replace(/\s+/g, " ")}
               title={tab.label}
             >
               <span className="material-symbols-outlined text-xl md:text-xl">
                 {tab.icon}
               </span>
-              <span className="hidden sm:inline text-sm font-medium tracking-wide whitespace-nowrap">{tab.label}</span>
+              <span className="hidden sm:inline text-sm font-medium tracking-wide whitespace-nowrap">
+                {tab.label}
+              </span>
             </button>
           ))}
         </div>
 
         {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          {renderTabContent()}
-        </div>
-      </div>
-    </Modal>
+        <div className="overflow-y-auto">{renderTabContent()}</div>
+      </main>
+    </div>
   );
 });

@@ -1,12 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { ChatMessage, ChapterPreview } from "../types";
-import { STORAGE_KEY } from "../constants";
+import type { ChatMessage, ChapterPreview, LLMProvider, LLMProviderAssignments } from "../types";
+import { STORAGE_KEY, DEFAULT_LLM_PROVIDER, DEFAULT_LLM_ASSIGNMENTS } from "../constants";
 import { createLibrarySlice, type LibrarySlice } from "./slices/librarySlice";
 import {
   createReaderSlice,
   type ReaderSlice,
-  initialReaderState,
 } from "./slices/readerSlice";
 import { createUISlice, type UISlice } from "./slices/uiSlice";
 import {
@@ -17,13 +16,7 @@ import {
   createVocabularySlice,
   type VocabularySlice,
 } from "./slices/vocabularySlice";
-
-// Initial state for AI sidebar reset (excludes chapterPreviews to preserve them)
-const initialAISidebarStateWithoutPreviews = {
-  activeAiTab: "preview" as const,
-  chapterChats: {},
-  previewLoading: false,
-};
+import type { ReaderSettings } from "../types";
 
 export interface AppState
   extends LibrarySlice, ReaderSlice, UISlice, AISidebarSlice, VocabularySlice {
@@ -53,40 +46,21 @@ export const useStore = create<AppState>()(
         ...aiSidebarSlice,
         ...vocabularySlice,
 
-        // Override openBook to reset reader and AI sidebar state (preserves chapterPreviews)
-        openBook: (bookId) => {
-          set((state) => {
-            const updatedLibrary = state.library.map((b) =>
-              b.id === bookId ? { ...b, lastReadAt: Date.now() } : b
-            );
-            return {
-              currentView: "reader",
-              currentBookId: bookId,
-              library: updatedLibrary,
-              ...initialReaderState,
-              ...initialAISidebarStateWithoutPreviews,
-            };
-          });
+        // Navigation functions are now handled by useNavigation hook
+        // These are kept for backward compatibility but should not be used directly
+        openBook: (_bookId) => {
+          // This function is deprecated - use useNavigation().openBook instead
+          console.warn("openBook from store is deprecated, use useNavigation().openBook instead");
         },
 
-        // Override goToLibrary to reset reader and AI sidebar state (preserves chapterPreviews)
         goToLibrary: () => {
-          set({
-            currentView: "library",
-            currentBookId: null,
-            ...initialReaderState,
-            ...initialAISidebarStateWithoutPreviews,
-          });
+          // This function is deprecated - use useNavigation().goToLibrary instead
+          console.warn("goToLibrary from store is deprecated, use useNavigation().goToLibrary instead");
         },
 
-        // Override goToVocabulary to reset reader and AI sidebar state (preserves chapterPreviews)
         goToVocabulary: () => {
-          set({
-            currentView: "vocabulary",
-            currentBookId: null,
-            ...initialReaderState,
-            ...initialAISidebarStateWithoutPreviews,
-          });
+          // This function is deprecated - use useNavigation().goToVocabulary instead
+          console.warn("goToVocabulary from store is deprecated, use useNavigation().goToVocabulary instead");
         },
 
         // Override removeBookFromLibrary to also clean up previews for the deleted book
@@ -118,7 +92,7 @@ export const useStore = create<AppState>()(
     {
       name: STORAGE_KEY,
       partialize: (state) => ({
-        currentView: state.currentView,
+        // currentView is no longer persisted - routing is handled by URL
         currentBookId: state.currentBookId,
         library: state.library,
         isSidebarCollapsed: state.isSidebarCollapsed,
@@ -128,16 +102,95 @@ export const useStore = create<AppState>()(
         chapterPreviews: state.chapterPreviews,
       }),
       merge: (persistedState: unknown, currentState: AppState) => {
-        const persisted = persistedState as Partial<AppState>;
-        return {
-          ...currentState,
-          ...persisted,
-          // Merge settings to ensure new fields (like theme) are preserved
-          settings: {
-            ...currentState.settings,
-            ...(persisted.settings || {}),
-          },
-        } as AppState;
+        try {
+          const persisted = (persistedState || {}) as Partial<AppState>;
+          const persistedSettings = (persisted.settings || {}) as Partial<ReaderSettings>;
+          const currentSettings = currentState.settings;
+
+        // Migrate old LLM settings to new provider format
+        let migratedProviders: LLMProvider[] = currentSettings.llmProviders || [];
+        let migratedAssignments: LLMProviderAssignments = currentSettings.llmAssignments || DEFAULT_LLM_ASSIGNMENTS;
+
+        // Check if we need to migrate from old format
+        if (!persistedSettings.llmProviders || !Array.isArray(persistedSettings.llmProviders) || persistedSettings.llmProviders.length === 0) {
+          // Migration needed: create providers from old flat settings
+          const providers: LLMProvider[] = [];
+          const assignments: LLMProviderAssignments = {
+            previewProvider: null,
+            askProvider: null,
+            translationProvider: null,
+          };
+
+          // Create main provider from old settings
+          if (persistedSettings.llmApiKey || persistedSettings.llmBaseUrl || persistedSettings.llmModel) {
+            const mainProvider: LLMProvider = {
+              id: "main",
+              name: "Main",
+              apiKey: persistedSettings.llmApiKey || "",
+              baseUrl: persistedSettings.llmBaseUrl || DEFAULT_LLM_PROVIDER.baseUrl,
+              model: persistedSettings.llmModel || DEFAULT_LLM_PROVIDER.model,
+            };
+            providers.push(mainProvider);
+            assignments.previewProvider = "main";
+            assignments.askProvider = "main";
+          }
+
+          // Create translation provider if different from main
+          const hasTranslationSettings = 
+            persistedSettings.llmTranslationApiKey ||
+            persistedSettings.llmTranslationBaseUrl ||
+            persistedSettings.llmTranslationModel;
+          
+          if (hasTranslationSettings) {
+            const translationProvider: LLMProvider = {
+              id: "translation",
+              name: "Translation",
+              apiKey: persistedSettings.llmTranslationApiKey || persistedSettings.llmApiKey || "",
+              baseUrl: persistedSettings.llmTranslationBaseUrl || persistedSettings.llmBaseUrl || DEFAULT_LLM_PROVIDER.baseUrl,
+              model: persistedSettings.llmTranslationModel || persistedSettings.llmModel || DEFAULT_LLM_PROVIDER.model,
+            };
+            providers.push(translationProvider);
+            assignments.translationProvider = "translation";
+          } else if (providers.length > 0) {
+            // Use main provider for translation if no separate translation settings
+            assignments.translationProvider = "main";
+          }
+
+          // If no providers were created, use default
+          if (providers.length === 0) {
+            providers.push(DEFAULT_LLM_PROVIDER);
+          }
+
+          migratedProviders = providers;
+          migratedAssignments = assignments;
+        } else {
+          // Use persisted providers and assignments if they exist
+          if (Array.isArray(persistedSettings.llmProviders)) {
+            migratedProviders = persistedSettings.llmProviders;
+          }
+          if (persistedSettings.llmAssignments && 
+              typeof persistedSettings.llmAssignments === 'object' &&
+              'previewProvider' in persistedSettings.llmAssignments) {
+            migratedAssignments = persistedSettings.llmAssignments;
+          }
+        }
+
+          return {
+            ...currentState,
+            ...persisted,
+            // Merge settings to ensure new fields are preserved
+            settings: {
+              ...currentState.settings,
+              ...persistedSettings,
+              llmProviders: migratedProviders,
+              llmAssignments: migratedAssignments,
+            },
+          };
+        } catch (error) {
+          console.error("Error merging persisted state:", error);
+          // Return current state on error to prevent app crash
+          return currentState;
+        }
       },
     }
   )

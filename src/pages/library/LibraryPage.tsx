@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import type { LibraryBook } from "../../types";
 import { useStore } from "../../store/useStore";
+import { useNavigation } from "../../hooks/useNavigation";
 import { saveBookFile, deleteBookFile } from "../../store/bookStorage";
 import {
   formatLanguageMap,
@@ -12,14 +13,8 @@ import { LoadingSpinner, Logo, IconButton } from "../../components/common";
 import { BookCard, AddBookCard } from "../../components/library";
 
 export function LibraryPage() {
-  const {
-    library,
-    addBookToLibrary,
-    removeBookFromLibrary,
-    openBook,
-    toggleSettings,
-    goToVocabulary,
-  } = useStore();
+  const { library, addBookToLibrary, removeBookFromLibrary } = useStore();
+  const { openBook, goToVocabulary, goToSettings } = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
 
   const sortedLibrary = useMemo(
@@ -60,7 +55,9 @@ export function LibraryPage() {
         const safeTitle =
           typeof rawTitle === "string" ||
           (typeof rawTitle === "object" && rawTitle !== null)
-            ? formatLanguageMap(rawTitle as any)
+            ? formatLanguageMap(
+                rawTitle as Parameters<typeof formatLanguageMap>[0]
+              )
             : "";
         const title = safeTitle || file.name.replace(".epub", "");
 
@@ -68,7 +65,9 @@ export function LibraryPage() {
           typeof rawAuthor === "string" ||
           Array.isArray(rawAuthor) ||
           typeof rawAuthor === "object"
-            ? formatContributor(rawAuthor as any)
+            ? formatContributor(
+                rawAuthor as Parameters<typeof formatContributor>[0]
+              )
             : "";
         const author = safeAuthor || "";
 
@@ -140,7 +139,7 @@ export function LibraryPage() {
               <IconButton
                 icon="settings"
                 label="Settings"
-                onClick={() => toggleSettings()}
+                onClick={goToSettings}
               />
             </div>
           </div>
