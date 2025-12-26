@@ -15,59 +15,52 @@ export interface Credentials {
 }
 
 /**
- * Auth Service (Single Responsibility: Authentication)
+ * Parse Basic Auth header from request
  */
-export class AuthService {
-  constructor(private env: Env) {}
+export function parseCredentials(request: Request): Credentials | null {
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader?.startsWith("Basic ")) {
+    return null;
+  }
 
-  /**
-   * Parse Basic Auth header from request
-   */
-  parseCredentials(request: Request): Credentials | null {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader?.startsWith("Basic ")) {
+  try {
+    const base64 = authHeader.substring(6);
+    const decoded = atob(base64);
+    const [username, password] = decoded.split(":", 2);
+
+    if (!username || !password) {
       return null;
     }
 
-    try {
-      const base64 = authHeader.substring(6);
-      const decoded = atob(base64);
-      const [username, password] = decoded.split(":", 2);
+    return { username, password };
+  } catch {
+    return null;
+  }
+}
 
-      if (!username || !password) {
-        return null;
-      }
-
-      return { username, password };
-    } catch {
-      return null;
-    }
+/**
+ * Validate credentials against environment variables
+ */
+export function validateAuth(request: Request, env: Env): boolean {
+  const credentials = parseCredentials(request);
+  if (!credentials) {
+    return false;
   }
 
-  /**
-   * Validate credentials against environment variables
-   */
-  validate(request: Request): boolean {
-    const credentials = this.parseCredentials(request);
-    if (!credentials) {
-      return false;
-    }
+  return (
+    credentials.username === env.AUTH_USERNAME &&
+    credentials.password === env.AUTH_PASSWORD
+  );
+}
 
-    return (
-      credentials.username === this.env.AUTH_USERNAME &&
-      credentials.password === this.env.AUTH_PASSWORD
-    );
+/**
+ * Get username from authenticated request
+ * Throws if authentication fails
+ */
+export function getUsername(request: Request): string {
+  const credentials = parseCredentials(request);
+  if (!credentials) {
+    throw new Error("Invalid credentials");
   }
-
-  /**
-   * Get username from authenticated request
-   * Throws if authentication fails
-   */
-  getUsername(request: Request): string {
-    const credentials = this.parseCredentials(request);
-    if (!credentials) {
-      throw new Error("Invalid credentials");
-    }
-    return credentials.username;
-  }
+  return credentials.username;
 }

@@ -3,12 +3,13 @@
  * Uses Basic Auth and R2 storage
  *
  * Refactored with SOLID and DRY principles for better maintainability
+ * Functional programming style
  */
 
-import { AuthService } from "./authService";
-import { BackupService } from "./backupService";
+import { validateAuth, getUsername } from "./authService";
+import { uploadBackup, downloadBackup, deleteBackup } from "./backupService";
 import { BACKUP_PATHS, HTTP_STATUS } from "./constants";
-import { ResponseBuilder } from "./responseBuilder";
+import { createErrorResponse, createCorsResponse } from "./responseBuilder";
 
 export interface Env {
   BACKUPS: R2Bucket;
@@ -16,74 +17,60 @@ export interface Env {
   AUTH_PASSWORD: string;
 }
 
-// ============================================================================
-// Router (Single Responsibility: Request Routing)
-// ============================================================================
+/**
+ * Handle CORS preflight requests
+ */
+function handleCORS(request: Request): Response | null {
+  if (request.method === "OPTIONS") {
+    return createCorsResponse();
+  }
+  return null;
+}
 
-class Router {
-  private backupService: BackupService;
-  private authService: AuthService;
+/**
+ * Check if path matches backup endpoint
+ */
+function isBackupPath(path: string): boolean {
+  return path === BACKUP_PATHS.BASE || path === `${BACKUP_PATHS.BASE}/`;
+}
 
-  constructor(env: Env) {
-    this.backupService = new BackupService(env);
-    this.authService = new AuthService(env);
+/**
+ * Route request to appropriate handler
+ */
+async function routeRequest(request: Request, env: Env): Promise<Response> {
+  // Handle CORS preflight
+  const corsResponse = handleCORS(request);
+  if (corsResponse) {
+    return corsResponse;
   }
 
-  /**
-   * Handle CORS preflight requests
-   */
-  private handleCORS(request: Request): Response | null {
-    if (request.method === "OPTIONS") {
-      return ResponseBuilder.cors();
-    }
-    return null;
-  }
+  const url = new URL(request.url);
+  const path = url.pathname;
 
-  /**
-   * Check if path matches backup endpoint
-   */
-  private isBackupPath(path: string): boolean {
-    return path === BACKUP_PATHS.BASE || path === `${BACKUP_PATHS.BASE}/`;
-  }
-
-  /**
-   * Route request to appropriate handler
-   */
-  async route(request: Request): Promise<Response> {
-    // Handle CORS preflight
-    const corsResponse = this.handleCORS(request);
-    if (corsResponse) {
-      return corsResponse;
+  if (isBackupPath(path)) {
+    // Validate authentication for backup endpoints
+    if (!validateAuth(request, env)) {
+      return createErrorResponse("Unauthorized", HTTP_STATUS.UNAUTHORIZED);
     }
 
-    const url = new URL(request.url);
-    const path = url.pathname;
+    const username = getUsername(request);
 
-    if (this.isBackupPath(path)) {
-      // Validate authentication for backup endpoints
-      if (!this.authService.validate(request)) {
-        return ResponseBuilder.error("Unauthorized", HTTP_STATUS.UNAUTHORIZED);
-      }
-
-      const username = this.authService.getUsername(request);
-
-      switch (request.method) {
-        case "POST":
-          return this.backupService.upload(request, username);
-        case "GET":
-          return this.backupService.download(username);
-        case "DELETE":
-          return this.backupService.delete(username);
-        default:
-          return ResponseBuilder.error(
-            "Method not allowed",
-            HTTP_STATUS.METHOD_NOT_ALLOWED
-          );
-      }
+    switch (request.method) {
+      case "POST":
+        return uploadBackup(request, username, env);
+      case "GET":
+        return downloadBackup(username, env);
+      case "DELETE":
+        return deleteBackup(username, env);
+      default:
+        return createErrorResponse(
+          "Method not allowed",
+          HTTP_STATUS.METHOD_NOT_ALLOWED
+        );
     }
-
-    return ResponseBuilder.error("Not found", HTTP_STATUS.NOT_FOUND);
   }
+
+  return createErrorResponse("Not found", HTTP_STATUS.NOT_FOUND);
 }
 
 // ============================================================================
@@ -92,7 +79,6 @@ class Router {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const router = new Router(env);
-    return router.route(request);
+    return routeRequest(request, env);
   },
 };
