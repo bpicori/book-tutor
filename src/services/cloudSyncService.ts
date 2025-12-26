@@ -99,6 +99,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
  */
 async function compressData(data: string): Promise<ArrayBuffer> {
   const encoder = new TextEncoder();
+  // eslint-disable-next-line no-undef
   const stream = new CompressionStream("gzip");
   const writer = stream.writable.getWriter();
   const reader = stream.readable.getReader();
@@ -134,6 +135,7 @@ async function compressData(data: string): Promise<ArrayBuffer> {
  * Decompress gzip-compressed data
  */
 async function decompressData(compressedData: ArrayBuffer): Promise<string> {
+  // eslint-disable-next-line no-undef
   const stream = new DecompressionStream("gzip");
   const writer = stream.writable.getWriter();
   const reader = stream.readable.getReader();
