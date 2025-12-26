@@ -18,19 +18,6 @@ function getBackupKey(username: string): string {
 }
 
 /**
- * Extract metadata from request headers (optional)
- */
-function getMetadataFromHeaders(request: Request): {
-  exportedAt?: string;
-  version?: string;
-} {
-  return {
-    exportedAt: request.headers.get("X-Backup-Exported-At") || undefined,
-    version: request.headers.get("X-Backup-Version") || undefined,
-  };
-}
-
-/**
  * Upload backup to R2 storage
  * Client always sends compressed data, worker stores it as-is
  */
@@ -42,25 +29,17 @@ export async function uploadBackup(
   try {
     const key = getBackupKey(username);
     const compressedData = await request.arrayBuffer();
-    const metadata = getMetadataFromHeaders(request);
-
-    const customMetadata: Record<string, string> = {};
-    if (metadata.exportedAt) customMetadata.exportedAt = metadata.exportedAt;
-    if (metadata.version) customMetadata.version = metadata.version;
 
     await env.BACKUPS.put(key, compressedData, {
       httpMetadata: {
         contentType: CONTENT_TYPES.GZIP,
         contentEncoding: "gzip",
       },
-      customMetadata:
-        Object.keys(customMetadata).length > 0 ? customMetadata : undefined,
     });
 
     return createSuccessResponse({
       success: true,
       message: "Backup uploaded successfully",
-      ...(metadata.exportedAt && { exportedAt: metadata.exportedAt }),
     });
   } catch (error) {
     console.error("Upload error:", error);
