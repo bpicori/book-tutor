@@ -13,9 +13,13 @@ import {
   createVocabularySlice,
   type VocabularySlice,
 } from "./slices/vocabularySlice";
+import {
+  createCloudSyncSlice,
+  type CloudSyncSlice,
+} from "./slices/cloudSyncSlice";
 
 export interface AppState
-  extends LibrarySlice, ReaderSlice, UISlice, AISidebarSlice, VocabularySlice {
+  extends LibrarySlice, ReaderSlice, UISlice, AISidebarSlice, VocabularySlice, CloudSyncSlice {
   // Selectors (moved from actions to avoid re-render issues)
   getChatMessages: (chapterHref: string) => ChatMessage[];
   getChapterPreview: (chapterHref: string) => ChapterPreview | null;
@@ -29,6 +33,7 @@ export const useStore = create<AppState>()(
       const uiSlice = createUISlice(set, get, api);
       const aiSidebarSlice = createAISidebarSlice(set, get, api);
       const vocabularySlice = createVocabularySlice(set, get, api);
+      const cloudSyncSlice = createCloudSyncSlice(set, get, api);
 
       return {
         ...librarySlice,
@@ -36,6 +41,7 @@ export const useStore = create<AppState>()(
         ...uiSlice,
         ...aiSidebarSlice,
         ...vocabularySlice,
+        ...cloudSyncSlice,
 
         // Override removeBookFromLibrary to also clean up previews for the deleted book
         removeBookFromLibrary: (bookId) => {
@@ -74,6 +80,7 @@ export const useStore = create<AppState>()(
         settings: state.settings,
         words: state.words,
         chapterPreviews: state.chapterPreviews,
+        cloudSync: state.cloudSync,
       }),
       merge: (persistedState: unknown, currentState: AppState) => {
         try {

@@ -1,0 +1,18 @@
+name = "book-tutor-sync"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# R2 bucket binding
+# Change this to your desired bucket name
+[[r2_buckets]]
+binding = "BACKUPS"
+bucket_name = "your-bucket-name-here"
+
+# Environment variables (set via wrangler secret put)
+# AUTH_USERNAME - username for basic auth
+# AUTH_PASSWORD - password for basic auth
+# 
+# To set secrets:
+# npx wrangler secret put AUTH_USERNAME
+# npx wrangler secret put AUTH_PASSWORD
+

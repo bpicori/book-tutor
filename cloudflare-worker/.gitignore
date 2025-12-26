@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Config file (contains user-specific settings)
+config.json
+
+# Wrangler
+.wrangler/
+.dev.vars
+wrangler.toml
+
+# Logs
+*.log
+

@@ -7,9 +7,10 @@ import {
   LLMTab,
   BackupTab,
   ThemeTab,
+  CloudSyncTab,
 } from "../../components/settings";
 
-type TabId = "typography" | "theme" | "llm" | "backup";
+type TabId = "typography" | "theme" | "llm" | "backup" | "cloudsync";
 
 interface Tab {
   id: TabId;
@@ -21,7 +22,8 @@ const tabs: Tab[] = [
   { id: "typography", label: "Typography", icon: "text_fields" },
   { id: "theme", label: "Theme", icon: "palette" },
   { id: "llm", label: "LLM", icon: "smart_toy" },
-  { id: "backup", label: "Backup", icon: "cloud_sync" },
+  { id: "backup", label: "Backup", icon: "download" },
+  { id: "cloudsync", label: "Cloud Sync", icon: "cloud_sync" },
 ];
 
 export const SettingsPage = memo(function SettingsPage() {
@@ -43,6 +45,8 @@ export const SettingsPage = memo(function SettingsPage() {
         return <LLMTab settings={settings} onUpdate={updateSettings} />;
       case "backup":
         return <BackupTab />;
+      case "cloudsync":
+        return <CloudSyncTab />;
       default:
         return null;
     }
