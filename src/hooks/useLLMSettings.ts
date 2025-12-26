@@ -6,7 +6,7 @@ type LLMUseCase = "preview" | "ask" | "translation";
 
 /**
  * Generic hook to get LLM settings for a specific use case.
- * Handles provider lookup, fallbacks, and legacy settings migration.
+ * Handles provider lookup and fallbacks.
  */
 function useLLMSettingsFor(useCase: LLMUseCase): LLMServiceSettings | null {
   const settings = useStore((state) => state.settings);
@@ -29,7 +29,7 @@ function useLLMSettingsFor(useCase: LLMUseCase): LLMServiceSettings | null {
         break;
     }
 
-    // Try to find provider from new system
+    // Find provider from provider system
     if (providerId) {
       const provider = settings.llmProviders.find((p) => p.id === providerId);
       if (provider && provider.apiKey) {
@@ -41,28 +41,6 @@ function useLLMSettingsFor(useCase: LLMUseCase): LLMServiceSettings | null {
       }
     }
 
-    // Fallback to legacy settings for backward compatibility
-    if (useCase === "translation") {
-      // Translation has special legacy fallback logic
-      const apiKey = settings.llmTranslationApiKey || settings.llmApiKey;
-      if (apiKey) {
-        return {
-          apiKey,
-          baseUrl: settings.llmTranslationBaseUrl || settings.llmBaseUrl,
-          model: settings.llmTranslationModel || settings.llmModel,
-        };
-      }
-    } else {
-      // Preview and Ask use main legacy settings
-      if (settings.llmApiKey) {
-        return {
-          apiKey: settings.llmApiKey,
-          baseUrl: settings.llmBaseUrl,
-          model: settings.llmModel,
-        };
-      }
-    }
-
     return null;
   }, [
     useCase,
@@ -70,13 +48,6 @@ function useLLMSettingsFor(useCase: LLMUseCase): LLMServiceSettings | null {
     settings.llmAssignments.previewProvider,
     settings.llmAssignments.askProvider,
     settings.llmAssignments.translationProvider,
-    // Legacy fallback dependencies
-    settings.llmApiKey,
-    settings.llmBaseUrl,
-    settings.llmModel,
-    settings.llmTranslationApiKey,
-    settings.llmTranslationBaseUrl,
-    settings.llmTranslationModel,
   ]);
 }
 

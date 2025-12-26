@@ -1,12 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { ChatMessage, ChapterPreview } from "../types";
-import {
-  STORAGE_KEY,
-  DEFAULT_LLM_PROVIDER,
-  DEFAULT_LLM_ASSIGNMENTS,
-} from "../constants";
-import { migrateLLMSettings } from "./migrations/llmSettingsMigration";
+import { STORAGE_KEY } from "../constants";
 import { createLibrarySlice, type LibrarySlice } from "./slices/librarySlice";
 import { createReaderSlice, type ReaderSlice } from "./slices/readerSlice";
 import { createUISlice, type UISlice } from "./slices/uiSlice";
@@ -18,15 +13,9 @@ import {
   createVocabularySlice,
   type VocabularySlice,
 } from "./slices/vocabularySlice";
-import type { ReaderSettings } from "../types";
 
 export interface AppState
   extends LibrarySlice, ReaderSlice, UISlice, AISidebarSlice, VocabularySlice {
-  // Additional actions that need to coordinate multiple slices
-  openBook: (bookId: string) => void;
-  goToLibrary: () => void;
-  goToVocabulary: () => void;
-
   // Selectors (moved from actions to avoid re-render issues)
   getChatMessages: (chapterHref: string) => ChatMessage[];
   getChapterPreview: (chapterHref: string) => ChapterPreview | null;
@@ -47,29 +36,6 @@ export const useStore = create<AppState>()(
         ...uiSlice,
         ...aiSidebarSlice,
         ...vocabularySlice,
-
-        // Navigation functions are now handled by useNavigation hook
-        // These are kept for backward compatibility but should not be used directly
-        openBook: (_bookId) => {
-          // This function is deprecated - use useNavigation().openBook instead
-          console.warn(
-            "openBook from store is deprecated, use useNavigation().openBook instead"
-          );
-        },
-
-        goToLibrary: () => {
-          // This function is deprecated - use useNavigation().goToLibrary instead
-          console.warn(
-            "goToLibrary from store is deprecated, use useNavigation().goToLibrary instead"
-          );
-        },
-
-        goToVocabulary: () => {
-          // This function is deprecated - use useNavigation().goToVocabulary instead
-          console.warn(
-            "goToVocabulary from store is deprecated, use useNavigation().goToVocabulary instead"
-          );
-        },
 
         // Override removeBookFromLibrary to also clean up previews for the deleted book
         removeBookFromLibrary: (bookId) => {
@@ -112,25 +78,9 @@ export const useStore = create<AppState>()(
       merge: (persistedState: unknown, currentState: AppState) => {
         try {
           const persisted = (persistedState || {}) as Partial<AppState>;
-          const persistedSettings = (persisted.settings ||
-            {}) as Partial<ReaderSettings>;
-
-          // Migrate old LLM settings to new provider format
-          const migrationResult = migrateLLMSettings(persistedSettings, {
-            provider: DEFAULT_LLM_PROVIDER,
-            assignments: DEFAULT_LLM_ASSIGNMENTS,
-          });
-
           return {
             ...currentState,
             ...persisted,
-            // Merge settings to ensure new fields are preserved
-            settings: {
-              ...currentState.settings,
-              ...persistedSettings,
-              llmProviders: migrationResult.llmProviders,
-              llmAssignments: migrationResult.llmAssignments,
-            },
           };
         } catch (error) {
           console.error("Error merging persisted state:", error);

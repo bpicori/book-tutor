@@ -70,12 +70,6 @@ export const DEFAULT_LLM_ASSIGNMENTS: LLMProviderAssignments = {
 };
 
 /**
- * Default LLM settings (derived from DEFAULT_LLM_PROVIDER)
- */
-export const DEFAULT_LLM_BASE_URL = DEFAULT_LLM_PROVIDER.baseUrl;
-export const DEFAULT_LLM_MODEL = DEFAULT_LLM_PROVIDER.model;
-
-/**
  * Default reader settings
  */
 export const DEFAULT_SETTINGS: ReaderSettings = {
@@ -84,14 +78,6 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   lineHeight: 1.6,
   viewMode: "paginated",
   theme: "sepia",
-  // Legacy fields (kept for migration)
-  llmApiKey: "",
-  llmBaseUrl: DEFAULT_LLM_BASE_URL,
-  llmModel: DEFAULT_LLM_MODEL,
-  llmTranslationApiKey: "",
-  llmTranslationBaseUrl: DEFAULT_LLM_BASE_URL,
-  llmTranslationModel: DEFAULT_LLM_MODEL,
-  // New provider-based system
   llmProviders: [DEFAULT_LLM_PROVIDER],
   llmAssignments: DEFAULT_LLM_ASSIGNMENTS,
 };

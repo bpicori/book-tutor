@@ -228,18 +228,9 @@ export interface LLMProviderAssignments {
 }
 
 /**
- * LLM/API settings for AI features (deprecated - use LLMProvider system)
- * Kept for backward compatibility during migration
+ * LLM/API settings for AI features
  */
 export interface LLMSettings {
-  llmApiKey: string;
-  llmBaseUrl: string;
-  llmModel: string;
-  // Translation settings (separate API key, base URL, and model)
-  llmTranslationApiKey: string;
-  llmTranslationBaseUrl: string;
-  llmTranslationModel: string;
-  // New provider-based system
   llmProviders: LLMProvider[];
   llmAssignments: LLMProviderAssignments;
 }
@@ -255,7 +246,6 @@ export interface ThemeSettings {
 
 /**
  * Combined reader settings (composed of separate concerns)
- * Maintained for backward compatibility with existing code
  */
 export interface ReaderSettings
   extends TypographySettings, ViewSettings, LLMSettings, ThemeSettings {}
