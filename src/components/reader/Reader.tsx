@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import type { FoliateView } from "../../types";
 import { useStore } from "../../store/useStore";
 import { generateReaderCSS } from "../../utils/readerStyles";
@@ -12,11 +12,13 @@ interface ReaderProps {
 
 export function Reader({ viewRef }: ReaderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [viewReady, setViewReady] = useState(false);
   const { setProgress, setCurrentTocHref, setCurrentSectionIndex, settings } =
     useStore();
   const { selection, dismissSelection } = useSelectionHandler({
     containerRef: containerRef as React.RefObject<HTMLElement | null>,
     viewRef,
+    viewReady,
   });
 
   const handleRelocate = useCallback(
@@ -59,12 +61,14 @@ export function Reader({ viewRef }: ReaderProps) {
 
     container.appendChild(view);
     viewRef.current = view;
+    setViewReady(true);
     view.addEventListener("relocate", handleRelocate);
 
     return () => {
       view.removeEventListener("relocate", handleRelocate);
       view.remove();
       viewRef.current = null;
+      setViewReady(false);
     };
   }, [handleRelocate, viewRef]);
 

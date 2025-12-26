@@ -4,6 +4,7 @@ import type { SelectionInfo } from "../types";
 interface UseSelectionHandlerOptions {
   containerRef: React.RefObject<HTMLElement | null>;
   viewRef: React.MutableRefObject<HTMLElement | null>;
+  viewReady?: boolean;
 }
 
 /**
@@ -13,6 +14,7 @@ interface UseSelectionHandlerOptions {
 export function useSelectionHandler({
   containerRef,
   viewRef,
+  viewReady = false,
 }: UseSelectionHandlerOptions) {
   const [selection, setSelection] = useState<SelectionInfo | null>(null);
   const documentListenersRef = useRef<
@@ -152,7 +154,7 @@ export function useSelectionHandler({
     return () => {
       view.removeEventListener("load", handleLoad);
     };
-  }, [viewRef, setupDocumentListeners]);
+  }, [viewRef, setupDocumentListeners, viewReady]);
 
   // Handle clicks/touches outside to dismiss selection bar
   useEffect(() => {
