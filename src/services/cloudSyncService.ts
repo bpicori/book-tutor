@@ -25,6 +25,7 @@ interface CloudSyncResponse {
   success: boolean;
   message: string;
   exportedAt?: string;
+  version?: number;
 }
 
 /**
@@ -94,6 +95,78 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 }
 
 /**
+ * Compress data using gzip compression
+ */
+async function compressData(data: string): Promise<ArrayBuffer> {
+  const encoder = new TextEncoder();
+  const stream = new CompressionStream("gzip");
+  const writer = stream.writable.getWriter();
+  const reader = stream.readable.getReader();
+
+  // Write data to compression stream
+  writer.write(encoder.encode(data));
+  writer.close();
+
+  // Read compressed chunks
+  const chunks: Uint8Array[] = [];
+  let done = false;
+  while (!done) {
+    const { value, done: readerDone } = await reader.read();
+    done = readerDone;
+    if (value) {
+      chunks.push(value);
+    }
+  }
+
+  // Combine chunks into single ArrayBuffer
+  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  return result.buffer;
+}
+
+/**
+ * Decompress gzip-compressed data
+ */
+async function decompressData(compressedData: ArrayBuffer): Promise<string> {
+  const stream = new DecompressionStream("gzip");
+  const writer = stream.writable.getWriter();
+  const reader = stream.readable.getReader();
+
+  // Write compressed data to decompression stream
+  writer.write(new Uint8Array(compressedData));
+  writer.close();
+
+  // Read decompressed chunks
+  const chunks: Uint8Array[] = [];
+  let done = false;
+  while (!done) {
+    const { value, done: readerDone } = await reader.read();
+    done = readerDone;
+    if (value) {
+      chunks.push(value);
+    }
+  }
+
+  // Combine chunks and decode to string
+  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  const decoder = new TextDecoder();
+  return decoder.decode(result);
+}
+
+/**
  * Get backup data in the format expected by the API
  */
 async function getBackupData(): Promise<BackupData> {
@@ -128,14 +201,18 @@ export async function uploadBackup(
 ): Promise<CloudSyncResponse> {
   try {
     const backupData = await getBackupData();
+    const jsonString = JSON.stringify(backupData);
+
+    // Compress the backup data before uploading
+    const compressedData = await compressData(jsonString);
 
     const response = await fetch(`${config.apiUrl}/backup`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/gzip",
         Authorization: createBasicAuth(config.username, config.password),
       },
-      body: JSON.stringify(backupData),
+      body: compressedData,
     });
 
     if (!response.ok) {
@@ -150,6 +227,7 @@ export async function uploadBackup(
       success: true,
       message: result.message || "Backup uploaded successfully",
       exportedAt: result.exportedAt,
+      version: backupData.version,
     };
   } catch (error) {
     return {
@@ -173,6 +251,7 @@ export async function downloadBackup(
       method: "GET",
       headers: {
         Authorization: createBasicAuth(config.username, config.password),
+        Accept: "application/gzip",
       },
     });
 
@@ -190,7 +269,12 @@ export async function downloadBackup(
       throw new Error(errorData.error || "Failed to download backup");
     }
 
-    const backupData: BackupData = await response.json();
+    // Get compressed data as ArrayBuffer
+    const compressedData = await response.arrayBuffer();
+
+    // Decompress the backup data
+    const jsonString = await decompressData(compressedData);
+    const backupData: BackupData = JSON.parse(jsonString);
 
     // Validate backup structure
     if (
@@ -203,7 +287,6 @@ export async function downloadBackup(
 
     // Import the backup using existing import function
     // We need to convert it to a File-like object for importBackup
-    const jsonString = JSON.stringify(backupData);
     const blob = new Blob([jsonString], { type: "application/json" });
     const file = new File([blob], "cloud-backup.json", {
       type: "application/json",
@@ -220,8 +303,10 @@ export async function downloadBackup(
 
     return {
       success: true,
-      message: importResult.message || "Backup downloaded and restored successfully",
+      message:
+        importResult.message || "Backup downloaded and restored successfully",
       exportedAt: backupData.exportedAt,
+      version: backupData.version,
     };
   } catch (error) {
     return {
@@ -270,4 +355,3 @@ export async function deleteBackup(
     };
   }
 }
-

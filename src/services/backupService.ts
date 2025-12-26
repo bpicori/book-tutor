@@ -23,7 +23,7 @@ interface BackupData {
   bookFiles: BackupBookFile[];
 }
 
-const BACKUP_VERSION = 1;
+export const BACKUP_VERSION = 1;
 
 /**
  * Convert ArrayBuffer to Base64 string

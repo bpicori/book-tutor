@@ -5,6 +5,7 @@ import {
   downloadBackup,
   deleteBackup,
 } from "../../../services/cloudSyncService";
+import { BACKUP_VERSION } from "../../../services/backupService";
 import { Button } from "../../common";
 
 export const CloudSyncTab = memo(function CloudSyncTab() {
@@ -35,10 +36,20 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
     try {
       const result = await uploadBackup(cloudSync.config);
       const timestamp = result.success ? Date.now() : null;
+      
+      // Build message with version info if available
+      let message = result.message;
+      if (result.success && result.version !== undefined) {
+        if (result.version !== BACKUP_VERSION) {
+          const versionInfo = ` (Cloud backup version ${result.version}, local version ${BACKUP_VERSION})`;
+          message = result.message + versionInfo;
+        }
+      }
+      
       setLastSync(
         timestamp,
         result.success ? "success" : "error",
-        result.message
+        message
       );
     } catch (error) {
       setLastSync(
@@ -60,10 +71,20 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
     try {
       const result = await downloadBackup(cloudSync.config);
       const timestamp = result.success ? Date.now() : null;
+      
+      // Build message with version info if available
+      let message = result.message;
+      if (result.success && result.version !== undefined) {
+        if (result.version !== BACKUP_VERSION) {
+          const versionInfo = ` (Cloud backup version ${result.version}, local version ${BACKUP_VERSION})`;
+          message = result.message + versionInfo;
+        }
+      }
+      
       setLastSync(
         timestamp,
         result.success ? "success" : "error",
-        result.message
+        message
       );
 
       if (result.success) {
@@ -227,7 +248,7 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
               icon={isUploading ? "progress_activity" : "cloud_upload"}
               className={isUploading ? "[&_span]:animate-spin" : ""}
             >
-              {isUploading ? "Uploading..." : "Upload to Cloud"}
+              {isUploading ? "Backing up..." : "Backup to Cloud"}
             </Button>
 
             <Button
@@ -237,7 +258,7 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
               icon={isDownloading ? "progress_activity" : "cloud_download"}
               className={isDownloading ? "[&_span]:animate-spin" : ""}
             >
-              {isDownloading ? "Downloading..." : "Download from Cloud"}
+              {isDownloading ? "Restoring..." : "Restore from Cloud"}
             </Button>
 
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
@@ -246,8 +267,8 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
                   warning
                 </span>
                 <p className="text-sm text-amber-700">
-                  Downloading will replace your current library and settings.
-                  Consider uploading a backup first.
+                  Restoring from cloud will replace your current library and settings with the cloud backup.
+                  Make sure to backup your current data first if needed.
                 </p>
               </div>
             </div>

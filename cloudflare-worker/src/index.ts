@@ -79,12 +79,84 @@ function handleCORS(request: Request): Response | null {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Authorization, Content-Type",
+        "Access-Control-Allow-Headers": "Authorization, Content-Type, Content-Encoding, Accept",
         "Access-Control-Max-Age": "86400",
       },
     });
   }
   return null;
+}
+
+/**
+ * Decompress gzip-compressed data
+ */
+async function decompressData(compressedData: ArrayBuffer): Promise<string> {
+  const stream = new DecompressionStream("gzip");
+  const writer = stream.writable.getWriter();
+  const reader = stream.readable.getReader();
+
+  // Write compressed data to decompression stream
+  writer.write(new Uint8Array(compressedData));
+  writer.close();
+
+  // Read decompressed chunks
+  const chunks: Uint8Array[] = [];
+  let done = false;
+  while (!done) {
+    const { value, done: readerDone } = await reader.read();
+    done = readerDone;
+    if (value) {
+      chunks.push(value);
+    }
+  }
+
+  // Combine chunks and decode to string
+  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  const decoder = new TextDecoder();
+  return decoder.decode(result);
+}
+
+/**
+ * Compress data using gzip compression
+ */
+async function compressData(data: string): Promise<ArrayBuffer> {
+  const encoder = new TextEncoder();
+  const stream = new CompressionStream("gzip");
+  const writer = stream.writable.getWriter();
+  const reader = stream.readable.getReader();
+
+  // Write data to compression stream
+  writer.write(encoder.encode(data));
+  writer.close();
+
+  // Read compressed chunks
+  const chunks: Uint8Array[] = [];
+  let done = false;
+  while (!done) {
+    const { value, done: readerDone } = await reader.read();
+    done = readerDone;
+    if (value) {
+      chunks.push(value);
+    }
+  }
+
+  // Combine chunks into single ArrayBuffer
+  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  return result.buffer;
 }
 
 /**
@@ -96,7 +168,31 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
   }
 
   try {
-    const backupData: BackupData = await request.json();
+    // Check if data is compressed (gzip)
+    const contentType = request.headers.get("Content-Type");
+    const isCompressed = contentType === "application/gzip";
+
+    // Read request body once
+    const requestBody = await request.arrayBuffer();
+    
+    let backupData: BackupData;
+    let exportedAt: string;
+    let version: number;
+    let dataToStore: ArrayBuffer;
+
+    if (isCompressed) {
+      // Decompress the data to validate structure
+      const jsonString = await decompressData(requestBody);
+      backupData = JSON.parse(jsonString);
+      // Use the original compressed data for storage
+      dataToStore = requestBody;
+    } else {
+      // Legacy support: handle uncompressed JSON
+      const jsonString = new TextDecoder().decode(requestBody);
+      backupData = JSON.parse(jsonString);
+      // Compress before storing
+      dataToStore = await compressData(jsonString);
+    }
 
     // Validate backup structure
     if (
@@ -108,22 +204,26 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
       return errorResponse("Invalid backup format", 400);
     }
 
+    exportedAt = backupData.exportedAt;
+    version = backupData.version;
+
     // Get username from auth
     const credentials = parseBasicAuth(request);
     if (!credentials) {
       return errorResponse("Invalid credentials", 401);
     }
 
-    const key = `backups/${credentials.username}.json`;
+    const key = `backups/${credentials.username}.json.gz`;
 
-    // Store in R2
-    await env.BACKUPS.put(key, JSON.stringify(backupData), {
+    // Store compressed in R2
+    await env.BACKUPS.put(key, dataToStore, {
       httpMetadata: {
-        contentType: "application/json",
+        contentType: "application/gzip",
+        contentEncoding: "gzip",
       },
       customMetadata: {
-        exportedAt: backupData.exportedAt,
-        version: String(backupData.version),
+        exportedAt: exportedAt,
+        version: String(version),
       },
     });
 
@@ -131,7 +231,7 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
       JSON.stringify({
         success: true,
         message: "Backup uploaded successfully",
-        exportedAt: backupData.exportedAt,
+        exportedAt: exportedAt,
       }),
       {
         status: 200,
@@ -164,23 +264,49 @@ async function handleDownload(request: Request, env: Env): Promise<Response> {
       return errorResponse("Invalid credentials", 401);
     }
 
-    const key = `backups/${credentials.username}.json`;
-    const object = await env.BACKUPS.get(key);
+    // Try compressed backup first, fallback to uncompressed for legacy backups
+    let key = `backups/${credentials.username}.json.gz`;
+    let object = await env.BACKUPS.get(key);
+
+    // Fallback to uncompressed backup for backward compatibility
+    if (!object) {
+      key = `backups/${credentials.username}.json`;
+      object = await env.BACKUPS.get(key);
+    }
 
     if (!object) {
       return errorResponse("Backup not found", 404);
     }
 
-    const backupData = await object.json<BackupData>();
+    // Check if the stored object is compressed (by extension or content type)
+    const isCompressed = key.endsWith(".gz") || 
+                         object.httpMetadata?.contentEncoding === "gzip" ||
+                         object.httpMetadata?.contentType === "application/gzip";
 
-    return new Response(JSON.stringify(backupData), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "no-cache",
-      },
-    });
+    if (isCompressed) {
+      // Return compressed data directly (client will decompress)
+      const compressedData = await object.arrayBuffer();
+      return new Response(compressedData, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/gzip",
+          "Content-Encoding": "gzip",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "no-cache",
+        },
+      });
+    } else {
+      // Legacy uncompressed backup - return as JSON
+      const backupData = await object.json<BackupData>();
+      return new Response(JSON.stringify(backupData), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "no-cache",
+        },
+      });
+    }
   } catch (error) {
     console.error("Download error:", error);
     return errorResponse(
@@ -204,8 +330,14 @@ async function handleDelete(request: Request, env: Env): Promise<Response> {
       return errorResponse("Invalid credentials", 401);
     }
 
-    const key = `backups/${credentials.username}.json`;
-    await env.BACKUPS.delete(key);
+    // Delete both compressed and uncompressed backups (for cleanup)
+    const compressedKey = `backups/${credentials.username}.json.gz`;
+    const uncompressedKey = `backups/${credentials.username}.json`;
+    
+    await Promise.all([
+      env.BACKUPS.delete(compressedKey),
+      env.BACKUPS.delete(uncompressedKey),
+    ]);
 
     return new Response(
       JSON.stringify({
