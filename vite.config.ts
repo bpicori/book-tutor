@@ -33,8 +33,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["vite.svg"],
       manifest: {
-        name: "Read with AI",
-        short_name: "ReadAI",
+        name: "Book Tutor",
+        short_name: "BookTutor",
         description: "Read books with AI assistance",
         theme_color: "#ffffff",
         background_color: "#ffffff",
