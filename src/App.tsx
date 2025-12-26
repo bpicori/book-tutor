@@ -10,7 +10,7 @@ export function App() {
       <Route path="/" element={<LibraryPage />} />
       <Route path="/reader/:bookId" element={<ReaderPage />} />
       <Route path="/vocabulary" element={<VocabularyPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/settings/:tab?" element={<SettingsPage />} />
     </Routes>
   );
 }

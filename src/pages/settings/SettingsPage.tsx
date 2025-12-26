@@ -1,5 +1,5 @@
-import { memo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { memo, useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useStore } from "../../store/useStore";
 import { IconButton, Logo } from "../../components/common";
 import {
@@ -26,10 +26,34 @@ const tabs: Tab[] = [
   { id: "cloudsync", label: "Cloud Sync", icon: "cloud_sync" },
 ];
 
+const isValidTabId = (tab: string | undefined): tab is TabId => {
+  return (
+    tab !== undefined &&
+    ["typography", "theme", "llm", "backup", "cloudsync"].includes(tab)
+  );
+};
+
 export const SettingsPage = memo(function SettingsPage() {
   const { settings, updateSettings } = useStore();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabId>("typography");
+  const { tab } = useParams<{ tab?: string }>();
+
+  // Initialize activeTab from URL or default to "typography"
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    return isValidTabId(tab) ? tab : "typography";
+  });
+
+  // Sync state with URL param when URL changes (e.g., browser back/forward, direct URL)
+  useEffect(() => {
+    if (isValidTabId(tab) && tab !== activeTab) {
+      setActiveTab(tab);
+    }
+  }, [tab, activeTab]);
+
+  const handleTabChange = (tabId: TabId) => {
+    setActiveTab(tabId);
+    navigate(`/settings/${tabId}`, { replace: true });
+  };
 
   const handleBack = () => {
     navigate(-1); // Go back to previous page
@@ -79,7 +103,7 @@ export const SettingsPage = memo(function SettingsPage() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`
                 flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2.5 rounded-t-lg min-w-[44px] md:min-w-0 min-h-[44px] md:min-h-0 flex-shrink-0
                 transition-all duration-300 ease-out

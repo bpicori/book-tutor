@@ -1,4 +1,4 @@
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useEffect, useRef } from "react";
 import { useStore } from "../../../store/useStore";
 import {
   uploadBackup,
@@ -9,8 +9,7 @@ import { BACKUP_VERSION } from "../../../services/backupService";
 import { Button } from "../../common";
 
 export const CloudSyncTab = memo(function CloudSyncTab() {
-  const { cloudSync, setCloudSyncEnabled, updateCloudSyncConfig, setLastSync } =
-    useStore();
+  const { cloudSync, updateCloudSyncConfig, setLastSync } = useStore();
 
   const [isUploading, setIsUploading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -18,17 +17,42 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
   const [localApiUrl, setLocalApiUrl] = useState(cloudSync.config.apiUrl);
   const [localUsername, setLocalUsername] = useState(cloudSync.config.username);
   const [localPassword, setLocalPassword] = useState(cloudSync.config.password);
+  const isInitialMount = useRef(true);
 
-  const handleSaveConfig = useCallback(() => {
-    updateCloudSyncConfig({
-      apiUrl: localApiUrl.trim(),
-      username: localUsername.trim(),
-      password: localPassword,
-    });
+  // Auto-save configuration when values change (debounced)
+  useEffect(() => {
+    // Skip auto-save on initial mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    const isConfigValid =
+      localApiUrl.trim() && localUsername.trim() && localPassword.length > 0;
+
+    // Only save if config is valid
+    if (!isConfigValid) {
+      return;
+    }
+
+    // Debounce: wait 500ms after user stops typing
+    const timer = setTimeout(() => {
+      updateCloudSyncConfig({
+        apiUrl: localApiUrl.trim(),
+        username: localUsername.trim(),
+        password: localPassword,
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [localApiUrl, localUsername, localPassword, updateCloudSyncConfig]);
 
   const handleUpload = useCallback(async () => {
-    if (!cloudSync.config.apiUrl || !cloudSync.config.username || !cloudSync.config.password) {
+    if (
+      !cloudSync.config.apiUrl ||
+      !cloudSync.config.username ||
+      !cloudSync.config.password
+    ) {
       return;
     }
 
@@ -36,7 +60,7 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
     try {
       const result = await uploadBackup(cloudSync.config);
       const timestamp = result.success ? Date.now() : null;
-      
+
       // Build message with version info if available
       let message = result.message;
       if (result.success && result.version !== undefined) {
@@ -45,12 +69,8 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
           message = result.message + versionInfo;
         }
       }
-      
-      setLastSync(
-        timestamp,
-        result.success ? "success" : "error",
-        message
-      );
+
+      setLastSync(timestamp, result.success ? "success" : "error", message);
     } catch (error) {
       setLastSync(
         null,
@@ -63,7 +83,11 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
   }, [cloudSync.config, setLastSync]);
 
   const handleDownload = useCallback(async () => {
-    if (!cloudSync.config.apiUrl || !cloudSync.config.username || !cloudSync.config.password) {
+    if (
+      !cloudSync.config.apiUrl ||
+      !cloudSync.config.username ||
+      !cloudSync.config.password
+    ) {
       return;
     }
 
@@ -71,7 +95,7 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
     try {
       const result = await downloadBackup(cloudSync.config);
       const timestamp = result.success ? Date.now() : null;
-      
+
       // Build message with version info if available
       let message = result.message;
       if (result.success && result.version !== undefined) {
@@ -80,12 +104,8 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
           message = result.message + versionInfo;
         }
       }
-      
-      setLastSync(
-        timestamp,
-        result.success ? "success" : "error",
-        message
-      );
+
+      setLastSync(timestamp, result.success ? "success" : "error", message);
 
       if (result.success) {
         // Reload page to apply restored data
@@ -105,7 +125,11 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
   }, [cloudSync.config, setLastSync]);
 
   const handleDelete = useCallback(async () => {
-    if (!cloudSync.config.apiUrl || !cloudSync.config.username || !cloudSync.config.password) {
+    if (
+      !cloudSync.config.apiUrl ||
+      !cloudSync.config.username ||
+      !cloudSync.config.password
+    ) {
       return;
     }
 
@@ -116,11 +140,7 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
     setIsDeleting(true);
     try {
       const result = await deleteBackup(cloudSync.config);
-      setLastSync(
-        null,
-        result.success ? "success" : "error",
-        result.message
-      );
+      setLastSync(null, result.success ? "success" : "error", result.message);
     } catch (error) {
       setLastSync(
         null,
@@ -133,9 +153,7 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
   }, [cloudSync.config, setLastSync]);
 
   const isConfigValid =
-    localApiUrl.trim() &&
-    localUsername.trim() &&
-    localPassword.length > 0;
+    localApiUrl.trim() && localUsername.trim() && localPassword.length > 0;
 
   const formatLastSync = (timestamp: number | null): string => {
     if (!timestamp) return "Never";
@@ -158,7 +176,8 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
               settings.
             </p>
             <p className="text-muted-gray-text">
-              Configure your Cloudflare Worker API endpoint and credentials below.
+              Configure your Cloudflare Worker API endpoint and credentials
+              below.
             </p>
           </div>
         </div>
@@ -221,15 +240,6 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
               className="w-full px-3 py-2 bg-paper-dark border border-border-warm rounded-lg text-light-gray-text placeholder-muted-gray-text focus:outline-none focus:ring-2 focus:ring-forest-green/40 focus:border-forest-green"
             />
           </div>
-
-          <Button
-            variant="secondary"
-            onClick={handleSaveConfig}
-            disabled={!isConfigValid}
-            icon="save"
-          >
-            Save Configuration
-          </Button>
         </div>
       </div>
 
@@ -267,8 +277,9 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
                   warning
                 </span>
                 <p className="text-sm text-amber-700">
-                  Restoring from cloud will replace your current library and settings with the cloud backup.
-                  Make sure to backup your current data first if needed.
+                  Restoring from cloud will replace your current library and
+                  settings with the cloud backup. Make sure to backup your
+                  current data first if needed.
                 </p>
               </div>
             </div>
@@ -330,4 +341,3 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
     </div>
   );
 });
-
