@@ -4,6 +4,7 @@
  */
 
 import { DB_NAME, DB_VERSION, DB_STORE_NAME, STORAGE_KEY } from "../constants";
+import { useStore } from "../store/useStore";
 
 interface StoredBook {
   id: string;
@@ -214,11 +215,35 @@ export async function importBackup(file: File): Promise<{
       };
     }
 
-    // Restore localStorage data
+    // Restore localStorage data (this replaces current localStorage with cloud backup)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(backup.localStorage));
 
     // Restore book files to IndexedDB
     await restoreBookFiles(backup.bookFiles);
+
+    // Replace current store state with restored state from cloud backup
+    // Extract persisted state from Zustand's format: { state: {...}, version: 0 }
+    try {
+      const persistData = backup.localStorage as
+        | { state?: unknown; version?: number }
+        | Record<string, unknown>;
+
+      const restoredState =
+        "state" in persistData && persistData.state
+          ? (persistData.state as Partial<ReturnType<typeof useStore.getState>>)
+          : (persistData as Partial<ReturnType<typeof useStore.getState>>);
+
+      if (restoredState && typeof restoredState === "object") {
+        // Replace persisted state entirely with cloud backup (preserve non-persisted fields)
+        const currentState = useStore.getState();
+        useStore.setState({
+          ...currentState,
+          ...restoredState,
+        } as ReturnType<typeof useStore.getState>);
+      }
+    } catch (error) {
+      console.error("Error updating store state after restore:", error);
+    }
 
     return {
       success: true,

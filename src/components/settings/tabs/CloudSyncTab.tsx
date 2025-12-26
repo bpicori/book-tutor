@@ -106,13 +106,6 @@ export const CloudSyncTab = memo(function CloudSyncTab() {
       }
 
       setLastSync(timestamp, result.success ? "success" : "error", message);
-
-      if (result.success) {
-        // Reload page to apply restored data
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      }
     } catch (error) {
       setLastSync(
         null,
