@@ -208,23 +208,29 @@ export interface ViewSettings {
 }
 
 /**
- * LLM Provider configuration
+ * Supported provider types (matching free-tier-router)
+ */
+export type LLMProviderType = "groq" | "cerebras" | "openrouter" | "nvidia-nim";
+
+/**
+ * LLM Provider configuration (aligned with free-tier-router)
  */
 export interface LLMProvider {
   id: string;
-  name: string; // User-friendly name (e.g., "My OpenAI", "Claude Sonnet")
+  name: string; // User-friendly name (e.g., "My Groq", "Cerebras Free")
+  type: LLMProviderType;
   apiKey: string;
-  baseUrl: string;
-  model: string;
+  priority: number; // Lower = higher priority (0 is highest)
+  enabled: boolean;
 }
 
 /**
- * LLM Provider assignments for different use cases
+ * Model configuration for different use cases
  */
-export interface LLMProviderAssignments {
-  previewProvider: string | null; // Provider ID
-  askProvider: string | null; // Provider ID
-  translationProvider: string | null; // Provider ID
+export interface LLMModelConfig {
+  previewModel: string; // Model for chapter previews/summaries
+  askModel: string; // Model for Ask AI chat
+  translationModel: string; // Model for translations/definitions
 }
 
 /**
@@ -232,7 +238,7 @@ export interface LLMProviderAssignments {
  */
 export interface LLMSettings {
   llmProviders: LLMProvider[];
-  llmAssignments: LLMProviderAssignments;
+  llmModels: LLMModelConfig;
 }
 
 /**

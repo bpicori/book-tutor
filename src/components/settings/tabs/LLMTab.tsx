@@ -1,9 +1,10 @@
-import { memo, useState } from "react";
-import type { ReaderSettings, LLMProvider } from "../../../types";
+import { memo, useState, useMemo } from "react";
+import type { ReaderSettings, LLMProvider, LLMModelConfig } from "../../../types";
 import { Button } from "../../common";
-import { DEFAULT_LLM_PROVIDER } from "../../../constants";
+import { DEFAULT_LLM_MODELS } from "../../../constants";
 import { ProviderCard } from "./ProviderCard";
-import { ProviderAssignments } from "./ProviderAssignments";
+import { ModelConfig } from "./ModelConfig";
+import { normalizeProviders } from "../../../services/routerService";
 
 interface LLMTabProps {
   settings: ReaderSettings;
@@ -19,12 +20,12 @@ export const LLMTab = memo(function LLMTab({
   );
   const [showApiKeys, setShowApiKeys] = useState<Record<string, boolean>>({});
 
-  const providers = settings.llmProviders || [];
-  const assignments = settings.llmAssignments || {
-    previewProvider: null,
-    askProvider: null,
-    translationProvider: null,
-  };
+  // Normalize providers with defaults for backward compatibility
+  const providers = useMemo(
+    () => normalizeProviders(settings.llmProviders || []),
+    [settings.llmProviders]
+  );
+  const models = settings.llmModels || DEFAULT_LLM_MODELS;
 
   const toggleShowApiKey = (providerId: string) => {
     setShowApiKeys((prev) => ({
@@ -37,9 +38,10 @@ export const LLMTab = memo(function LLMTab({
     const newProvider: LLMProvider = {
       id: `provider-${Date.now()}`,
       name: `Provider ${providers.length + 1}`,
+      type: "groq",
       apiKey: "",
-      baseUrl: DEFAULT_LLM_PROVIDER.baseUrl,
-      model: DEFAULT_LLM_PROVIDER.model,
+      priority: providers.length,
+      enabled: true,
     };
     onUpdate({
       llmProviders: [...providers, newProvider],
@@ -63,22 +65,8 @@ export const LLMTab = memo(function LLMTab({
     }
 
     const updatedProviders = providers.filter((p) => p.id !== providerId);
-    const updatedAssignments = { ...assignments };
-
-    // Clear assignments that reference the deleted provider
-    if (assignments.previewProvider === providerId) {
-      updatedAssignments.previewProvider = null;
-    }
-    if (assignments.askProvider === providerId) {
-      updatedAssignments.askProvider = null;
-    }
-    if (assignments.translationProvider === providerId) {
-      updatedAssignments.translationProvider = null;
-    }
-
     onUpdate({
       llmProviders: updatedProviders,
-      llmAssignments: updatedAssignments,
     });
 
     if (editingProviderId === providerId) {
@@ -90,14 +78,11 @@ export const LLMTab = memo(function LLMTab({
     setEditingProviderId(null);
   };
 
-  const handleAssignmentChange = (
-    useCase: "previewProvider" | "askProvider" | "translationProvider",
-    providerId: string | null
-  ) => {
+  const handleModelChange = (updates: Partial<LLMModelConfig>) => {
     onUpdate({
-      llmAssignments: {
-        ...assignments,
-        [useCase]: providerId,
+      llmModels: {
+        ...models,
+        ...updates,
       },
     });
   };
@@ -115,8 +100,8 @@ export const LLMTab = memo(function LLMTab({
           </Button>
         </div>
         <p className="text-sm text-light-gray-text mb-6">
-          Configure multiple LLM providers and assign them to different use
-          cases.
+          Configure your free-tier LLM providers. Add multiple providers for
+          automatic failover when rate limits are hit.
         </p>
 
         {providers.length === 0 ? (
@@ -147,14 +132,8 @@ export const LLMTab = memo(function LLMTab({
         )}
       </div>
 
-      {/* Assignments Section */}
-      {providers.length > 0 && (
-        <ProviderAssignments
-          providers={providers}
-          assignments={assignments}
-          onAssignmentChange={handleAssignmentChange}
-        />
-      )}
+      {/* Model Configuration Section */}
+      <ModelConfig models={models} onModelChange={handleModelChange} />
     </div>
   );
 });

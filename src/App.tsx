@@ -1,9 +1,11 @@
 import { Routes, Route } from "react-router-dom";
 import { LibraryPage, ReaderPage, SettingsPage, VocabularyPage } from "./pages";
 import { useTheme } from "./hooks/useTheme";
+import { useRouterInitialization } from "./hooks/useLLMSettings";
 
 export function App() {
   useTheme();
+  useRouterInitialization();
 
   return (
     <Routes>

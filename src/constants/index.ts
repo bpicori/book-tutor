@@ -1,8 +1,8 @@
 import type {
   ReaderSettings,
   Theme,
-  LLMProvider,
-  LLMProviderAssignments,
+  LLMModelConfig,
+  LLMProviderType,
 } from "../types";
 
 /**
@@ -50,24 +50,56 @@ export const THEMES: ThemeInfo[] = [
 ];
 
 /**
- * Default LLM provider
+ * Available LLM provider types with metadata
  */
-export const DEFAULT_LLM_PROVIDER: LLMProvider = {
-  id: "default",
-  name: "Default",
-  apiKey: "",
-  baseUrl: "https://api.openai.com/v1",
-  model: "gpt-4o-mini",
+export interface ProviderTypeInfo {
+  type: LLMProviderType;
+  label: string;
+  description: string;
+}
+
+export const PROVIDER_TYPES: ProviderTypeInfo[] = [
+  {
+    type: "groq",
+    label: "Groq",
+    description: "Fast inference with free tier",
+  },
+  {
+    type: "cerebras",
+    label: "Cerebras",
+    description: "High-speed inference with free tier",
+  },
+  {
+    type: "openrouter",
+    label: "OpenRouter",
+    description: "Access to multiple models via unified API",
+  },
+  {
+    type: "nvidia-nim",
+    label: "NVIDIA NIM",
+    description: "NVIDIA's inference microservices",
+  },
+];
+
+/**
+ * Default LLM model configuration
+ */
+export const DEFAULT_LLM_MODELS: LLMModelConfig = {
+  previewModel: "llama-3.1-8b",
+  askModel: "llama-3.1-8b",
+  translationModel: "llama-3.1-8b",
 };
 
 /**
- * Default LLM provider assignments
+ * Common model suggestions for the UI
  */
-export const DEFAULT_LLM_ASSIGNMENTS: LLMProviderAssignments = {
-  previewProvider: null,
-  askProvider: null,
-  translationProvider: null,
-};
+export const SUGGESTED_MODELS = [
+  { value: "llama-3.1-8b", label: "Llama 3.1 8B (Fast)" },
+  { value: "llama-3.3-70b", label: "Llama 3.3 70B (Smart)" },
+  { value: "llama-3.1-70b", label: "Llama 3.1 70B" },
+  { value: "mixtral-8x7b", label: "Mixtral 8x7B" },
+  { value: "gemma-7b", label: "Gemma 7B" },
+];
 
 /**
  * Default reader settings
@@ -78,6 +110,6 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   lineHeight: 1.6,
   viewMode: "paginated",
   theme: "sepia",
-  llmProviders: [DEFAULT_LLM_PROVIDER],
-  llmAssignments: DEFAULT_LLM_ASSIGNMENTS,
+  llmProviders: [],
+  llmModels: DEFAULT_LLM_MODELS,
 };
