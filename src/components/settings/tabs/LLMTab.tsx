@@ -1,81 +1,30 @@
-import { memo, useState, useMemo } from "react";
-import type { ReaderSettings, LLMProvider, LLMModelConfig } from "../../../types";
+import { memo, useState } from "react";
+import type {
+  ReaderSettings,
+  LLMProviderConfig,
+  LLMModelConfig,
+} from "../../../types";
 import { Button } from "../../common";
-import { DEFAULT_LLM_MODELS } from "../../../constants";
-import { ProviderCard } from "./ProviderCard";
 import { ModelConfig } from "./ModelConfig";
-import { normalizeProviders } from "../../../services/routerService";
 
 interface LLMTabProps {
   settings: ReaderSettings;
   onUpdate: (settings: Partial<ReaderSettings>) => void;
 }
 
-export const LLMTab = memo(function LLMTab({
-  settings,
-  onUpdate,
-}: LLMTabProps) {
-  const [editingProviderId, setEditingProviderId] = useState<string | null>(
-    null
-  );
-  const [showApiKeys, setShowApiKeys] = useState<Record<string, boolean>>({});
+export const LLMTab = memo(function LLMTab({ settings, onUpdate }: LLMTabProps) {
+  const [showApiKey, setShowApiKey] = useState(false);
 
-  // Normalize providers with defaults for backward compatibility
-  const providers = useMemo(
-    () => normalizeProviders(settings.llmProviders || []),
-    [settings.llmProviders]
-  );
-  const models = settings.llmModels || DEFAULT_LLM_MODELS;
+  const provider = settings.llmProvider;
+  const models = settings.llmModels;
 
-  const toggleShowApiKey = (providerId: string) => {
-    setShowApiKeys((prev) => ({
-      ...prev,
-      [providerId]: !prev[providerId],
-    }));
-  };
-
-  const handleAddProvider = () => {
-    const newProvider: LLMProvider = {
-      id: `provider-${Date.now()}`,
-      name: `Provider ${providers.length + 1}`,
-      type: "groq",
-      apiKey: "",
-      priority: providers.length,
-      enabled: true,
-    };
+  const handleProviderUpdate = (updates: Partial<LLMProviderConfig>) => {
     onUpdate({
-      llmProviders: [...providers, newProvider],
+      llmProvider: {
+        ...provider,
+        ...updates,
+      },
     });
-    setEditingProviderId(newProvider.id);
-  };
-
-  const handleUpdateProvider = (
-    providerId: string,
-    updates: Partial<LLMProvider>
-  ) => {
-    const updatedProviders = providers.map((p) =>
-      p.id === providerId ? { ...p, ...updates } : p
-    );
-    onUpdate({ llmProviders: updatedProviders });
-  };
-
-  const handleDeleteProvider = (providerId: string) => {
-    if (!confirm("Are you sure you want to delete this provider?")) {
-      return;
-    }
-
-    const updatedProviders = providers.filter((p) => p.id !== providerId);
-    onUpdate({
-      llmProviders: updatedProviders,
-    });
-
-    if (editingProviderId === providerId) {
-      setEditingProviderId(null);
-    }
-  };
-
-  const handleSaveProvider = () => {
-    setEditingProviderId(null);
   };
 
   const handleModelChange = (updates: Partial<LLMModelConfig>) => {
@@ -89,51 +38,70 @@ export const LLMTab = memo(function LLMTab({
 
   return (
     <div className="space-y-8">
-      {/* Providers Section */}
+      {/* Provider Configuration Section */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-muted-gray-text">
-            LLM Providers
-          </h3>
-          <Button variant="primary" onClick={handleAddProvider} icon="add">
-            Add Provider
-          </Button>
-        </div>
+        <h3 className="text-lg font-semibold text-muted-gray-text mb-4">
+          LLM Provider
+        </h3>
         <p className="text-sm text-light-gray-text mb-6">
-          Configure your free-tier LLM providers. Add multiple providers for
-          automatic failover when rate limits are hit.
+          Configure your OpenAI-compatible API endpoint. Works with OpenAI,
+          Groq, Cerebras, OpenRouter, local LLMs, and any OpenAI-compatible API.
         </p>
 
-        {providers.length === 0 ? (
-          <div className="text-center py-8 border border-border-warm rounded-lg bg-warm-off-white/50">
-            <p className="text-light-gray-text mb-4">No providers configured</p>
-            <Button variant="primary" onClick={handleAddProvider} icon="add">
-              Add Your First Provider
-            </Button>
-          </div>
-        ) : (
+        <div className="border rounded-lg p-4 border-border-warm bg-warm-off-white">
           <div className="space-y-4">
-            {providers.map((provider) => (
-              <ProviderCard
-                key={provider.id}
-                provider={provider}
-                isEditing={editingProviderId === provider.id}
-                showApiKey={showApiKeys[provider.id] || false}
-                onEdit={() => setEditingProviderId(provider.id)}
-                onDelete={() => handleDeleteProvider(provider.id)}
-                onToggleShowApiKey={() => toggleShowApiKey(provider.id)}
-                onUpdate={(updates) =>
-                  handleUpdateProvider(provider.id, updates)
+            <div>
+              <label className="block text-sm font-medium text-muted-gray-text mb-2">
+                Base URL
+              </label>
+              <input
+                type="text"
+                value={provider.baseUrl}
+                onChange={(e) =>
+                  handleProviderUpdate({ baseUrl: e.target.value })
                 }
-                onSave={handleSaveProvider}
+                className="w-full px-4 py-2 rounded-lg border border-border-warm bg-white text-muted-gray-text focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
+                placeholder="https://api.openai.com/v1"
               />
-            ))}
+              <p className="mt-1 text-xs text-light-gray-text">
+                The base URL for your OpenAI-compatible API endpoint
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-muted-gray-text mb-2">
+                API Key
+              </label>
+              <div className="relative">
+                <input
+                  type={showApiKey ? "text" : "password"}
+                  value={provider.apiKey}
+                  onChange={(e) =>
+                    handleProviderUpdate({ apiKey: e.target.value })
+                  }
+                  className="w-full px-4 py-2 rounded-lg border border-border-warm bg-white text-muted-gray-text focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent pr-12"
+                  placeholder="sk-..."
+                />
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  icon={showApiKey ? "visibility_off" : "visibility"}
+                  className="absolute inset-y-0 right-0 w-12 h-full rounded-l-none hover:text-forest-green"
+                  aria-label={showApiKey ? "Hide API key" : "Show API key"}
+                />
+              </div>
+            </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Model Configuration Section */}
-      <ModelConfig models={models} onModelChange={handleModelChange} />
+      <ModelConfig
+        provider={provider}
+        models={models}
+        onModelChange={handleModelChange}
+      />
     </div>
   );
 });

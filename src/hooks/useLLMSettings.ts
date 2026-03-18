@@ -1,44 +1,24 @@
-import { useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import { useStore } from "../store/useStore";
 import type { LLMSettings as LLMServiceSettings } from "../services/llmService";
-import {
-  initializeRouter,
-  isRouterAvailable,
-  normalizeProviders,
-} from "../services/routerService";
+import { getProviderBaseUrl } from "../services/routerService";
 import { DEFAULT_LLM_MODELS } from "../constants";
 
 type LLMUseCase = "preview" | "ask" | "translation";
 
 /**
  * Generic hook to get LLM settings for a specific use case.
- * With the router, we just return the model for the use case.
- * The router handles provider selection automatically.
+ * Returns settings with API key, base URL, and model for the use case.
  */
 function useLLMSettingsFor(useCase: LLMUseCase): LLMServiceSettings | null {
   const settings = useStore((state) => state.settings);
 
   return useMemo(() => {
     const models = settings.llmModels || DEFAULT_LLM_MODELS;
-    const rawProviders = settings.llmProviders || [];
+    const provider = settings.llmProvider;
 
-    // Normalize providers with defaults for backward compatibility
-    const providers = normalizeProviders(rawProviders);
-
-    // Check if we have any enabled providers with API keys
-    const hasValidProvider = providers.some(
-      (p) => p.enabled && p.apiKey && p.apiKey.trim() !== ""
-    );
-
-    if (!hasValidProvider) {
-      return null;
-    }
-
-    // Router must be available if we have valid providers
-    // (router is initialized in useRouterInitialization)
-    if (!isRouterAvailable()) {
-      // Router not yet initialized - this can happen during initial render
-      // Return null and the UI will retry once router is ready
+    // Check if provider has an API key
+    if (!provider?.apiKey || provider.apiKey.trim() === "") {
       return null;
     }
 
@@ -56,14 +36,15 @@ function useLLMSettingsFor(useCase: LLMUseCase): LLMServiceSettings | null {
         break;
     }
 
-    // Router handles all provider/API key management
-    // We just need to pass the model
+    // Get the base URL for the provider
+    const baseUrl = getProviderBaseUrl(provider);
+
     return {
-      apiKey: "", // Router handles this internally
-      baseUrl: "", // Router handles this internally
+      apiKey: provider.apiKey,
+      baseUrl,
       model,
     };
-  }, [settings.llmProviders, settings.llmModels]);
+  }, [settings.llmProvider, settings.llmModels]);
 }
 
 /**
@@ -91,16 +72,9 @@ export function useLLMTranslationSettings(): LLMServiceSettings | null {
 }
 
 /**
- * Hook to initialize the free-tier-router when providers are configured.
- * Should be called once at the app level (e.g., in App.tsx).
- *
- * The router provides automatic failover between providers when one hits rate limits.
+ * @deprecated Router initialization is no longer needed with single provider.
+ * This hook is kept for backward compatibility but does nothing.
  */
 export function useRouterInitialization(): void {
-  const llmProviders = useStore((state) => state.settings.llmProviders);
-
-  useEffect(() => {
-    // Initialize router with current providers
-    initializeRouter(llmProviders);
-  }, [llmProviders]);
+  // No-op - router initialization not needed with single provider
 }

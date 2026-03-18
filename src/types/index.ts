@@ -208,20 +208,11 @@ export interface ViewSettings {
 }
 
 /**
- * Supported provider types (matching free-tier-router)
+ * Simplified LLM Provider configuration (OpenAI Compatible)
  */
-export type LLMProviderType = "groq" | "cerebras" | "openrouter" | "nvidia-nim";
-
-/**
- * LLM Provider configuration (aligned with free-tier-router)
- */
-export interface LLMProvider {
-  id: string;
-  name: string; // User-friendly name (e.g., "My Groq", "Cerebras Free")
-  type: LLMProviderType;
+export interface LLMProviderConfig {
+  baseUrl: string;
   apiKey: string;
-  priority: number; // Lower = higher priority (0 is highest)
-  enabled: boolean;
 }
 
 /**
@@ -237,7 +228,7 @@ export interface LLMModelConfig {
  * LLM/API settings for AI features
  */
 export interface LLMSettings {
-  llmProviders: LLMProvider[];
+  llmProvider: LLMProviderConfig;
   llmModels: LLMModelConfig;
 }
 

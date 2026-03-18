@@ -2,7 +2,6 @@ import type {
   ReaderSettings,
   Theme,
   LLMModelConfig,
-  LLMProviderType,
 } from "../types";
 
 /**
@@ -50,56 +49,13 @@ export const THEMES: ThemeInfo[] = [
 ];
 
 /**
- * Available LLM provider types with metadata
- */
-export interface ProviderTypeInfo {
-  type: LLMProviderType;
-  label: string;
-  description: string;
-}
-
-export const PROVIDER_TYPES: ProviderTypeInfo[] = [
-  {
-    type: "groq",
-    label: "Groq",
-    description: "Fast inference with free tier",
-  },
-  {
-    type: "cerebras",
-    label: "Cerebras",
-    description: "High-speed inference with free tier",
-  },
-  {
-    type: "openrouter",
-    label: "OpenRouter",
-    description: "Access to multiple models via unified API",
-  },
-  {
-    type: "nvidia-nim",
-    label: "NVIDIA NIM",
-    description: "NVIDIA's inference microservices",
-  },
-];
-
-/**
  * Default LLM model configuration
  */
 export const DEFAULT_LLM_MODELS: LLMModelConfig = {
-  previewModel: "llama-3.1-8b",
-  askModel: "llama-3.1-8b",
-  translationModel: "llama-3.1-8b",
+  previewModel: "gpt-4o-mini",
+  askModel: "gpt-4o-mini",
+  translationModel: "gpt-4o-mini",
 };
-
-/**
- * Common model suggestions for the UI
- */
-export const SUGGESTED_MODELS = [
-  { value: "llama-3.1-8b", label: "Llama 3.1 8B (Fast)" },
-  { value: "llama-3.3-70b", label: "Llama 3.3 70B (Smart)" },
-  { value: "llama-3.1-70b", label: "Llama 3.1 70B" },
-  { value: "mixtral-8x7b", label: "Mixtral 8x7B" },
-  { value: "gemma-7b", label: "Gemma 7B" },
-];
 
 /**
  * Default reader settings
@@ -110,6 +66,9 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   lineHeight: 1.6,
   viewMode: "paginated",
   theme: "sepia",
-  llmProviders: [],
+  llmProvider: {
+    baseUrl: "https://api.openai.com/v1",
+    apiKey: "",
+  },
   llmModels: DEFAULT_LLM_MODELS,
 };

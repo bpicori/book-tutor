@@ -19,7 +19,13 @@ import {
 } from "./slices/cloudSyncSlice";
 
 export interface AppState
-  extends LibrarySlice, ReaderSlice, UISlice, AISidebarSlice, VocabularySlice, CloudSyncSlice {
+  extends
+    LibrarySlice,
+    ReaderSlice,
+    UISlice,
+    AISidebarSlice,
+    VocabularySlice,
+    CloudSyncSlice {
   // Selectors (moved from actions to avoid re-render issues)
   getChatMessages: (chapterHref: string) => ChatMessage[];
   getChapterPreview: (chapterHref: string) => ChapterPreview | null;
@@ -91,7 +97,6 @@ export const useStore = create<AppState>()(
           };
         } catch (error) {
           console.error("Error merging persisted state:", error);
-          // Return current state on error to prevent app crash
           return currentState;
         }
       },

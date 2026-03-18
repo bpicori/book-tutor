@@ -14,14 +14,6 @@ import {
   splitChapterIntoChunks,
   type Chunk,
 } from "../utils/chapterChunker";
-import { getRouter, isRouterAvailable } from "./routerService";
-import {
-  AllProvidersExhaustedError,
-  RateLimitError,
-  ModelNotFoundError,
-  ConfigurationError,
-  FreeTierRouterError,
-} from "free-tier-router/browser";
 
 export interface LLMSettings {
   apiKey: string;
@@ -40,19 +32,6 @@ export class LLMServiceError extends Error {
 }
 
 function createClient(settings: LLMSettings): OpenAI {
-  // Check if router is available (multiple providers configured)
-  if (isRouterAvailable()) {
-    const router = getRouter();
-    if (router) {
-      // Router has OpenAI-compatible interface
-      // Cast to OpenAI since the chat.completions.create API is compatible
-      return router as unknown as OpenAI;
-    }
-  }
-
-  // Fall back to direct OpenAI client
-  console.log("[LLM] Using direct OpenAI client for request");
-
   if (!settings.apiKey) {
     throw new LLMServiceError(
       "API key is not configured. Please add your API key in Settings.",
@@ -78,48 +57,12 @@ function createClient(settings: LLMSettings): OpenAI {
 }
 
 /**
- * Centralized error handler for OpenAI API and free-tier-router errors.
+ * Centralized error handler for OpenAI API errors.
  * Converts errors into LLMServiceError with appropriate messages.
  */
 function handleOpenAIError(error: unknown, settings: LLMSettings): never {
   if (error instanceof LLMServiceError) {
     throw error;
-  }
-
-  // Handle free-tier-router errors
-  if (error instanceof AllProvidersExhaustedError) {
-    throw new LLMServiceError(
-      "All providers are rate limited. Please try again later.",
-      "RATE_LIMIT"
-    );
-  }
-
-  if (error instanceof RateLimitError) {
-    throw new LLMServiceError(
-      "Rate limit exceeded. Please try again later.",
-      "RATE_LIMIT"
-    );
-  }
-
-  if (error instanceof ModelNotFoundError) {
-    throw new LLMServiceError(
-      `Model "${settings.model}" not found. Please check your model name.`,
-      "MODEL_NOT_FOUND"
-    );
-  }
-
-  if (error instanceof ConfigurationError) {
-    throw new LLMServiceError(
-      "Router configuration error. Please check your settings.",
-      "CONFIG_ERROR"
-    );
-  }
-
-  if (error instanceof FreeTierRouterError) {
-    throw new LLMServiceError(
-      error.message || "An error occurred with the router.",
-      "ROUTER_ERROR"
-    );
   }
 
   // Handle OpenAI SDK errors
@@ -309,7 +252,7 @@ interface PreviewResponse {
 interface PreparedContent {
   content: string;
   summaries?: ChapterSummary[];
-  fullSummary?: string;
+  fullSummary?: string; // Final rolling summary with complete context
   chunkingApplied: boolean;
 }
 
