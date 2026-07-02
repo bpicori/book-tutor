@@ -3,8 +3,9 @@ import {
   exportBackup,
   importBackup,
   getBackupSizeEstimate,
+  resetApp,
 } from "../../../services/backupService";
-import { Button } from "../../common";
+import { Button, Modal } from "../../common";
 
 interface BackupInfo {
   booksCount: number;
@@ -14,6 +15,8 @@ interface BackupInfo {
 export const BackupTab = memo(function BackupTab() {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -49,6 +52,22 @@ export const BackupTab = memo(function BackupTab() {
 
   const handleImportClick = useCallback(() => {
     fileInputRef.current?.click();
+  }, []);
+
+  const handleReset = useCallback(async () => {
+    setIsResetting(true);
+    setMessage(null);
+
+    try {
+      await resetApp();
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Failed to reset app",
+      });
+      setIsResetting(false);
+      setShowResetConfirm(false);
+    }
   }, []);
 
   const handleFileSelect = useCallback(
@@ -204,6 +223,64 @@ export const BackupTab = memo(function BackupTab() {
           </p>
         </div>
       )}
+
+      {/* Reset */}
+      <div className="pt-6 border-t border-border-warm space-y-3">
+        <h3 className="text-sm font-medium text-light-gray-text">Reset App</h3>
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+          <div className="flex items-start gap-2">
+            <span className="material-symbols-outlined text-red-500 text-lg mt-0.5">
+              delete_forever
+            </span>
+            <p className="text-sm text-red-700">
+              Permanently delete your library, highlights, vocabulary, chat
+              history, and settings from this device. Export a backup first if
+              you want to keep your data.
+            </p>
+          </div>
+        </div>
+        <Button
+          variant="secondary"
+          onClick={() => setShowResetConfirm(true)}
+          disabled={isExporting || isImporting || isResetting}
+          icon="restart_alt"
+          className="!border-red-500/30 !text-red-700 hover:!border-red-500/50 hover:!text-red-800"
+        >
+          Reset App
+        </Button>
+      </div>
+
+      <Modal
+        isOpen={showResetConfirm}
+        onClose={() => !isResetting && setShowResetConfirm(false)}
+        title="Reset Book Tutor?"
+      >
+        <div className="p-4 md:p-6 space-y-4">
+          <p className="text-sm text-muted-gray-text">
+            This will erase all books, reading progress, highlights, vocabulary,
+            chapter previews, and settings stored on this device. This cannot be
+            undone.
+          </p>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => setShowResetConfirm(false)}
+              disabled={isResetting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleReset}
+              disabled={isResetting}
+              icon={isResetting ? "progress_activity" : "delete_forever"}
+              className={`!from-red-600 !to-red-600/90 !border-red-600/20 hover:!from-red-600/95 hover:!to-red-600/85 ${isResetting ? "[&_span]:animate-spin" : ""}`}
+            >
+              {isResetting ? "Resetting..." : "Reset Everything"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 });

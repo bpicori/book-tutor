@@ -113,3 +113,26 @@ export async function getAllBookIds(): Promise<string[]> {
     request.onsuccess = () => resolve(request.result as string[]);
   });
 }
+
+/**
+ * Delete all stored book files by removing the IndexedDB database.
+ */
+export async function deleteAllBooks(): Promise<void> {
+  closeDB();
+
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.deleteDatabase(DB_NAME);
+
+    request.onerror = () =>
+      reject(request.error ?? new Error("Failed to delete book storage"));
+
+    request.onsuccess = () => resolve();
+
+    request.onblocked = () =>
+      reject(
+        new Error(
+          "Reset blocked — close other Book Tutor tabs and try again"
+        )
+      );
+  });
+}

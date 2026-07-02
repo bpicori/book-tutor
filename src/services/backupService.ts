@@ -4,6 +4,7 @@
  */
 
 import { DB_NAME, DB_VERSION, DB_STORE_NAME, STORAGE_KEY } from "../constants";
+import { deleteAllBooks } from "../store/bookStorage";
 import { useStore } from "../store/useStore";
 
 interface StoredBook {
@@ -257,6 +258,16 @@ export async function importBackup(file: File): Promise<{
         error instanceof Error ? error.message : "Failed to parse backup file",
     };
   }
+}
+
+/**
+ * Erase all local app data and reload to a fresh state.
+ */
+export async function resetApp(): Promise<void> {
+  await deleteAllBooks();
+  localStorage.removeItem(STORAGE_KEY);
+  await useStore.persist.clearStorage();
+  window.location.assign(import.meta.env.BASE_URL);
 }
 
 /**
