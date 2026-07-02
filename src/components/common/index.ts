@@ -3,4 +3,5 @@ export { IconButton } from "./IconButton";
 export { Button } from "./Button";
 export { ProgressBar } from "./ProgressBar";
 export { Logo } from "./Logo";
+export { Brand } from "./Brand";
 export { Modal } from "./Modal";
