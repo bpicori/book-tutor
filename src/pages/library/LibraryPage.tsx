@@ -120,8 +120,10 @@ export function LibraryPage() {
     [removeBookFromLibrary]
   );
 
+  const isEmpty = library.length === 0;
+
   return (
-    <div className="min-h-screen bg-warm-off-white">
+    <div className="min-h-screen bg-warm-off-white flex flex-col">
       <header className="sticky top-0 z-10 bg-warm-off-white/95 backdrop-blur-sm border-b border-border-warm">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
           <div className="flex items-center justify-between gap-3">
@@ -147,44 +149,60 @@ export function LibraryPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
-        <div className="mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-semibold text-muted-gray-text mb-1">
-            Your Library
-          </h2>
-          <p className="text-light-gray-text text-sm">
-            {library.length === 0
-              ? "Add your first book to get started"
-              : `${library.length} book${library.length === 1 ? "" : "s"}`}
-          </p>
-        </div>
-
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-6 py-6 md:py-8 flex flex-col">
         {isLoading && <LoadingSpinner message="Adding book..." />}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-          <AddBookCard onFileSelect={handleFileSelect} />
-          {sortedLibrary.map((book) => (
-            <BookCard
-              key={book.id}
-              book={book}
-              onOpen={() => openBook(book.id)}
-              onDelete={() => handleDeleteBook(book.id)}
-            />
-          ))}
-        </div>
+        {isEmpty ? (
+          <div className="flex-1 flex items-center justify-center py-8 md:py-12">
+            <div className="w-full max-w-lg mx-auto text-center">
+              <div className="mb-8 space-y-3">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-forest-green/10">
+                  <span className="material-symbols-outlined text-4xl text-forest-green/70">
+                    auto_stories
+                  </span>
+                </div>
+                <h2 className="text-xl md:text-2xl font-semibold text-muted-gray-text">
+                  Your library is empty
+                </h2>
+                <p className="text-light-gray-text text-sm md:text-base max-w-sm mx-auto leading-relaxed">
+                  Add an EPUB to start reading with chapter previews, highlights,
+                  and AI help along the way.
+                </p>
+              </div>
 
-        {library.length === 0 && (
-          <div className="text-center py-16">
-            <span className="material-symbols-outlined text-6xl text-border-warm mb-4">
-              library_books
-            </span>
-            <h3 className="text-muted-gray-text font-medium mb-2">
-              Your library is empty
-            </h3>
-            <p className="text-light-gray-text text-sm max-w-md mx-auto">
-              Click the "Add Book" card above to add your first EPUB file.
-            </p>
+              <AddBookCard
+                variant="hero"
+                onFileSelect={handleFileSelect}
+              />
+
+              <p className="mt-6 text-xs text-light-gray-text">
+                EPUB files only · stored locally in your browser
+              </p>
+            </div>
           </div>
+        ) : (
+          <>
+            <div className="mb-6 md:mb-8">
+              <h2 className="text-lg md:text-xl font-semibold text-muted-gray-text mb-1">
+                Your Library
+              </h2>
+              <p className="text-light-gray-text text-sm">
+                {library.length} book{library.length === 1 ? "" : "s"}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+              <AddBookCard onFileSelect={handleFileSelect} />
+              {sortedLibrary.map((book) => (
+                <BookCard
+                  key={book.id}
+                  book={book}
+                  onOpen={() => openBook(book.id)}
+                  onDelete={() => handleDeleteBook(book.id)}
+                />
+              ))}
+            </div>
+          </>
         )}
       </main>
     </div>
