@@ -161,15 +161,12 @@ export function LibraryPage() {
                   Your library is empty
                 </h2>
                 <p className="text-light-gray-text text-sm md:text-base max-w-sm mx-auto leading-relaxed">
-                  Add an EPUB to start reading with chapter previews, highlights,
-                  and AI help along the way.
+                  Add an EPUB to start reading with chapter previews,
+                  highlights, and AI help along the way.
                 </p>
               </div>
 
-              <AddBookCard
-                variant="hero"
-                onFileSelect={handleFileSelect}
-              />
+              <AddBookCard variant="hero" onFileSelect={handleFileSelect} />
 
               <p className="mt-6 text-xs text-light-gray-text">
                 EPUB files only · stored locally in your browser

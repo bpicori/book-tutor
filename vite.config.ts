@@ -31,13 +31,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["vite.svg"],
+      includeAssets: ["icons/icon-192x192.svg", "icons/icon-512x512.svg"],
       manifest: {
         name: "Book Tutor",
         short_name: "BookTutor",
         description: "Read books with AI assistance",
-        theme_color: "#ffffff",
-        background_color: "#ffffff",
+        theme_color: "#f7f3eb",
+        background_color: "#f7f3eb",
         display: "standalone",
         scope: "/book-tutor/",
         start_url: "/book-tutor/",

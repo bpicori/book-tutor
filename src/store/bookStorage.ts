@@ -130,9 +130,7 @@ export async function deleteAllBooks(): Promise<void> {
 
     request.onblocked = () =>
       reject(
-        new Error(
-          "Reset blocked — close other Book Tutor tabs and try again"
-        )
+        new Error("Reset blocked — close other Book Tutor tabs and try again")
       );
   });
 }

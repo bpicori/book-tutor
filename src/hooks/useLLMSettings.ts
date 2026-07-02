@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useStore } from "../store/useStore";
 import type { LLMSettings as LLMServiceSettings } from "../services/llmService";
-import { getProviderBaseUrl } from "../services/routerService";
+import { getProviderBaseUrl } from "../services/llmProviderService";
 import { DEFAULT_LLM_MODELS } from "../constants";
 
 type LLMUseCase = "preview" | "ask" | "translation";
@@ -69,12 +69,4 @@ export function useLLMAskSettings(): LLMServiceSettings | null {
  */
 export function useLLMTranslationSettings(): LLMServiceSettings | null {
   return useLLMSettingsFor("translation");
-}
-
-/**
- * @deprecated Router initialization is no longer needed with single provider.
- * This hook is kept for backward compatibility but does nothing.
- */
-export function useRouterInitialization(): void {
-  // No-op - router initialization not needed with single provider
 }

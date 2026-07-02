@@ -46,7 +46,7 @@ export async function fetchModels(
       .map((model) => model.id)
       .sort((a, b) => a.localeCompare(b));
   } catch (error) {
-    console.error("[Router] Failed to fetch models:", error);
+    console.error("[LLM] Failed to fetch models:", error);
     return [];
   }
 }

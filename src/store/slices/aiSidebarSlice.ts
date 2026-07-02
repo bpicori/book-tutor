@@ -28,8 +28,6 @@ export interface AISidebarSlice {
   setChapterPreview: (chapterHref: string, preview: ChapterPreview) => void;
   setPreviewLoading: (loading: boolean) => void;
   clearChapterPreview: (chapterHref: string) => void;
-  clearBookPreviews: (bookId: string) => void;
-  resetAISidebarState: () => void;
 }
 
 export const initialAISidebarState = {
@@ -38,6 +36,13 @@ export const initialAISidebarState = {
   chapterPreviews: {} as ChapterPreviews,
   previewLoading: false,
   pendingQuote: null as string | null,
+};
+
+/** Sidebar fields reset on navigation; preserves chapterPreviews and pendingQuote. */
+export const navigationAISidebarReset = {
+  activeAiTab: initialAISidebarState.activeAiTab,
+  chapterChats: initialAISidebarState.chapterChats,
+  previewLoading: initialAISidebarState.previewLoading,
 };
 
 export const createAISidebarSlice: StateCreator<AISidebarSlice> = (set) => ({
@@ -100,17 +105,4 @@ export const createAISidebarSlice: StateCreator<AISidebarSlice> = (set) => ({
       const { [chapterHref]: _, ...rest } = state.chapterPreviews;
       return { chapterPreviews: rest };
     }),
-
-  clearBookPreviews: (bookId) =>
-    set((state) => {
-      // Filter out all previews for the specified book (keys start with "bookId:")
-      const filteredPreviews = Object.fromEntries(
-        Object.entries(state.chapterPreviews).filter(
-          ([key]) => !key.startsWith(`${bookId}:`)
-        )
-      );
-      return { chapterPreviews: filteredPreviews };
-    }),
-
-  resetAISidebarState: () => set(initialAISidebarState),
 });

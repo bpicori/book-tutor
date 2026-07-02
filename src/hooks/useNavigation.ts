@@ -1,13 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useStore } from "../store/useStore";
 import { initialReaderState } from "../store/slices/readerSlice";
-
-// Initial state for AI sidebar reset (excludes chapterPreviews to preserve them)
-const initialAISidebarStateWithoutPreviews = {
-  activeAiTab: "preview" as const,
-  chapterChats: {},
-  previewLoading: false,
-};
+import { navigationAISidebarReset } from "../store/slices/aiSidebarSlice";
 
 /**
  * Hook for navigation functions that use React Router
@@ -25,7 +19,7 @@ export function useNavigation() {
       currentBookId: bookId,
       library: updatedLibrary,
       ...initialReaderState,
-      ...initialAISidebarStateWithoutPreviews,
+      ...navigationAISidebarReset,
     });
     navigate(`/reader/${bookId}`);
   };
@@ -34,7 +28,7 @@ export function useNavigation() {
     useStore.setState({
       currentBookId: null,
       ...initialReaderState,
-      ...initialAISidebarStateWithoutPreviews,
+      ...navigationAISidebarReset,
     });
     navigate("/");
   };
@@ -43,7 +37,7 @@ export function useNavigation() {
     useStore.setState({
       currentBookId: null,
       ...initialReaderState,
-      ...initialAISidebarStateWithoutPreviews,
+      ...navigationAISidebarReset,
     });
     navigate("/vocabulary");
   };

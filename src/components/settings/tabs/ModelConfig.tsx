@@ -1,6 +1,6 @@
 import { memo, useState, useCallback } from "react";
 import type { LLMModelConfig, LLMProviderConfig } from "../../../types";
-import { fetchModels } from "../../../services/routerService";
+import { fetchModels } from "../../../services/llmProviderService";
 import { Button } from "../../common";
 
 interface ModelConfigProps {

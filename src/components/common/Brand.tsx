@@ -13,8 +13,7 @@ export const Brand = memo(function Brand({
 }: BrandProps) {
   const containerClass =
     size === "sm" ? "rounded-lg p-1" : "rounded-xl p-1.5 md:p-2";
-  const textClass =
-    size === "sm" ? "text-base" : "text-xl md:text-2xl";
+  const textClass = size === "sm" ? "text-base" : "text-xl md:text-2xl";
   const gapClass = size === "sm" ? "gap-2" : "gap-2.5 md:gap-3";
 
   return (

@@ -33,7 +33,6 @@
     "vite-plugin-pwa": "^1.2.0"
   },
   "dependencies": {
-    "free-tier-router": "^1.1.0",
     "openai": "^6.10.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
