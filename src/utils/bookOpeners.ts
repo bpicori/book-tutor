@@ -1,4 +1,5 @@
 import type { Book } from "../types";
+import { APP_NAME } from "../constants";
 import { generateReaderCSS } from "./readerStyles";
 import type { ReaderSettings } from "../types";
 
@@ -33,7 +34,7 @@ export function updateBookTitle(book: Book | null): void {
       : Object.values(book.metadata.title)[0];
 
   if (title) {
-    document.title = `${title} - Read with AI`;
+    document.title = `${title} - ${APP_NAME}`;
   }
 }
 

@@ -1,4 +1,4 @@
-# BookTutor
+# Book Tutor
 
 An AI-powered book reader for deeper reading comprehension. Currently supports EPUB files.
 

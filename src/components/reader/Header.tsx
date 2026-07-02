@@ -1,6 +1,7 @@
 import { memo, useState, useRef, useEffect } from "react";
 import { useStore } from "../../store/useStore";
 import { useNavigation } from "../../hooks/useNavigation";
+import { APP_NAME } from "../../constants";
 import { formatLanguageMap } from "../../utils/formatters";
 import { IconButton, Logo } from "../common";
 
@@ -13,7 +14,7 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
   const { book, toggleAiSidebar, toggleSidebar, isSidebarCollapsed } =
     useStore();
   const { goToLibrary, goToVocabulary, goToSettings } = useNavigation();
-  const title = formatLanguageMap(book?.metadata?.title) || "Read with AI";
+  const title = formatLanguageMap(book?.metadata?.title) || APP_NAME;
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 

@@ -9,6 +9,7 @@ import {
   blobToDataUrl,
   generateBookId,
 } from "../../utils/formatters";
+import { APP_NAME } from "../../constants";
 import { LoadingSpinner, Logo, IconButton } from "../../components/common";
 import { BookCard, AddBookCard } from "../../components/library";
 
@@ -127,7 +128,7 @@ export function LibraryPage() {
             <div className="flex items-center gap-2 md:gap-3 min-w-0">
               <Logo />
               <h1 className="text-lg md:text-2xl font-bold text-muted-gray-text tracking-tight truncate">
-                Read with AI
+                {APP_NAME}
               </h1>
             </div>
             <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">

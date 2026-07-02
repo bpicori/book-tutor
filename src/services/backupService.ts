@@ -176,7 +176,7 @@ export async function exportBackup(): Promise<void> {
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = `read-with-ai-backup-${new Date().toISOString().split("T")[0]}.json`;
+  a.download = `book-tutor-backup-${new Date().toISOString().split("T")[0]}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

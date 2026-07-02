@@ -5,6 +5,8 @@ import type {
   HighlightColor,
 } from "../types";
 
+export const APP_NAME = "Book Tutor";
+
 /**
  * Storage key for Zustand persist middleware
  */
