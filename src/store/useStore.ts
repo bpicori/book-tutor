@@ -17,6 +17,10 @@ import {
   createCloudSyncSlice,
   type CloudSyncSlice,
 } from "./slices/cloudSyncSlice";
+import {
+  createAnnotationsSlice,
+  type AnnotationsSlice,
+} from "./slices/annotationsSlice";
 
 export interface AppState
   extends
@@ -25,7 +29,8 @@ export interface AppState
     UISlice,
     AISidebarSlice,
     VocabularySlice,
-    CloudSyncSlice {
+    CloudSyncSlice,
+    AnnotationsSlice {
   // Selectors (moved from actions to avoid re-render issues)
   getChatMessages: (chapterHref: string) => ChatMessage[];
   getChapterPreview: (chapterHref: string) => ChapterPreview | null;
@@ -40,6 +45,7 @@ export const useStore = create<AppState>()(
       const aiSidebarSlice = createAISidebarSlice(set, get, api);
       const vocabularySlice = createVocabularySlice(set, get, api);
       const cloudSyncSlice = createCloudSyncSlice(set, get, api);
+      const annotationsSlice = createAnnotationsSlice(set, get, api);
 
       return {
         ...librarySlice,
@@ -48,11 +54,11 @@ export const useStore = create<AppState>()(
         ...aiSidebarSlice,
         ...vocabularySlice,
         ...cloudSyncSlice,
+        ...annotationsSlice,
 
-        // Override removeBookFromLibrary to also clean up previews for the deleted book
+        // Override removeBookFromLibrary to also clean up previews and highlights
         removeBookFromLibrary: (bookId) => {
           set((state) => {
-            // Filter out previews for this book (keys start with "bookId:")
             const filteredPreviews = Object.fromEntries(
               Object.entries(state.chapterPreviews).filter(
                 ([key]) => !key.startsWith(`${bookId}:`)
@@ -61,6 +67,7 @@ export const useStore = create<AppState>()(
             return {
               library: state.library.filter((b) => b.id !== bookId),
               chapterPreviews: filteredPreviews,
+              highlights: state.highlights.filter((h) => h.bookId !== bookId),
             };
           });
         },
@@ -86,6 +93,7 @@ export const useStore = create<AppState>()(
         settings: state.settings,
         words: state.words,
         chapterPreviews: state.chapterPreviews,
+        highlights: state.highlights,
         cloudSync: state.cloudSync,
       }),
       merge: (persistedState: unknown, currentState: AppState) => {

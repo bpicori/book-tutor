@@ -15,10 +15,22 @@ export function createChatSystemPrompt(
   bookTitle: string,
   bookAuthor: string,
   chapterLabel: string,
-  chapterContent: string
+  chapterContent: string,
+  bookContext?: string
 ): string {
-  return `You are a helpful reading assistant. The user is currently reading "${bookTitle}" by ${bookAuthor}, specifically the chapter "${chapterLabel}".
+  const priorChaptersSection = bookContext?.trim()
+    ? `
+THE BOOK SO FAR (from earlier chapters you previewed):
+---
+${bookContext}
+---
 
+Use this prior context when the user asks how this chapter connects to earlier parts of the book.
+`
+    : "";
+
+  return `You are a helpful reading assistant. The user is currently reading "${bookTitle}" by ${bookAuthor}, specifically the chapter "${chapterLabel}".
+${priorChaptersSection}
 CHAPTER CONTENT:
 ---
 ${chapterContent}

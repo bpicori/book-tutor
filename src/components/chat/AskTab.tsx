@@ -23,17 +23,30 @@ const QUICK_ACTIONS = [
 ];
 
 export const AskTab = memo(function AskTab() {
-  const { progress, currentTocHref, book } = useStore();
+  const { progress, currentTocHref, book, pendingQuote, setPendingQuote } =
+    useStore();
 
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const chapterLabel = progress.tocLabel || "Current Chapter";
   const chapterHref = currentTocHref || "default";
   const { chatMessages, sendMessage, clearMessages, isLoading } =
     useChapterChat(chapterHref, chapterLabel);
+
+  // Prefill input when "Ask AI about this" is triggered from selection/highlight
+  useEffect(() => {
+    if (pendingQuote) {
+      setInputValue(pendingQuote);
+      setPendingQuote(null);
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+    }
+  }, [pendingQuote, setPendingQuote]);
 
   // Check if user is near bottom of scroll container
   const isNearBottom = () => {
@@ -169,6 +182,7 @@ export const AskTab = memo(function AskTab() {
       <div className="flex-shrink-0 p-4 border-t border-border-warm">
         <div className="relative">
           <textarea
+            ref={inputRef}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}

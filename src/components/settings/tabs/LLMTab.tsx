@@ -12,7 +12,10 @@ interface LLMTabProps {
   onUpdate: (settings: Partial<ReaderSettings>) => void;
 }
 
-export const LLMTab = memo(function LLMTab({ settings, onUpdate }: LLMTabProps) {
+export const LLMTab = memo(function LLMTab({
+  settings,
+  onUpdate,
+}: LLMTabProps) {
   const [showApiKey, setShowApiKey] = useState(false);
 
   const provider = settings.llmProvider;

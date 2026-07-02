@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { SelectionInfo } from "../types";
+import type { FoliateView, HighlightColor, SelectionInfo } from "../types";
+import { getHighlightHex } from "../constants";
+import { useStore } from "../store/useStore";
 
 interface UseSelectionHandlerOptions {
   containerRef: React.RefObject<HTMLElement | null>;
-  viewRef: React.MutableRefObject<HTMLElement | null>;
+  viewRef: React.MutableRefObject<FoliateView | null>;
   viewReady?: boolean;
 }
 
 /**
  * Hook to handle text selection in the reader view.
- * Manages selection state, event listeners, and positioning logic.
+ * Manages selection state, event listeners, positioning logic, and highlight creation.
  */
 export function useSelectionHandler({
   containerRef,
@@ -20,6 +22,11 @@ export function useSelectionHandler({
   const documentListenersRef = useRef<
     Array<{ doc: Document; cleanup: () => void }>
   >([]);
+  const selectionRangeRef = useRef<Range | null>(null);
+  const selectionSectionIndexRef = useRef<number | null>(null);
+  const docToSectionIndexRef = useRef<Map<Document, number>>(new Map());
+
+  const { currentBookId, progress, currentTocHref, addHighlight } = useStore();
 
   const handleSelection = useCallback(
     (doc: Document, clientX?: number, clientY?: number) => {
@@ -33,24 +40,22 @@ export function useSelectionHandler({
         const text = sel.toString().trim();
         if (!text) return;
 
-        // Get selection range
-        const range = sel.getRangeAt(0);
-        const rects = range.getClientRects();
+        const range = sel.getRangeAt(0).cloneRange();
+        selectionRangeRef.current = range;
+        selectionSectionIndexRef.current =
+          docToSectionIndexRef.current.get(doc) ?? null;
 
-        // Find the iframe element to get its position in the main viewport
+        const rects = range.getClientRects();
         const iframe = doc.defaultView?.frameElement as HTMLElement | null;
         const iframeRect = iframe?.getBoundingClientRect();
 
         let x: number;
         let y: number;
-        let height: number = 20; // Default fallback height
+        let height: number = 20;
 
         if (rects.length > 0 && iframeRect) {
-          // Use the first rect of the selection for positioning
           const firstRect = rects[0];
-          // Add iframe's position to get main viewport coordinates
           x = iframeRect.left + firstRect.left + firstRect.width / 2;
-          // Position closer to the selection (add small offset to reduce gap)
           y = iframeRect.top + firstRect.top + 8;
           height = firstRect.height;
         } else if (
@@ -58,11 +63,9 @@ export function useSelectionHandler({
           clientX !== undefined &&
           clientY !== undefined
         ) {
-          // Fallback to touch/mouse position within iframe + iframe offset
           x = iframeRect.left + clientX;
           y = iframeRect.top + clientY - 50;
         } else {
-          // Last resort: use container position
           const container = containerRef.current;
           if (!container) return;
           const containerRect = container.getBoundingClientRect();
@@ -70,7 +73,6 @@ export function useSelectionHandler({
             x = containerRect.left + clientX;
             y = containerRect.top + clientY - 50;
           } else {
-            // Center position as fallback
             x = containerRect.left + containerRect.width / 2;
             y = containerRect.top + containerRect.height / 2;
           }
@@ -89,7 +91,6 @@ export function useSelectionHandler({
       };
 
       const handleTouchEnd = (e: TouchEvent) => {
-        // Prevent default to avoid triggering mouse events
         e.preventDefault();
         const touch = e.changedTouches[0];
         if (touch) {
@@ -97,12 +98,12 @@ export function useSelectionHandler({
         }
       };
 
-      // Dismiss selection bar when clicking/touching inside the document (without selecting)
       const handleMouseDown = () => {
         setTimeout(() => {
           const sel = doc.getSelection();
           if (!sel || sel.isCollapsed || !sel.toString().trim()) {
             setSelection(null);
+            selectionRangeRef.current = null;
           }
         }, 10);
       };
@@ -112,6 +113,7 @@ export function useSelectionHandler({
           const sel = doc.getSelection();
           if (!sel || sel.isCollapsed || !sel.toString().trim()) {
             setSelection(null);
+            selectionRangeRef.current = null;
           }
         }, 10);
       };
@@ -135,16 +137,63 @@ export function useSelectionHandler({
 
   const dismissSelection = useCallback(() => {
     setSelection(null);
+    selectionRangeRef.current = null;
   }, []);
 
-  // Setup listeners when new documents load
+  const createHighlight = useCallback(
+    async (color: HighlightColor) => {
+      const view = viewRef.current;
+      const range = selectionRangeRef.current;
+      const sectionIndex = selectionSectionIndexRef.current;
+
+      if (!view || !range || sectionIndex === null || !currentBookId) {
+        return null;
+      }
+
+      const cfi = view.getCFI(sectionIndex, range);
+      const hex = getHighlightHex(color);
+      const text = selection?.text ?? range.toString().trim();
+
+      const highlight = {
+        id: crypto.randomUUID(),
+        bookId: currentBookId,
+        cfi,
+        sectionIndex,
+        text,
+        color,
+        chapterHref: currentTocHref ?? undefined,
+        chapterLabel: progress.tocLabel,
+        createdAt: Date.now(),
+      };
+
+      addHighlight(highlight);
+      await view.addAnnotation({ value: cfi, color: hex });
+
+      dismissSelection();
+      return highlight;
+    },
+    [
+      viewRef,
+      currentBookId,
+      selection,
+      currentTocHref,
+      progress.tocLabel,
+      addHighlight,
+      dismissSelection,
+    ]
+  );
+
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
 
     const handleLoad = (event: Event) => {
-      const { doc } = (event as CustomEvent).detail;
-      if (doc) {
+      const { doc, index } = (event as CustomEvent).detail as {
+        doc?: Document;
+        index?: number;
+      };
+      if (doc && typeof index === "number") {
+        docToSectionIndexRef.current.set(doc, index);
         setupDocumentListeners(doc);
       }
     };
@@ -156,7 +205,6 @@ export function useSelectionHandler({
     };
   }, [viewRef, setupDocumentListeners, viewReady]);
 
-  // Handle clicks/touches outside to dismiss selection bar
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Node;
@@ -166,6 +214,7 @@ export function useSelectionHandler({
       }
 
       setSelection(null);
+      selectionRangeRef.current = null;
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -174,13 +223,14 @@ export function useSelectionHandler({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
-      // Cleanup all document listeners
-      for (const { cleanup } of documentListenersRef.current) {
+      const listeners = documentListenersRef.current;
+      for (const { cleanup } of listeners) {
         cleanup();
       }
       documentListenersRef.current = [];
+      docToSectionIndexRef.current.clear();
     };
   }, []);
 
-  return { selection, dismissSelection };
+  return { selection, dismissSelection, createHighlight };
 }

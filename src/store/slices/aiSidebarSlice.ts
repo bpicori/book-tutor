@@ -13,9 +13,11 @@ export interface AISidebarSlice {
   chapterChats: ChapterChats;
   chapterPreviews: ChapterPreviews;
   previewLoading: boolean;
+  pendingQuote: string | null;
 
   // Actions
   setActiveAiTab: (tab: AiSidebarTab) => void;
+  setPendingQuote: (quote: string | null) => void;
   addChatMessage: (chapterHref: string, message: ChatMessage) => void;
   updateLastChatMessage: (
     chapterHref: string,
@@ -35,6 +37,7 @@ export const initialAISidebarState = {
   chapterChats: {} as ChapterChats,
   chapterPreviews: {} as ChapterPreviews,
   previewLoading: false,
+  pendingQuote: null as string | null,
 };
 
 export const createAISidebarSlice: StateCreator<AISidebarSlice> = (set) => ({
@@ -43,6 +46,8 @@ export const createAISidebarSlice: StateCreator<AISidebarSlice> = (set) => ({
 
   // Actions
   setActiveAiTab: (tab) => set({ activeAiTab: tab }),
+
+  setPendingQuote: (quote) => set({ pendingQuote: quote }),
 
   addChatMessage: (chapterHref, message) =>
     set((state) => {

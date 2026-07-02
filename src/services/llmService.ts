@@ -162,13 +162,15 @@ export async function* streamChapterChat(
   chapterLabel: string,
   chapterContent: string,
   messages: ChatMessage[],
-  settings: LLMSettings
+  settings: LLMSettings,
+  bookContext?: string
 ): AsyncGenerator<string, void, unknown> {
   const systemPrompt = createChatSystemPrompt(
     bookTitle,
     bookAuthor,
     chapterLabel,
-    chapterContent
+    chapterContent,
+    bookContext
   );
   yield* streamChat(messages, settings, systemPrompt);
 }

@@ -5,6 +5,7 @@ import {
   getBookTitle,
   getBookAuthor,
   extractTextFromDocument,
+  buildBookMemory,
 } from "../utils/bookHelpers";
 import { useLLMAskSettings } from "./useLLMSettings";
 
@@ -17,6 +18,7 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
     book,
     currentBookId,
     currentSectionIndex,
+    currentTocHref,
     chapterChats,
     chapterPreviews,
     addChatMessage,
@@ -115,6 +117,14 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
       // Add the new user message
       conversationHistory.push({ role: "user" as const, content: message });
 
+      // Get book context from prior chapter previews
+      const bookContext = buildBookMemory(
+        book,
+        chapterPreviews,
+        currentBookId,
+        currentTocHref
+      );
+
       try {
         let fullContent = "";
 
@@ -124,7 +134,8 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
           chapterLabel,
           contentForChat,
           conversationHistory,
-          llmSettings
+          llmSettings,
+          bookContext || undefined
         )) {
           fullContent += chunk;
           updateLastChatMessage(chapterHref, fullContent, true);
@@ -150,6 +161,9 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
       chatMessages,
       preview,
       llmSettings,
+      currentBookId,
+      currentTocHref,
+      chapterPreviews,
       addChatMessage,
       updateLastChatMessage,
     ]

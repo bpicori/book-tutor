@@ -2,6 +2,7 @@ import type {
   ReaderSettings,
   Theme,
   LLMModelConfig,
+  HighlightColor,
 } from "../types";
 
 /**
@@ -60,6 +61,23 @@ export const DEFAULT_LLM_MODELS: LLMModelConfig = {
 /**
  * Default reader settings
  */
+export interface HighlightColorInfo {
+  id: HighlightColor;
+  label: string;
+  hex: string;
+}
+
+export const HIGHLIGHT_COLORS: HighlightColorInfo[] = [
+  { id: "yellow", label: "Yellow", hex: "#FDE047" },
+  { id: "green", label: "Green", hex: "#86EFAC" },
+  { id: "blue", label: "Blue", hex: "#93C5FD" },
+  { id: "pink", label: "Pink", hex: "#F9A8D4" },
+];
+
+export function getHighlightHex(color: HighlightColor): string {
+  return HIGHLIGHT_COLORS.find((c) => c.id === color)?.hex ?? "#FDE047";
+}
+
 export const DEFAULT_SETTINGS: ReaderSettings = {
   fontFamily: "Literata",
   fontSize: 16,

@@ -60,7 +60,7 @@ export function ReaderPage() {
   return (
     <div className="flex h-screen w-full overflow-hidden">
       {isLoading && <LoadingSpinner message="Loading book..." fullScreen />}
-      <Sidebar onNavigate={handleNavigate} />
+      <Sidebar onNavigate={handleNavigate} viewRef={viewRef} />
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <Header onPrev={handlePrev} onNext={handleNext} />
         <Reader viewRef={viewRef} />

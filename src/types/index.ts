@@ -104,6 +104,19 @@ export interface FoliateView extends HTMLElement {
   goRight(): Promise<void>;
   /** Navigate to a specific location (href string or section index) */
   goTo(target: string | number): Promise<void>;
+  /** Get CFI string for a section index and optional range */
+  getCFI(index: number, range?: Range): string;
+  /** Add or remove an annotation overlay */
+  addAnnotation(
+    annotation: { value: string; color?: string; note?: string },
+    remove?: boolean
+  ): Promise<{ index: number; label: string } | void>;
+  /** Remove an annotation overlay */
+  deleteAnnotation(annotation: {
+    value: string;
+    color?: string;
+    note?: string;
+  }): Promise<{ index: number; label: string } | void>;
 }
 
 // Library Types
@@ -177,6 +190,22 @@ export interface SelectionInfo {
   x: number;
   y: number;
   height: number;
+}
+
+// Highlight / Annotation Types
+export type HighlightColor = "yellow" | "green" | "blue" | "pink";
+
+export interface Highlight {
+  id: string;
+  bookId: string;
+  cfi: string;
+  sectionIndex: number;
+  text: string;
+  color: HighlightColor;
+  note?: string;
+  chapterHref?: string;
+  chapterLabel?: string;
+  createdAt: number;
 }
 
 // Vocabulary Types
