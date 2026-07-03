@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import type { FoliateView, Highlight, HighlightColor } from "../../types";
 import { useStore } from "../../store/useStore";
-import { generateReaderCSS } from "../../utils/readerStyles";
+import { applyBookStyles } from "../../utils/bookOpeners";
 import { getHighlightHex } from "../../constants";
 import { SelectionActionBar } from "../selection-action-bar";
 import { HighlightPopup } from "../selection-action-bar/HighlightPopup";
@@ -32,7 +32,7 @@ export function Reader({ viewRef }: ReaderProps) {
     setCurrentTocHref,
     setCurrentSectionIndex,
     settings,
-    toggleAiSidebar,
+    setAiSidebarOpen,
     setActiveAiTab,
     setPendingQuote,
   } = useStore();
@@ -45,11 +45,11 @@ export function Reader({ viewRef }: ReaderProps) {
 
   const handleAskAI = useCallback(
     (text: string) => {
-      toggleAiSidebar(true);
+      setAiSidebarOpen(true);
       setActiveAiTab("ask");
       setPendingQuote(text);
     },
-    [toggleAiSidebar, setActiveAiTab, setPendingQuote]
+    [setAiSidebarOpen, setActiveAiTab, setPendingQuote]
   );
 
   const handleHighlight = useCallback(
@@ -90,8 +90,7 @@ export function Reader({ viewRef }: ReaderProps) {
     const view = viewRef.current;
     if (!view?.book || !view.renderer) return;
 
-    const css = generateReaderCSS(settings);
-    view.renderer.setStyles?.(css);
+    applyBookStyles(view.renderer, settings);
   }, [settings, viewRef]);
 
   useEffect(() => {

@@ -2,6 +2,8 @@ import { memo, useState, useCallback } from "react";
 import type { LLMModelConfig, LLMProviderConfig } from "../../../types";
 import { fetchModels } from "../../../services/llmProviderService";
 import { Button } from "../../common";
+import { ModelField } from "../ModelField";
+import { StatusBanner } from "../StatusBanner";
 
 interface ModelConfigProps {
   provider: LLMProviderConfig;
@@ -45,7 +47,6 @@ export const ModelConfig = memo(function ModelConfig({
     }
   }, [provider]);
 
-  const hasModels = availableModels.length > 0;
   const canLoad = provider.apiKey && provider.apiKey.trim() !== "";
 
   return (
@@ -81,105 +82,33 @@ export const ModelConfig = memo(function ModelConfig({
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+        <StatusBanner variant="warning" className="mb-4">
           {error}
-        </div>
+        </StatusBanner>
       )}
 
       <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-muted-gray-text mb-3">
-            Chapter Preview Model
-          </label>
-          {hasModels ? (
-            <select
-              value={models.previewModel}
-              onChange={(e) => onModelChange({ previewModel: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-border-warm bg-warm-off-white text-muted-gray-text focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
-            >
-              {availableModels.map((model) => (
-                <option key={model} value={model}>
-                  {model}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type="text"
-              value={models.previewModel}
-              onChange={(e) => onModelChange({ previewModel: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-border-warm bg-warm-off-white text-muted-gray-text focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
-              placeholder="Enter model ID (e.g., gpt-4o-mini)"
-            />
-          )}
-          <p className="mt-2 text-xs text-light-gray-text">
-            Used for generating chapter previews and summaries.
-          </p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-muted-gray-text mb-3">
-            Ask AI Chat Model
-          </label>
-          {hasModels ? (
-            <select
-              value={models.askModel}
-              onChange={(e) => onModelChange({ askModel: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-border-warm bg-warm-off-white text-muted-gray-text focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
-            >
-              {availableModels.map((model) => (
-                <option key={model} value={model}>
-                  {model}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type="text"
-              value={models.askModel}
-              onChange={(e) => onModelChange({ askModel: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-border-warm bg-warm-off-white text-muted-gray-text focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
-              placeholder="Enter model ID (e.g., gpt-4o-mini)"
-            />
-          )}
-          <p className="mt-2 text-xs text-light-gray-text">
-            Used for Ask AI chat conversations about the book.
-          </p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-muted-gray-text mb-3">
-            Translation Model
-          </label>
-          {hasModels ? (
-            <select
-              value={models.translationModel}
-              onChange={(e) =>
-                onModelChange({ translationModel: e.target.value })
-              }
-              className="w-full px-4 py-2 rounded-lg border border-border-warm bg-warm-off-white text-muted-gray-text focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
-            >
-              {availableModels.map((model) => (
-                <option key={model} value={model}>
-                  {model}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type="text"
-              value={models.translationModel}
-              onChange={(e) =>
-                onModelChange({ translationModel: e.target.value })
-              }
-              className="w-full px-4 py-2 rounded-lg border border-border-warm bg-warm-off-white text-muted-gray-text focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
-              placeholder="Enter model ID (e.g., gpt-4o-mini)"
-            />
-          )}
-          <p className="mt-2 text-xs text-light-gray-text">
-            Used for word translations and definitions.
-          </p>
-        </div>
+        <ModelField
+          label="Chapter Preview Model"
+          description="Used for generating chapter previews and summaries."
+          value={models.previewModel}
+          availableModels={availableModels}
+          onChange={(value) => onModelChange({ previewModel: value })}
+        />
+        <ModelField
+          label="Ask AI Chat Model"
+          description="Used for Ask AI chat conversations about the book."
+          value={models.askModel}
+          availableModels={availableModels}
+          onChange={(value) => onModelChange({ askModel: value })}
+        />
+        <ModelField
+          label="Translation Model"
+          description="Used for word translations and definitions."
+          value={models.translationModel}
+          availableModels={availableModels}
+          onChange={(value) => onModelChange({ translationModel: value })}
+        />
       </div>
     </div>
   );

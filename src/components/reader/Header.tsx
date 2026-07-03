@@ -2,7 +2,7 @@ import { memo, useState, useRef, useEffect } from "react";
 import { useStore } from "../../store/useStore";
 import { useNavigation } from "../../hooks/useNavigation";
 import { APP_NAME } from "../../constants";
-import { formatLanguageMap } from "../../utils/formatters";
+import { getBookTitle } from "../../utils/metadata";
 import { IconButton, Logo } from "../common";
 
 interface HeaderProps {
@@ -11,10 +11,10 @@ interface HeaderProps {
 }
 
 export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
-  const { book, toggleAiSidebar, toggleSidebar, isSidebarCollapsed } =
+  const { book, setAiSidebarOpen, setSidebarCollapsed, isSidebarCollapsed } =
     useStore();
   const { goToLibrary, goToVocabulary, goToSettings } = useNavigation();
-  const title = formatLanguageMap(book?.metadata?.title) || APP_NAME;
+  const title = getBookTitle(book?.metadata, APP_NAME);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +40,7 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
         <IconButton
           icon={isSidebarCollapsed ? "menu" : "menu_open"}
           label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          onClick={() => toggleSidebar()}
+          onClick={() => setSidebarCollapsed()}
         />
         <IconButton
           icon="arrow_back"
@@ -76,7 +76,7 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
             icon="smart_toy"
             label="Toggle AI Assistant"
             text="AI Assistant"
-            onClick={() => toggleAiSidebar()}
+            onClick={() => setAiSidebarOpen()}
           />
         </div>
 
@@ -115,7 +115,7 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
               </button>
               <button
                 onClick={() => {
-                  toggleAiSidebar();
+                  setAiSidebarOpen();
                   setShowMenu(false);
                 }}
                 className="w-full px-4 py-2 text-left text-sm text-muted-gray-text hover:bg-hover-warm flex items-center gap-2 transition-colors"

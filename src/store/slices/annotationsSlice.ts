@@ -3,19 +3,16 @@ import type { Highlight, HighlightColor } from "../../types";
 
 export interface AnnotationsSlice {
   highlights: Highlight[];
-
   addHighlight: (highlight: Highlight) => void;
   updateHighlight: (
     id: string,
     updates: { color?: HighlightColor; note?: string }
   ) => void;
   removeHighlight: (id: string) => void;
-  getBookHighlights: (bookId: string) => Highlight[];
 }
 
 export const createAnnotationsSlice: StateCreator<AnnotationsSlice> = (
-  set,
-  get
+  set
 ) => ({
   highlights: [],
 
@@ -35,8 +32,4 @@ export const createAnnotationsSlice: StateCreator<AnnotationsSlice> = (
     set((state) => ({
       highlights: state.highlights.filter((h) => h.id !== id),
     })),
-
-  getBookHighlights: (bookId) => {
-    return get().highlights.filter((h) => h.bookId === bookId);
-  },
 });

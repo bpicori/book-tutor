@@ -1,68 +1,27 @@
-import type {
-  ReaderSettings,
-  Theme,
-  LLMModelConfig,
-  HighlightColor,
-} from "../types";
+import type { ReaderSettings, HighlightColor, LLMModelConfig } from "../types";
+
+export { ROUTES, SETTINGS_TABS, isValidSettingsTabId } from "./routes";
+export type { SettingsTabId } from "./routes";
+export { THEME_PALETTE, THEMES } from "./themePalette";
+export type { ThemePaletteEntry } from "./themePalette";
 
 export const APP_NAME = "Book Tutor";
+export const DEFAULT_LLM_BASE_URL = "https://api.openai.com/v1";
 
-/**
- * Storage key for Zustand persist middleware
- */
 export const STORAGE_KEY = "read-with-ai-storage";
-
-/**
- * IndexedDB database configuration
- */
 export const DB_NAME = "read-with-ai-books";
 export const DB_VERSION = 1;
 export const DB_STORE_NAME = "books";
 
-/**
- * Available themes with metadata
- */
-export interface ThemeInfo {
-  id: Theme;
-  label: string;
-  description: string;
-}
+export const CHAPTER_CHUNK_TARGET_CHARS = 40_000;
+export const CHAPTER_SPLIT_SEARCH_WINDOW = 5_000;
 
-export const THEMES: ThemeInfo[] = [
-  {
-    id: "sepia",
-    label: "Sepia",
-    description: "Warm, book-like reading experience",
-  },
-  {
-    id: "solarized",
-    label: "Solarized Light",
-    description: "Eye-friendly light theme with teal accents",
-  },
-  {
-    id: "nord",
-    label: "Nord",
-    description: "Cool arctic blue-gray palette",
-  },
-  {
-    id: "dark",
-    label: "Dark",
-    description: "Deep dark theme for low-light reading",
-  },
-];
-
-/**
- * Default LLM model configuration
- */
 export const DEFAULT_LLM_MODELS: LLMModelConfig = {
   previewModel: "gpt-4o-mini",
   askModel: "gpt-4o-mini",
   translationModel: "gpt-4o-mini",
 };
 
-/**
- * Default reader settings
- */
 export interface HighlightColorInfo {
   id: HighlightColor;
   label: string;
@@ -87,7 +46,7 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   viewMode: "paginated",
   theme: "sepia",
   llmProvider: {
-    baseUrl: "https://api.openai.com/v1",
+    baseUrl: DEFAULT_LLM_BASE_URL,
     apiKey: "",
   },
   llmModels: DEFAULT_LLM_MODELS,

@@ -1,3 +1,4 @@
+import { DEFAULT_LLM_BASE_URL } from "../constants";
 import type { LLMProviderConfig } from "../types";
 
 export interface ModelInfo {
@@ -13,7 +14,7 @@ export interface ModelsResponse {
  * Get the base URL for a provider.
  */
 export const getProviderBaseUrl = (config: LLMProviderConfig): string => {
-  return config.baseUrl || "https://api.openai.com/v1";
+  return config.baseUrl || DEFAULT_LLM_BASE_URL;
 };
 
 /**

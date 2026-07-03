@@ -1,14 +1,10 @@
 import type { StateCreator } from "zustand";
-import type { LibraryBook, AppPage } from "../../types";
+import type { LibraryBook } from "../../types";
 
 export interface LibrarySlice {
-  // State
-  currentView: AppPage;
   currentBookId: string | null;
   library: LibraryBook[];
 
-  // Actions
-  setCurrentView: (view: AppPage) => void;
   addBookToLibrary: (book: LibraryBook) => void;
   removeBookFromLibrary: (bookId: string) => void;
   updateBookProgress: (bookId: string, progress: number) => void;
@@ -16,13 +12,8 @@ export interface LibrarySlice {
 }
 
 export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
-  // Initial state
-  currentView: "library",
   currentBookId: null,
   library: [],
-
-  // Actions
-  setCurrentView: (view) => set({ currentView: view }),
 
   addBookToLibrary: (book) =>
     set((state) => ({ library: [...state.library, book] })),

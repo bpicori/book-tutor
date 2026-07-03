@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { ChatMessage, ChapterPreview } from "../types";
+import type { ChapterChats } from "../types";
 import { STORAGE_KEY } from "../constants";
 import { createLibrarySlice, type LibrarySlice } from "./slices/librarySlice";
 import { createReaderSlice, type ReaderSlice } from "./slices/readerSlice";
@@ -30,10 +30,20 @@ export interface AppState
     AISidebarSlice,
     VocabularySlice,
     CloudSyncSlice,
-    AnnotationsSlice {
-  // Selectors (moved from actions to avoid re-render issues)
-  getChatMessages: (chapterHref: string) => ChatMessage[];
-  getChapterPreview: (chapterHref: string) => ChapterPreview | null;
+    AnnotationsSlice {}
+
+function migrateChapterChats(
+  chapterChats: ChapterChats | undefined,
+  currentBookId: string | null | undefined
+): ChapterChats {
+  if (!chapterChats || !currentBookId) return chapterChats ?? {};
+
+  const migrated: ChapterChats = {};
+  for (const [key, messages] of Object.entries(chapterChats)) {
+    const migratedKey = key.includes(":") ? key : `${currentBookId}:${key}`;
+    migrated[migratedKey] = messages;
+  }
+  return migrated;
 }
 
 export const useStore = create<AppState>()(
@@ -56,7 +66,6 @@ export const useStore = create<AppState>()(
         ...cloudSyncSlice,
         ...annotationsSlice,
 
-        // Override removeBookFromLibrary to also clean up previews and highlights
         removeBookFromLibrary: (bookId) => {
           set((state) => {
             const filteredPreviews = Object.fromEntries(
@@ -64,28 +73,24 @@ export const useStore = create<AppState>()(
                 ([key]) => !key.startsWith(`${bookId}:`)
               )
             );
+            const filteredChats = Object.fromEntries(
+              Object.entries(state.chapterChats).filter(
+                ([key]) => !key.startsWith(`${bookId}:`)
+              )
+            );
             return {
               library: state.library.filter((b) => b.id !== bookId),
               chapterPreviews: filteredPreviews,
+              chapterChats: filteredChats,
               highlights: state.highlights.filter((h) => h.bookId !== bookId),
             };
           });
-        },
-
-        // Selectors (using get() to avoid re-renders)
-        getChatMessages: (chapterHref: string) => {
-          return get().chapterChats[chapterHref] || [];
-        },
-
-        getChapterPreview: (chapterHref: string) => {
-          return get().chapterPreviews[chapterHref] || null;
         },
       };
     },
     {
       name: STORAGE_KEY,
       partialize: (state) => ({
-        // currentView is no longer persisted - routing is handled by URL
         currentBookId: state.currentBookId,
         library: state.library,
         isSidebarCollapsed: state.isSidebarCollapsed,
@@ -102,6 +107,10 @@ export const useStore = create<AppState>()(
           return {
             ...currentState,
             ...persisted,
+            chapterChats: migrateChapterChats(
+              persisted.chapterChats,
+              persisted.currentBookId
+            ),
           };
         } catch (error) {
           console.error("Error merging persisted state:", error);

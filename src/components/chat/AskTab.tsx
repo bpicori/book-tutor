@@ -2,7 +2,9 @@ import { useState, useRef, useEffect, memo } from "react";
 import { useStore } from "../../store/useStore";
 import { ChatMessage } from "./ChatMessage";
 import { useChapterChat } from "../../hooks/useChapterChat";
+import { useCurrentChapter } from "../../hooks/useCurrentChapter";
 import { Button } from "../common";
+import { ChapterContextBar } from "./ChapterContextBar";
 
 const QUICK_ACTIONS = [
   {
@@ -23,8 +25,8 @@ const QUICK_ACTIONS = [
 ];
 
 export const AskTab = memo(function AskTab() {
-  const { progress, currentTocHref, book, pendingQuote, setPendingQuote } =
-    useStore();
+  const { book, pendingQuote, setPendingQuote } = useStore();
+  const { chapterLabel, chapterHref } = useCurrentChapter();
 
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -32,8 +34,6 @@ export const AskTab = memo(function AskTab() {
   const shouldAutoScrollRef = useRef(true);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const chapterLabel = progress.tocLabel || "Current Chapter";
-  const chapterHref = currentTocHref || "default";
   const { chatMessages, sendMessage, clearMessages, isLoading } =
     useChapterChat(chapterHref, chapterLabel);
 
@@ -108,25 +108,21 @@ export const AskTab = memo(function AskTab() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Chapter indicator */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-hover-warm/30 border-b border-border-warm">
-        <span className="material-symbols-outlined text-forest-green text-lg">
-          menu_book
-        </span>
-        <span className="text-sm text-muted-gray-text font-medium truncate flex-1">
-          {chapterLabel}
-        </span>
-        {chatMessages.length > 0 && (
-          <Button
-            variant="ghost"
-            onClick={clearMessages}
-            disabled={isLoading}
-            icon="delete"
-            className="w-7 h-7 p-0 hover:text-red-500 hover:bg-red-500/10"
-            title="Clear chat"
-          />
-        )}
-      </div>
+      <ChapterContextBar
+        chapterLabel={chapterLabel}
+        actions={
+          chatMessages.length > 0 ? (
+            <Button
+              variant="ghost"
+              onClick={clearMessages}
+              disabled={isLoading}
+              icon="delete"
+              className="w-7 h-7 p-0 hover:text-red-500 hover:bg-red-500/10"
+              title="Clear chat"
+            />
+          ) : undefined
+        }
+      />
 
       {/* Messages area */}
       <div

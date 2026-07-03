@@ -181,9 +181,6 @@ export interface ProgressInfo {
   cfi?: string;
 }
 
-// App Types
-export type AppPage = "library" | "reader" | "vocabulary";
-
 // Selection Types
 export interface SelectionInfo {
   text: string;

@@ -2,23 +2,14 @@ import type { StateCreator } from "zustand";
 import type { SavedWord } from "../../types";
 
 export interface VocabularySlice {
-  // State
   words: SavedWord[];
-
-  // Actions
   addWord: (word: SavedWord) => void;
   removeWord: (wordId: string) => void;
-  getWords: () => SavedWord[];
 }
 
-export const createVocabularySlice: StateCreator<VocabularySlice> = (
-  set,
-  get
-) => ({
-  // Initial state
+export const createVocabularySlice: StateCreator<VocabularySlice> = (set) => ({
   words: [],
 
-  // Actions
   addWord: (word) =>
     set((state) => ({
       words: [word, ...state.words],
@@ -28,8 +19,4 @@ export const createVocabularySlice: StateCreator<VocabularySlice> = (
     set((state) => ({
       words: state.words.filter((w) => w.id !== wordId),
     })),
-
-  getWords: () => {
-    return get().words;
-  },
 });

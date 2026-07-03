@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import type { FoliateView, Highlight } from "../../types";
 import { useStore } from "../../store/useStore";
-import { formatLanguageMap, formatContributor } from "../../utils/formatters";
+import { getBookAuthor, getBookTitle } from "../../utils/metadata";
 import { getHighlightHex } from "../../constants";
 import { TOCLink } from "./TOCLink";
 
@@ -23,15 +23,15 @@ export const Sidebar = memo(function Sidebar({
     currentTocHref,
     currentBookId,
     setCurrentTocHref,
-    toggleSidebar,
+    setSidebarCollapsed,
     highlights,
     removeHighlight,
   } = useStore();
 
   const [activeTab, setActiveTab] = useState<SidebarTab>("contents");
 
-  const title = formatLanguageMap(book?.metadata?.title) || "Table of Contents";
-  const author = formatContributor(book?.metadata?.author) || "";
+  const title = getBookTitle(book?.metadata, "Table of Contents");
+  const author = getBookAuthor(book?.metadata, "");
 
   const bookHighlights = currentBookId
     ? highlights
@@ -43,14 +43,14 @@ export const Sidebar = memo(function Sidebar({
     onNavigate(href);
     setCurrentTocHref(href);
     if (window.innerWidth < 768) {
-      toggleSidebar(true);
+      setSidebarCollapsed(true);
     }
   };
 
   const handleHighlightNavigate = (highlight: Highlight) => {
     onNavigate(highlight.cfi);
     if (window.innerWidth < 768) {
-      toggleSidebar(true);
+      setSidebarCollapsed(true);
     }
   };
 
@@ -77,7 +77,7 @@ export const Sidebar = memo(function Sidebar({
     <>
       <div
         className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
-        onClick={() => toggleSidebar(true)}
+        onClick={() => setSidebarCollapsed(true)}
         aria-hidden="true"
       />
 
@@ -85,7 +85,7 @@ export const Sidebar = memo(function Sidebar({
         <div className="flex-shrink-0 p-4 pb-0">
           <div className="flex items-center gap-3 px-2">
             <button
-              onClick={() => toggleSidebar(true)}
+              onClick={() => setSidebarCollapsed(true)}
               className="md:hidden w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-hover-warm text-light-gray-text hover:text-forest-green transition-colors"
               aria-label="Close sidebar"
             >

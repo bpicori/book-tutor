@@ -1,6 +1,8 @@
 import { memo } from "react";
-import { useStore } from "../../store/useStore";
+
 import { useChapterPreview } from "../../hooks/useChapterPreview";
+import { useCurrentChapter } from "../../hooks/useCurrentChapter";
+import { ChapterContextBar } from "./ChapterContextBar";
 import type { ChapterPreview } from "../../types";
 
 // Skeleton loading component
@@ -271,10 +273,7 @@ const EmptyState = memo(function EmptyState({
 });
 
 export const PreviewTab = memo(function PreviewTab() {
-  const { progress, currentTocHref } = useStore();
-
-  const chapterLabel = progress.tocLabel || "Current Chapter";
-  const chapterHref = currentTocHref || "default";
+  const { chapterLabel, chapterHref } = useCurrentChapter();
   const {
     preview,
     isLoading,
@@ -286,26 +285,20 @@ export const PreviewTab = memo(function PreviewTab() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Chapter indicator */}
-      <div className="flex items-center justify-between px-4 py-3 bg-hover-warm/30 border-b border-border-warm">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="material-symbols-outlined text-forest-green text-lg shrink-0">
-            menu_book
-          </span>
-          <span className="text-sm text-muted-gray-text font-medium truncate">
-            {chapterLabel}
-          </span>
-        </div>
-        {preview && !isLoading && (
-          <button
-            onClick={refreshPreview}
-            className="text-light-gray-text hover:text-forest-green transition-colors shrink-0"
-            title="Regenerate preview"
-          >
-            <span className="material-symbols-outlined text-lg">refresh</span>
-          </button>
-        )}
-      </div>
+      <ChapterContextBar
+        chapterLabel={chapterLabel}
+        actions={
+          preview && !isLoading ? (
+            <button
+              onClick={refreshPreview}
+              className="text-light-gray-text hover:text-forest-green transition-colors shrink-0"
+              title="Regenerate preview"
+            >
+              <span className="material-symbols-outlined text-lg">refresh</span>
+            </button>
+          ) : undefined
+        }
+      />
 
       {/* Content area */}
       <div className="flex-1 overflow-y-auto scrollbar-thin p-4">

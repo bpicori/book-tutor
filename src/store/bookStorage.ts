@@ -1,14 +1,10 @@
-/**
- * IndexedDB storage for book files.
- * Since epub files can be large, we store them in IndexedDB
- * while keeping metadata in localStorage via zustand persist.
- */
-
 import { DB_NAME, DB_VERSION, DB_STORE_NAME } from "../constants";
+import { base64ToArrayBuffer } from "../utils/binary";
+import type { BackupBookFile } from "../services/backupData";
 
 const STORE_NAME = DB_STORE_NAME;
 
-interface StoredBook {
+export interface StoredBook {
   id: string;
   data: ArrayBuffer;
 }
@@ -16,7 +12,6 @@ interface StoredBook {
 let dbCache: IDBDatabase | null = null;
 
 function openDB(): Promise<IDBDatabase> {
-  // Return cached connection if available
   if (dbCache) {
     return Promise.resolve(dbCache);
   }
@@ -39,9 +34,6 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
-/**
- * Close the database connection (useful for cleanup)
- */
 export function closeDB(): void {
   if (dbCache) {
     dbCache.close();
@@ -75,7 +67,6 @@ export async function getBookFile(id: string): Promise<File | null> {
     request.onsuccess = () => {
       const result = request.result as StoredBook | undefined;
       if (result) {
-        // Convert ArrayBuffer back to File
         const blob = new Blob([result.data], { type: "application/epub+zip" });
         const file = new File([blob], `${id}.epub`, {
           type: "application/epub+zip",
@@ -114,9 +105,53 @@ export async function getAllBookIds(): Promise<string[]> {
   });
 }
 
-/**
- * Delete all stored book files by removing the IndexedDB database.
- */
+export async function getAllBookFiles(): Promise<StoredBook[]> {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, "readonly");
+    const store = transaction.objectStore(STORE_NAME);
+
+    const request = store.getAll();
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result as StoredBook[]);
+  });
+}
+
+export async function restoreBookFiles(books: BackupBookFile[]): Promise<void> {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, "readwrite");
+    const store = transaction.objectStore(STORE_NAME);
+
+    const clearRequest = store.clear();
+    clearRequest.onerror = () => reject(clearRequest.error);
+
+    clearRequest.onsuccess = () => {
+      if (books.length === 0) {
+        resolve();
+        return;
+      }
+
+      let completed = 0;
+      for (const book of books) {
+        const putRequest = store.put({
+          id: book.id,
+          data: base64ToArrayBuffer(book.data),
+        } satisfies StoredBook);
+        putRequest.onerror = () => reject(putRequest.error);
+        putRequest.onsuccess = () => {
+          completed++;
+          if (completed === books.length) {
+            resolve();
+          }
+        };
+      }
+    };
+  });
+}
+
 export async function deleteAllBooks(): Promise<void> {
   closeDB();
 

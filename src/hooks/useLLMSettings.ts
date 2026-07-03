@@ -44,7 +44,7 @@ function useLLMSettingsFor(useCase: LLMUseCase): LLMServiceSettings | null {
       baseUrl,
       model,
     };
-  }, [settings.llmProvider, settings.llmModels]);
+  }, [settings.llmProvider, settings.llmModels, useCase]);
 }
 
 /**

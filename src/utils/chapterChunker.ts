@@ -1,3 +1,8 @@
+import {
+  CHAPTER_CHUNK_TARGET_CHARS,
+  CHAPTER_SPLIT_SEARCH_WINDOW,
+} from "../constants";
+
 /**
  * Utilities for intelligently chunking chapter content for summarization
  */
@@ -16,12 +21,11 @@ export interface Chunk {
  */
 export function calculateOptimalChunks(chapterLength: number): number {
   // Skip chunking for short chapters
-  if (chapterLength < 40000) {
+  if (chapterLength < CHAPTER_CHUNK_TARGET_CHARS) {
     return 1;
   }
 
-  // Target ~40k characters per chunk
-  return Math.ceil(chapterLength / 40000);
+  return Math.ceil(chapterLength / CHAPTER_CHUNK_TARGET_CHARS);
 }
 
 /**
@@ -88,7 +92,10 @@ function findSmartSplitPoint(
   }
 
   // Look for paragraph breaks (double newlines) within a reasonable range
-  const searchWindow = Math.min(5000, targetIndex - startIndex); // Look up to 5k chars ahead
+  const searchWindow = Math.min(
+    CHAPTER_SPLIT_SEARCH_WINDOW,
+    targetIndex - startIndex
+  );
   const searchStart = Math.max(startIndex, targetIndex - searchWindow);
   const searchEnd = Math.min(content.length, targetIndex + searchWindow);
 

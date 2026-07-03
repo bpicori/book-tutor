@@ -6,6 +6,7 @@ interface IconButtonProps {
   onClick: () => void;
   text?: string;
   variant?: "default" | "circle" | "flat";
+  disabled?: boolean;
 }
 
 export const IconButton = memo(function IconButton({
@@ -14,6 +15,7 @@ export const IconButton = memo(function IconButton({
   onClick,
   text,
   variant = "default",
+  disabled = false,
 }: IconButtonProps) {
   const baseClasses = `
     flex cursor-pointer items-center justify-center overflow-hidden
@@ -71,7 +73,8 @@ export const IconButton = memo(function IconButton({
   return (
     <button
       onClick={onClick}
-      className={`${baseClasses} ${variantStyles[variant]}`}
+      disabled={disabled}
+      className={`${baseClasses} ${variantStyles[variant]} disabled:opacity-30 disabled:pointer-events-none`}
       aria-label={label}
     >
       <span className="material-symbols-outlined text-xl">{icon}</span>

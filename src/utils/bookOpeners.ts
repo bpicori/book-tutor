@@ -2,10 +2,8 @@ import type { Book } from "../types";
 import { APP_NAME } from "../constants";
 import { generateReaderCSS } from "./readerStyles";
 import type { ReaderSettings } from "../types";
+import { getBookTitle } from "./metadata";
 
-/**
- * Loads and sets the book cover image
- */
 export async function loadBookCover(
   book: Book | null,
   setCoverUrl: (url: string | null) => void
@@ -22,31 +20,19 @@ export async function loadBookCover(
   }
 }
 
-/**
- * Updates the document title based on book metadata
- */
 export function updateBookTitle(book: Book | null): void {
   if (!book?.metadata?.title) return;
 
-  const title =
-    typeof book.metadata.title === "string"
-      ? book.metadata.title
-      : Object.values(book.metadata.title)[0];
-
+  const title = getBookTitle(book.metadata, "");
   if (title) {
     document.title = `${title} - ${APP_NAME}`;
   }
 }
 
-/**
- * Applies CSS styles to the book renderer
- */
 export function applyBookStyles(
   renderer: { setStyles?: (styles: string) => void } | null,
   settings: ReaderSettings
 ): void {
   if (!renderer?.setStyles) return;
-
-  const css = generateReaderCSS(settings);
-  renderer.setStyles(css);
+  renderer.setStyles(generateReaderCSS(settings));
 }

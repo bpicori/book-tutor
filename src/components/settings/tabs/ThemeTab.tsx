@@ -1,46 +1,11 @@
 import { memo } from "react";
 import type { ReaderSettings, Theme } from "../../../types";
-import { THEMES } from "../../../constants";
+import { THEMES, THEME_PALETTE } from "../../../constants";
 
 interface ThemeTabProps {
   settings: ReaderSettings;
   onUpdate: (settings: Partial<ReaderSettings>) => void;
 }
-
-// Theme color previews for visual selection
-const themeColors: Record<
-  Theme,
-  { bg: string; panel: string; primary: string; text: string; border: string }
-> = {
-  sepia: {
-    bg: "#f7f3eb",
-    panel: "#fdf0d0",
-    primary: "#225732",
-    text: "#544d45",
-    border: "#e8e0ce",
-  },
-  solarized: {
-    bg: "#fdf6e3",
-    panel: "#eee8d5",
-    primary: "#268bd2",
-    text: "#657b83",
-    border: "#93a1a1",
-  },
-  nord: {
-    bg: "#2e3440",
-    panel: "#3b4252",
-    primary: "#88c0d0",
-    text: "#d8dee9",
-    border: "#4c566a",
-  },
-  dark: {
-    bg: "#1a1a1a",
-    panel: "#242424",
-    primary: "#7dd3fc",
-    text: "#e5e5e5",
-    border: "#404040",
-  },
-};
 
 export const ThemeTab = memo(function ThemeTab({
   settings,
@@ -58,7 +23,7 @@ export const ThemeTab = memo(function ThemeTab({
         </label>
         <div className="grid grid-cols-2 gap-4">
           {THEMES.map((themeInfo) => {
-            const colors = themeColors[themeInfo.id];
+            const colors = THEME_PALETTE[themeInfo.id].ui;
             const isSelected = settings.theme === themeInfo.id;
 
             return (

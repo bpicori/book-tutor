@@ -1,24 +1,10 @@
-/**
- * Cloud sync service for uploading/downloading backups to Cloudflare Worker API
- */
-
-import { STORAGE_KEY, DB_NAME, DB_VERSION, DB_STORE_NAME } from "../constants";
+import { buildBackupPayload } from "./backupData";
 import { importBackup } from "./backupService";
 
 export interface CloudSyncConfig {
   apiUrl: string;
   username: string;
   password: string;
-}
-
-interface BackupData {
-  version: number;
-  exportedAt: string;
-  localStorage: Record<string, unknown>;
-  bookFiles: Array<{
-    id: string;
-    data: string; // Base64 encoded
-  }>;
 }
 
 interface CloudSyncResponse {
@@ -28,75 +14,10 @@ interface CloudSyncResponse {
   version?: number;
 }
 
-/**
- * Create Basic Auth header value
- */
 function createBasicAuth(username: string, password: string): string {
-  const credentials = `${username}:${password}`;
-  return `Basic ${btoa(credentials)}`;
+  return `Basic ${btoa(`${username}:${password}`)}`;
 }
 
-interface StoredBook {
-  id: string;
-  data: ArrayBuffer;
-}
-
-/**
- * Open IndexedDB database
- */
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(DB_STORE_NAME)) {
-        db.createObjectStore(DB_STORE_NAME, { keyPath: "id" });
-      }
-    };
-  });
-}
-
-/**
- * Get all book files from IndexedDB
- */
-async function getAllBookFiles(): Promise<StoredBook[]> {
-  const db = await openDB();
-
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(DB_STORE_NAME, "readonly");
-    const store = transaction.objectStore(DB_STORE_NAME);
-
-    const request = store.getAll();
-    request.onerror = () => {
-      db.close();
-      reject(request.error);
-    };
-    request.onsuccess = () => {
-      db.close();
-      resolve(request.result as StoredBook[]);
-    };
-  });
-}
-
-/**
- * Convert ArrayBuffer to Base64 string
- */
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-/**
- * Compress data using gzip compression
- */
 async function compressData(data: string): Promise<ArrayBuffer> {
   const encoder = new TextEncoder();
   // eslint-disable-next-line no-undef
@@ -104,11 +25,9 @@ async function compressData(data: string): Promise<ArrayBuffer> {
   const writer = stream.writable.getWriter();
   const reader = stream.readable.getReader();
 
-  // Write data to compression stream
   writer.write(encoder.encode(data));
   writer.close();
 
-  // Read compressed chunks
   const chunks: Uint8Array[] = [];
   let done = false;
   while (!done) {
@@ -119,7 +38,6 @@ async function compressData(data: string): Promise<ArrayBuffer> {
     }
   }
 
-  // Combine chunks into single ArrayBuffer
   const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
   const result = new Uint8Array(totalLength);
   let offset = 0;
@@ -131,20 +49,15 @@ async function compressData(data: string): Promise<ArrayBuffer> {
   return result.buffer;
 }
 
-/**
- * Decompress gzip-compressed data
- */
 async function decompressData(compressedData: ArrayBuffer): Promise<string> {
   // eslint-disable-next-line no-undef
   const stream = new DecompressionStream("gzip");
   const writer = stream.writable.getWriter();
   const reader = stream.readable.getReader();
 
-  // Write compressed data to decompression stream
   writer.write(new Uint8Array(compressedData));
   writer.close();
 
-  // Read decompressed chunks
   const chunks: Uint8Array[] = [];
   let done = false;
   while (!done) {
@@ -155,7 +68,6 @@ async function decompressData(compressedData: ArrayBuffer): Promise<string> {
     }
   }
 
-  // Combine chunks and decode to string
   const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
   const result = new Uint8Array(totalLength);
   let offset = 0;
@@ -164,48 +76,29 @@ async function decompressData(compressedData: ArrayBuffer): Promise<string> {
     offset += chunk.length;
   }
 
-  const decoder = new TextDecoder();
-  return decoder.decode(result);
+  return new TextDecoder().decode(result);
 }
 
-/**
- * Get backup data in the format expected by the API
- */
-async function getBackupData(): Promise<BackupData> {
-  // Get localStorage data
-  const localStorageData = localStorage.getItem(STORAGE_KEY);
-  const parsedLocalStorage = localStorageData
-    ? JSON.parse(localStorageData)
-    : {};
-
-  // Get all book files from IndexedDB
-  const bookFiles = await getAllBookFiles();
-
-  // Convert book files to base64
-  const backupBookFiles = bookFiles.map((book) => ({
-    id: book.id,
-    data: arrayBufferToBase64(book.data),
-  }));
-
-  return {
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    localStorage: parsedLocalStorage,
-    bookFiles: backupBookFiles,
-  };
+async function runCloudSync(
+  action: () => Promise<CloudSyncResponse>
+): Promise<CloudSyncResponse> {
+  try {
+    return await action();
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Cloud sync operation failed",
+    };
+  }
 }
 
-/**
- * Upload backup to cloud
- */
 export async function uploadBackup(
   config: CloudSyncConfig
 ): Promise<CloudSyncResponse> {
-  try {
-    const backupData = await getBackupData();
+  return runCloudSync(async () => {
+    const backupData = await buildBackupPayload();
     const jsonString = JSON.stringify(backupData);
-
-    // Compress the backup data before uploading
     const compressedData = await compressData(jsonString);
 
     const response = await fetch(`${config.apiUrl}/backup`, {
@@ -231,24 +124,13 @@ export async function uploadBackup(
       exportedAt: result.exportedAt,
       version: backupData.version,
     };
-  } catch (error) {
-    return {
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to upload backup to cloud",
-    };
-  }
+  });
 }
 
-/**
- * Download backup from cloud
- */
 export async function downloadBackup(
   config: CloudSyncConfig
 ): Promise<CloudSyncResponse> {
-  try {
+  return runCloudSync(async () => {
     const response = await fetch(`${config.apiUrl}/backup`, {
       method: "GET",
       headers: {
@@ -271,14 +153,10 @@ export async function downloadBackup(
       throw new Error(errorData.error || "Failed to download backup");
     }
 
-    // Get compressed data as ArrayBuffer
     const compressedData = await response.arrayBuffer();
-
-    // Decompress the backup data
     const jsonString = await decompressData(compressedData);
-    const backupData: BackupData = JSON.parse(jsonString);
+    const backupData = JSON.parse(jsonString);
 
-    // Validate backup structure
     if (
       !backupData.version ||
       !backupData.localStorage ||
@@ -287,15 +165,12 @@ export async function downloadBackup(
       throw new Error("Invalid backup format received from cloud");
     }
 
-    // Import the backup using existing import function
-    // We need to convert it to a File-like object for importBackup
     const blob = new Blob([jsonString], { type: "application/json" });
     const file = new File([blob], "cloud-backup.json", {
       type: "application/json",
     });
 
     const importResult = await importBackup(file);
-
     if (!importResult.success) {
       return {
         success: false,
@@ -310,24 +185,13 @@ export async function downloadBackup(
       exportedAt: backupData.exportedAt,
       version: backupData.version,
     };
-  } catch (error) {
-    return {
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to download backup from cloud",
-    };
-  }
+  });
 }
 
-/**
- * Delete backup from cloud
- */
 export async function deleteBackup(
   config: CloudSyncConfig
 ): Promise<CloudSyncResponse> {
-  try {
+  return runCloudSync(async () => {
     const response = await fetch(`${config.apiUrl}/backup`, {
       method: "DELETE",
       headers: {
@@ -347,13 +211,5 @@ export async function deleteBackup(
       success: true,
       message: result.message || "Backup deleted successfully",
     };
-  } catch (error) {
-    return {
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to delete backup from cloud",
-    };
-  }
+  });
 }

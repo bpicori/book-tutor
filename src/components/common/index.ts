@@ -5,3 +5,5 @@ export { ProgressBar } from "./ProgressBar";
 export { Logo } from "./Logo";
 export { Brand } from "./Brand";
 export { Modal } from "./Modal";
+export { SegmentedTabs } from "./SegmentedTabs";
+export { PaginationControls } from "./PaginationControls";

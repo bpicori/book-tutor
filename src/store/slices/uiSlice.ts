@@ -3,31 +3,27 @@ import type { ReaderSettings } from "../../types";
 import { DEFAULT_SETTINGS } from "../../constants";
 
 export interface UISlice {
-  // State
   isAiSidebarOpen: boolean;
   isSidebarCollapsed: boolean;
   settings: ReaderSettings;
 
-  // Actions
-  toggleAiSidebar: (open?: boolean) => void;
-  toggleSidebar: (collapsed?: boolean) => void;
+  setAiSidebarOpen: (open?: boolean) => void;
+  setSidebarCollapsed: (collapsed?: boolean) => void;
   updateSettings: (settings: Partial<ReaderSettings>) => void;
   resetSettings: () => void;
 }
 
 export const createUISlice: StateCreator<UISlice> = (set) => ({
-  // Initial state
   isAiSidebarOpen: true,
   isSidebarCollapsed: false,
   settings: DEFAULT_SETTINGS,
 
-  // Actions
-  toggleAiSidebar: (open) =>
+  setAiSidebarOpen: (open) =>
     set((state) => ({
       isAiSidebarOpen: open ?? !state.isAiSidebarOpen,
     })),
 
-  toggleSidebar: (collapsed) =>
+  setSidebarCollapsed: (collapsed) =>
     set((state) => ({
       isSidebarCollapsed: collapsed ?? !state.isSidebarCollapsed,
     })),

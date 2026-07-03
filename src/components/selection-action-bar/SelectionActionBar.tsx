@@ -32,6 +32,47 @@ export function SelectionActionBar({
 
   const currentBook = library.find((b) => b.id === currentBookId);
 
+  const loadWordDefinition = useCallback(
+    async (word: string, options?: { saveToVocabulary?: boolean }) => {
+      if (!llmSettings) return;
+
+      currentWordRef.current = word;
+      setShowTranslation(true);
+      setShowHighlightColors(false);
+      setIsLoading(true);
+      setError(null);
+      setDefinition(null);
+
+      try {
+        const def = await getWordDefinition(word, llmSettings);
+        if (currentWordRef.current !== word) return;
+
+        setDefinition(def);
+        if (options?.saveToVocabulary) {
+          addWord({
+            id: crypto.randomUUID(),
+            word,
+            definition: def,
+            savedAt: Date.now(),
+            bookId: currentBookId || undefined,
+            bookTitle: currentBook?.title,
+          });
+        }
+      } catch (err) {
+        if (currentWordRef.current === word) {
+          setError(
+            err instanceof Error ? err.message : "Failed to get definition"
+          );
+        }
+      } finally {
+        if (currentWordRef.current === word) {
+          setIsLoading(false);
+        }
+      }
+    },
+    [llmSettings, addWord, currentBookId, currentBook]
+  );
+
   const handleCopy = useCallback(() => {
     if (selection?.text) {
       navigator.clipboard.writeText(selection.text);
@@ -39,37 +80,10 @@ export function SelectionActionBar({
     }
   }, [selection, onDismiss]);
 
-  const handleTranslate = useCallback(async () => {
-    if (!selection?.text || !llmSettings) {
-      return;
-    }
-
-    const wordToTranslate = selection.text;
-    currentWordRef.current = wordToTranslate;
-
-    setShowTranslation(true);
-    setShowHighlightColors(false);
-    setIsLoading(true);
-    setError(null);
-    setDefinition(null);
-
-    try {
-      const def = await getWordDefinition(wordToTranslate, llmSettings);
-      if (currentWordRef.current === wordToTranslate) {
-        setDefinition(def);
-      }
-    } catch (err) {
-      if (currentWordRef.current === wordToTranslate) {
-        setError(
-          err instanceof Error ? err.message : "Failed to get definition"
-        );
-      }
-    } finally {
-      if (currentWordRef.current === wordToTranslate) {
-        setIsLoading(false);
-      }
-    }
-  }, [selection, llmSettings]);
+  const handleTranslate = useCallback(() => {
+    if (!selection?.text) return;
+    loadWordDefinition(selection.text);
+  }, [selection, loadWordDefinition]);
 
   const handleCloseTranslation = useCallback(() => {
     setShowTranslation(false);
@@ -88,47 +102,10 @@ export function SelectionActionBar({
     setIsLoading(false);
   }, [selection?.text]);
 
-  const handleNewWord = useCallback(async () => {
-    if (!selection?.text || !llmSettings) {
-      return;
-    }
-
-    const wordToSave = selection.text;
-    currentWordRef.current = wordToSave;
-
-    setShowTranslation(true);
-    setShowHighlightColors(false);
-    setIsLoading(true);
-    setError(null);
-    setDefinition(null);
-
-    try {
-      const def = await getWordDefinition(wordToSave, llmSettings);
-
-      if (currentWordRef.current === wordToSave) {
-        setDefinition(def);
-
-        addWord({
-          id: crypto.randomUUID(),
-          word: wordToSave,
-          definition: def,
-          savedAt: Date.now(),
-          bookId: currentBookId || undefined,
-          bookTitle: currentBook?.title,
-        });
-      }
-    } catch (err) {
-      if (currentWordRef.current === wordToSave) {
-        setError(
-          err instanceof Error ? err.message : "Failed to get definition"
-        );
-      }
-    } finally {
-      if (currentWordRef.current === wordToSave) {
-        setIsLoading(false);
-      }
-    }
-  }, [selection, llmSettings, addWord, currentBookId, currentBook]);
+  const handleNewWord = useCallback(() => {
+    if (!selection?.text) return;
+    loadWordDefinition(selection.text, { saveToVocabulary: true });
+  }, [selection, loadWordDefinition]);
 
   const handleHighlightColor = useCallback(
     (color: HighlightColor) => {

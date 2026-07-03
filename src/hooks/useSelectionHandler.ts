@@ -206,6 +206,8 @@ export function useSelectionHandler({
   }, [viewRef, setupDocumentListeners, viewReady]);
 
   useEffect(() => {
+    const docToSectionIndex = docToSectionIndexRef.current;
+
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Node;
       const selectionBar = document.querySelector("[data-selection-bar]");
@@ -228,7 +230,7 @@ export function useSelectionHandler({
         cleanup();
       }
       documentListenersRef.current = [];
-      docToSectionIndexRef.current.clear();
+      docToSectionIndex.clear();
     };
   }, []);
 

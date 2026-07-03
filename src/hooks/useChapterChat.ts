@@ -1,18 +1,24 @@
 import { useCallback, useState, useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useStore } from "../store/useStore";
-import { streamChapterChat, LLMServiceError } from "../services/llmService";
+import {
+  streamChapterChat,
+  LLMServiceError,
+  formatLLMError,
+} from "../services/llmService";
 import {
   getBookTitle,
   getBookAuthor,
-  extractTextFromDocument,
   buildBookMemory,
 } from "../utils/bookHelpers";
+import { makeChapterKey } from "../utils/chapterKeys";
+import { loadChapterText } from "../utils/chapterContent";
+import {
+  buildConversationHistory,
+  resolveContentForChat,
+} from "../utils/chapterChat";
 import { useLLMAskSettings } from "./useLLMSettings";
 
-/**
- * Hook for managing chapter chat functionality
- * Handles sending messages, streaming responses, and error handling
- */
 export function useChapterChat(chapterHref: string, chapterLabel: string) {
   const {
     book,
@@ -24,52 +30,60 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
     addChatMessage,
     updateLastChatMessage,
     clearChapterChat,
-  } = useStore();
+  } = useStore(
+    useShallow((state) => ({
+      book: state.book,
+      currentBookId: state.currentBookId,
+      currentSectionIndex: state.currentSectionIndex,
+      currentTocHref: state.currentTocHref,
+      chapterChats: state.chapterChats,
+      chapterPreviews: state.chapterPreviews,
+      addChatMessage: state.addChatMessage,
+      updateLastChatMessage: state.updateLastChatMessage,
+      clearChapterChat: state.clearChapterChat,
+    }))
+  );
 
   const llmSettings = useLLMAskSettings();
+  const chapterKey = makeChapterKey(currentBookId, chapterHref);
   const chatMessages = useMemo(
-    () => chapterChats[chapterHref] || [],
-    [chapterChats, chapterHref]
+    () => chapterChats[chapterKey] || [],
+    [chapterChats, chapterKey]
   );
   const [chapterContent, setChapterContent] = useState<string>("");
 
-  // Check if preview with summaries exists for this chapter
-  const previewKey = currentBookId
-    ? `${currentBookId}:${chapterHref}`
-    : chapterHref;
-  const preview = chapterPreviews[previewKey];
+  const preview = chapterPreviews[chapterKey];
 
-  // Load chapter content when the chapter changes
   useEffect(() => {
-    async function loadChapterContent() {
-      if (
-        book?.sections &&
-        currentSectionIndex !== null &&
-        currentSectionIndex >= 0
-      ) {
-        const section = book.sections[currentSectionIndex];
-        if (section?.createDocument) {
-          try {
-            const doc = await section.createDocument();
-            const content = extractTextFromDocument(doc);
-            setChapterContent(content);
-          } catch (err) {
-            console.warn("Failed to load chapter content:", err);
-            setChapterContent("");
-          }
-        }
+    let cancelled = false;
+
+    async function loadContent() {
+      const content = await loadChapterText(
+        book,
+        currentSectionIndex,
+        chapterLabel
+      );
+      if (!cancelled) {
+        setChapterContent(
+          content.startsWith("[Chapter content could not be loaded")
+            ? ""
+            : content
+        );
       }
     }
-    loadChapterContent();
-  }, [book, currentSectionIndex]);
+
+    loadContent();
+    return () => {
+      cancelled = true;
+    };
+  }, [book, currentSectionIndex, chapterLabel]);
 
   const sendMessage = useCallback(
     async (message: string) => {
       if (!message.trim()) return;
 
-      // Check if API key is configured
       if (!llmSettings) {
-        addChatMessage(chapterHref, {
+        addChatMessage(chapterKey, {
           role: "assistant",
           content:
             "Please configure your API key in Settings to use the AI assistant.",
@@ -77,47 +91,20 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
         return;
       }
 
-      // Add user message
-      addChatMessage(chapterHref, { role: "user", content: message });
-
-      // Add empty assistant message for streaming
-      addChatMessage(chapterHref, {
+      addChatMessage(chapterKey, { role: "user", content: message });
+      addChatMessage(chapterKey, {
         role: "assistant",
         content: "",
         isStreaming: true,
       });
 
-      // Get book context
       const bookTitle = getBookTitle(book?.metadata);
       const bookAuthor = getBookAuthor(book?.metadata);
-
-      // Use summaries if available, otherwise fallback to truncation
-      let contentForChat: string;
-      if (preview?.fullSummary) {
-        // Use the full rolling summary which has complete context
-        contentForChat = preview.fullSummary;
-      } else if (preview?.summaries && preview.summaries.length > 0) {
-        // Fallback: concatenate all summaries if fullSummary not available
-        contentForChat = preview.summaries.map((s) => s.summary).join("\n\n");
-      } else {
-        // Fallback to truncation if no summaries exist
-        const maxContentLength = 32000;
-        contentForChat =
-          chapterContent.length > maxContentLength
-            ? chapterContent.slice(0, maxContentLength) +
-              "\n\n[Content truncated for length...]"
-            : chapterContent || `[Chapter content could not be loaded]`;
-      }
-
-      // Get conversation history for this chapter (excluding the empty streaming message we just added)
-      const conversationHistory = chatMessages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }));
-      // Add the new user message
-      conversationHistory.push({ role: "user" as const, content: message });
-
-      // Get book context from prior chapter previews
+      const contentForChat = resolveContentForChat(preview, chapterContent);
+      const conversationHistory = buildConversationHistory(
+        chatMessages,
+        message
+      );
       const bookContext = buildBookMemory(
         book,
         chapterPreviews,
@@ -138,23 +125,20 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
           bookContext || undefined
         )) {
           fullContent += chunk;
-          updateLastChatMessage(chapterHref, fullContent, true);
+          updateLastChatMessage(chapterKey, fullContent, true);
         }
 
-        // Mark streaming as complete
-        updateLastChatMessage(chapterHref, fullContent, false);
+        updateLastChatMessage(chapterKey, fullContent, false);
       } catch (error) {
-        let errorMessage = "An unexpected error occurred. Please try again.";
-
-        if (error instanceof LLMServiceError) {
-          errorMessage = error.message;
-        }
-
-        updateLastChatMessage(chapterHref, errorMessage, false);
+        const errorMessage =
+          error instanceof LLMServiceError
+            ? error.message
+            : formatLLMError(error);
+        updateLastChatMessage(chapterKey, errorMessage, false);
       }
     },
     [
-      chapterHref,
+      chapterKey,
       chapterLabel,
       chapterContent,
       book,
@@ -170,8 +154,8 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
   );
 
   const clearMessages = useCallback(() => {
-    clearChapterChat(chapterHref);
-  }, [chapterHref, clearChapterChat]);
+    clearChapterChat(chapterKey);
+  }, [chapterKey, clearChapterChat]);
 
   return {
     chatMessages,
