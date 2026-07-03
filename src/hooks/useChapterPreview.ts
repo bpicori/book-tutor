@@ -7,14 +7,13 @@ import {
 } from "../services/llmService";
 import { getBookTitle, getBookAuthor } from "../utils/bookHelpers";
 import { makeChapterKey } from "../utils/chapterKeys";
-import { loadChapterText } from "../utils/chapterContent";
+import { loadTocScopedText } from "../utils/chapterContent";
 import { useLLMSettings } from "./useLLMSettings";
 
-export function useChapterPreview(chapterHref: string, chapterLabel: string) {
+export function useChapterPreview(previewHref: string, previewLabel: string) {
   const {
     book,
     currentBookId,
-    currentSectionIndex,
     chapterPreviews,
     previewLoading,
     setChapterPreview,
@@ -24,7 +23,6 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
     useShallow((state) => ({
       book: state.book,
       currentBookId: state.currentBookId,
-      currentSectionIndex: state.currentSectionIndex,
       chapterPreviews: state.chapterPreviews,
       previewLoading: state.previewLoading,
       setChapterPreview: state.setChapterPreview,
@@ -41,7 +39,7 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
     total?: number;
   } | null>(null);
 
-  const previewKey = makeChapterKey(currentBookId, chapterHref);
+  const previewKey = makeChapterKey(currentBookId, previewHref);
   const preview = chapterPreviews[previewKey];
 
   const generatePreview = useCallback(async () => {
@@ -59,16 +57,17 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
     const bookAuthor = getBookAuthor(book?.metadata);
 
     try {
-      const chapterContent = await loadChapterText(
+      const chapterContent = await loadTocScopedText(
         book,
-        currentSectionIndex,
-        chapterLabel
+        book?.toc,
+        previewHref,
+        previewLabel
       );
 
       const generatedPreview = await generateChapterPreview(
         bookTitle,
         bookAuthor,
-        chapterLabel,
+        previewLabel,
         chapterContent,
         llmSettings,
         (step, progressInfo) => {
@@ -83,7 +82,7 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
       setChapterPreview(previewKey, {
         ...generatedPreview,
         chapterHref: previewKey,
-        chapterLabel,
+        chapterLabel: previewLabel,
         generatedAt: Date.now(),
       });
     } catch (err) {
@@ -99,8 +98,8 @@ export function useChapterPreview(chapterHref: string, chapterLabel: string) {
   }, [
     book,
     previewKey,
-    chapterLabel,
-    currentSectionIndex,
+    previewHref,
+    previewLabel,
     llmSettings,
     setChapterPreview,
     setPreviewLoading,

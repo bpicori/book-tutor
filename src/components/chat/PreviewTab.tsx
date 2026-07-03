@@ -232,7 +232,7 @@ const EmptyState = memo(function EmptyState({
       <p className="text-light-gray-text text-sm mb-6 max-w-xs">
         Generate a spoiler-free preview to orient yourself before reading{" "}
         <span className="font-medium text-muted-gray-text">
-          "{chapterLabel}"
+          &ldquo;{chapterLabel}&rdquo;
         </span>
       </p>
       <button
@@ -273,7 +273,7 @@ const EmptyState = memo(function EmptyState({
 });
 
 export const PreviewTab = memo(function PreviewTab() {
-  const { chapterLabel, chapterHref } = useCurrentChapter();
+  const { chapterLabel, previewHref, previewLabel } = useCurrentChapter();
   const {
     preview,
     isLoading,
@@ -281,7 +281,7 @@ export const PreviewTab = memo(function PreviewTab() {
     progress: previewProgress,
     generatePreview,
     refreshPreview,
-  } = useChapterPreview(chapterHref, chapterLabel);
+  } = useChapterPreview(previewHref, previewLabel);
 
   return (
     <div className="flex flex-col h-full">

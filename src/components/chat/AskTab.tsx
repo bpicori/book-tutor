@@ -26,7 +26,7 @@ const QUICK_ACTIONS = [
 
 export const AskTab = memo(function AskTab() {
   const { book, pendingQuote, setPendingQuote } = useStore();
-  const { chapterLabel, chapterHref } = useCurrentChapter();
+  const { chapterLabel, chapterHref, previewHref } = useCurrentChapter();
 
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -35,7 +35,7 @@ export const AskTab = memo(function AskTab() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const { chatMessages, sendMessage, clearMessages, isLoading } =
-    useChapterChat(chapterHref, chapterLabel);
+    useChapterChat({ chapterHref, chapterLabel, previewHref });
 
   // Prefill input when "Ask AI about this" is triggered from selection/highlight
   useEffect(() => {

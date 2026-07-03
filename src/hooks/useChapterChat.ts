@@ -12,18 +12,27 @@ import {
   buildBookMemory,
 } from "../utils/bookHelpers";
 import { makeChapterKey } from "../utils/chapterKeys";
-import { loadChapterText } from "../utils/chapterContent";
+import { loadTocScopedText } from "../utils/chapterContent";
 import {
   buildConversationHistory,
   resolveContentForChat,
 } from "../utils/chapterChat";
 import { useLLMAskSettings } from "./useLLMSettings";
 
-export function useChapterChat(chapterHref: string, chapterLabel: string) {
+interface UseChapterChatOptions {
+  chapterHref: string;
+  chapterLabel: string;
+  previewHref: string;
+}
+
+export function useChapterChat({
+  chapterHref,
+  chapterLabel,
+  previewHref,
+}: UseChapterChatOptions) {
   const {
     book,
     currentBookId,
-    currentSectionIndex,
     currentTocHref,
     chapterChats,
     chapterPreviews,
@@ -34,7 +43,6 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
     useShallow((state) => ({
       book: state.book,
       currentBookId: state.currentBookId,
-      currentSectionIndex: state.currentSectionIndex,
       currentTocHref: state.currentTocHref,
       chapterChats: state.chapterChats,
       chapterPreviews: state.chapterPreviews,
@@ -46,21 +54,23 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
 
   const llmSettings = useLLMAskSettings();
   const chapterKey = makeChapterKey(currentBookId, chapterHref);
+  const previewKey = makeChapterKey(currentBookId, previewHref);
   const chatMessages = useMemo(
     () => chapterChats[chapterKey] || [],
     [chapterChats, chapterKey]
   );
   const [chapterContent, setChapterContent] = useState<string>("");
 
-  const preview = chapterPreviews[chapterKey];
+  const preview = chapterPreviews[previewKey];
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadContent() {
-      const content = await loadChapterText(
+      const content = await loadTocScopedText(
         book,
-        currentSectionIndex,
+        book?.toc,
+        chapterHref,
         chapterLabel
       );
       if (!cancelled) {
@@ -76,7 +86,7 @@ export function useChapterChat(chapterHref: string, chapterLabel: string) {
     return () => {
       cancelled = true;
     };
-  }, [book, currentSectionIndex, chapterLabel]);
+  }, [book, book?.toc, chapterHref, chapterLabel]);
 
   const sendMessage = useCallback(
     async (message: string) => {

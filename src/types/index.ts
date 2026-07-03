@@ -60,8 +60,8 @@ export interface Book {
   /** Resolve an href to a section index and optional anchor function */
   resolveHref?(href: string): {
     index: number;
-    anchor?: (doc: Document) => Element | Range;
-  };
+    anchor?: (doc: Document) => Element | Range | number;
+  } | null;
 }
 
 /**
