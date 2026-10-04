@@ -6,6 +6,7 @@ import { getHighlightHex } from "../../constants";
 import { SelectionActionBar } from "../selection-action-bar";
 import { HighlightPopup } from "../selection-action-bar/HighlightPopup";
 import { useSelectionHandler } from "../../hooks/useSelectionHandler";
+import { useAskQuestion } from "../../hooks/useAskQuestion";
 // @ts-expect-error - foliate-js module has no type declarations
 import { Overlayer } from "../../foliate-js/overlayer.js";
 import "../../foliate-js/view.js";
@@ -27,15 +28,8 @@ export function Reader({ viewRef }: ReaderProps) {
   const [activeHighlightPopup, setActiveHighlightPopup] =
     useState<ActiveHighlightPopup | null>(null);
 
-  const {
-    setProgress,
-    setCurrentTocHref,
-    setCurrentSectionIndex,
-    settings,
-    setAiSidebarOpen,
-    setActiveAiTab,
-    setPendingQuote,
-  } = useStore();
+  const { setProgress, setCurrentTocHref, setCurrentSectionIndex, settings } =
+    useStore();
 
   const { selection, dismissSelection, createHighlight } = useSelectionHandler({
     containerRef: containerRef as React.RefObject<HTMLElement | null>,
@@ -43,13 +37,13 @@ export function Reader({ viewRef }: ReaderProps) {
     viewReady,
   });
 
+  const askQuestion = useAskQuestion();
+
   const handleAskAI = useCallback(
     (text: string) => {
-      setAiSidebarOpen(true);
-      setActiveAiTab("ask");
-      setPendingQuote(text);
+      askQuestion(text);
     },
-    [setAiSidebarOpen, setActiveAiTab, setPendingQuote]
+    [askQuestion]
   );
 
   const handleHighlight = useCallback(

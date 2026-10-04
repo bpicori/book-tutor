@@ -2,6 +2,7 @@ import { memo } from "react";
 
 import { useChapterPreview } from "../../hooks/useChapterPreview";
 import { useCurrentChapter } from "../../hooks/useCurrentChapter";
+import { useAskQuestion } from "../../hooks/useAskQuestion";
 import { ChapterContextBar } from "./ChapterContextBar";
 import type { ChapterPreview } from "../../types";
 
@@ -87,10 +88,12 @@ const PreviewSection = memo(function PreviewSection({
 // Preview content component
 interface PreviewContentProps {
   preview: ChapterPreview;
+  onAskQuestion?: (question: string) => void;
 }
 
 const PreviewContent = memo(function PreviewContent({
   preview,
+  onAskQuestion,
 }: PreviewContentProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -172,7 +175,7 @@ const PreviewContent = memo(function PreviewContent({
       {preview.guidingQuestions.length > 0 && (
         <div className="bg-active-green-light rounded-lg p-4 border border-forest-green/20">
           <div className="flex items-center gap-2 mb-3">
-            <span className="material-symbols-outlined text-forest-green text-lg">
+            <span className="material-symbols-outlined text-forest-green text-lg shrink-0">
               help_outline
             </span>
             <h4 className="text-forest-green font-semibold text-sm uppercase tracking-wide">
@@ -181,17 +184,33 @@ const PreviewContent = memo(function PreviewContent({
           </div>
           <ul className="space-y-2">
             {preview.guidingQuestions.map((question, idx) => (
-              <li
-                key={idx}
-                className="text-muted-gray-text text-sm flex items-start gap-2"
-              >
-                <span className="text-forest-green font-medium">
-                  {idx + 1}.
-                </span>
-                <span className="italic">{question}</span>
+              <li key={idx}>
+                <button
+                  type="button"
+                  onClick={() => onAskQuestion?.(question)}
+                  disabled={!onAskQuestion}
+                  title="Ask the AI assistant this question"
+                  className="group w-full flex items-start gap-2 text-left rounded-md px-2 py-1.5 -mx-2 hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-green/40 disabled:cursor-default disabled:hover:bg-transparent"
+                >
+                  <span className="text-forest-green font-medium shrink-0">
+                    {idx + 1}.
+                  </span>
+                  <span className="text-muted-gray-text text-sm italic flex-1 min-w-0">
+                    {question}
+                  </span>
+                  <span
+                    className="material-symbols-outlined text-base text-forest-green opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity shrink-0"
+                    aria-hidden="true"
+                  >
+                    chat
+                  </span>
+                </button>
               </li>
             ))}
           </ul>
+          <p className="text-light-gray-text text-xs mt-3">
+            Tap a question to ask the AI assistant about it.
+          </p>
         </div>
       )}
     </div>
@@ -274,6 +293,7 @@ const EmptyState = memo(function EmptyState({
 
 export const PreviewTab = memo(function PreviewTab() {
   const { chapterLabel, previewHref, previewLabel } = useCurrentChapter();
+  const askQuestion = useAskQuestion();
   const {
     preview,
     isLoading,
@@ -311,7 +331,7 @@ export const PreviewTab = memo(function PreviewTab() {
         {isLoading ? (
           <PreviewSkeleton progress={previewProgress} />
         ) : preview ? (
-          <PreviewContent preview={preview} />
+          <PreviewContent preview={preview} onAskQuestion={askQuestion} />
         ) : (
           <EmptyState
             chapterLabel={chapterLabel}
