@@ -75,21 +75,26 @@ export const Sidebar = memo(function Sidebar({
 
   return (
     <>
+      {/* Mobile: tapping the scrim closes the panel. Desktop has no scrim. */}
       <div
         className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
         onClick={() => setSidebarCollapsed(true)}
         aria-hidden="true"
       />
 
-      <aside className="flex flex-col w-72 h-full bg-warm-off-white border-r border-border-warm overflow-hidden fixed md:relative left-0 top-0 z-50 md:z-auto transform transition-transform md:translate-x-0">
+      {/* Desktop: overlays the book so opening the TOC never re-flows the page. */}
+      <aside className="flex flex-col w-72 h-full bg-warm-off-white border-r border-border-warm overflow-hidden shadow-xl fixed left-0 top-0 z-50 md:z-20 md:h-screen md:pt-[var(--header-height)] md:shadow-lg">
         <div className="flex-shrink-0 p-4 pb-0">
-          <div className="flex items-center gap-3 px-2">
+          <div className="flex items-center gap-2 sm:gap-3 px-2">
             <button
               onClick={() => setSidebarCollapsed(true)}
-              className="md:hidden w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-hover-warm text-light-gray-text hover:text-forest-green transition-colors"
-              aria-label="Close sidebar"
+              className="w-11 h-11 md:w-10 md:h-10 shrink-0 flex items-center justify-center rounded-lg hover:bg-hover-warm text-light-gray-text hover:text-forest-green transition-colors"
+              aria-label="Collapse chapters sidebar"
+              title="Collapse chapters"
             >
-              <span className="material-symbols-outlined text-xl">close</span>
+              <span className="material-symbols-outlined text-xl shrink-0">
+                left_panel_close
+              </span>
             </button>
 
             <div
@@ -117,31 +122,29 @@ export const Sidebar = memo(function Sidebar({
           </div>
 
           <div className="flex gap-1 bg-hover-warm rounded-lg p-1 mt-3 mx-2">
-            <button
-              onClick={() => setActiveTab("contents")}
-              className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                activeTab === "contents"
-                  ? "bg-white text-forest-green shadow-sm"
-                  : "text-light-gray-text hover:text-muted-gray-text"
-              }`}
-            >
-              Contents
-            </button>
-            <button
-              onClick={() => setActiveTab("notes")}
-              className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                activeTab === "notes"
-                  ? "bg-white text-forest-green shadow-sm"
-                  : "text-light-gray-text hover:text-muted-gray-text"
-              }`}
-            >
-              Notes
-              {bookHighlights.length > 0 && (
-                <span className="ml-1 text-[10px] opacity-70">
-                  ({bookHighlights.length})
-                </span>
-              )}
-            </button>
+            {(
+              [
+                { id: "contents", label: "Contents", count: 0 },
+                { id: "notes", label: "Notes", count: bookHighlights.length },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  activeTab === tab.id
+                    ? "bg-white text-forest-green shadow-sm"
+                    : "text-light-gray-text hover:text-muted-gray-text"
+                }`}
+              >
+                {tab.label}
+                {tab.count > 0 && (
+                  <span className="ml-1 text-[10px] opacity-70">
+                    ({tab.count})
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
         </div>
 

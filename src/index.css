@@ -63,6 +63,14 @@ body,
   height: 100%;
 }
 
+/*
+ * Reader top bar height. Both reader panels overlay the book, so they start
+ * below the header to keep the header controls reachable on desktop.
+ */
+:root {
+  --header-height: 53px;
+}
+
 body {
   background-color: var(--color-warm-off-white);
   font-family: var(--font-family-sans-ui);

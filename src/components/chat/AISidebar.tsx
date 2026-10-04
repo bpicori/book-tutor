@@ -21,13 +21,15 @@ export const AISidebar = memo(function AISidebar() {
 
   return (
     <>
+      {/* Mobile: tapping the scrim closes the panel. Desktop has no scrim. */}
       <div
         className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
         onClick={() => setAiSidebarOpen(false)}
         aria-hidden="true"
       />
 
-      <aside className="flex flex-col w-[32rem] max-w-[85vw] h-full bg-warm-off-white border-l border-border-warm overflow-hidden fixed md:relative right-0 top-0 z-50 md:z-auto transform transition-transform md:translate-x-0">
+      {/* Desktop: overlays the book so opening the panel never re-flows the page. */}
+      <aside className="flex flex-col w-[32rem] max-w-[85vw] h-full bg-warm-off-white border-l border-border-warm overflow-hidden shadow-xl fixed right-0 top-0 z-50 md:z-20 md:h-screen md:pt-[var(--header-height)] md:shadow-lg">
         <header className="flex-shrink-0 p-4 border-b border-border-warm">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-muted-gray-text font-semibold text-base">

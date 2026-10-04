@@ -33,15 +33,28 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
     }
   }, [showMenu]);
 
+  // Cmd/Ctrl+B toggles the chapters panel while reading.
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "b") {
+        event.preventDefault();
+        setSidebarCollapsed();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [setSidebarCollapsed]);
+
   return (
-    <header className="flex items-center justify-between border-b border-solid border-border-warm px-4 md:px-8 py-2 md:py-3 bg-sepia-panel">
+    <header className="flex items-center justify-between gap-2 sm:gap-3 border-b border-solid border-border-warm px-2 sm:px-4 md:px-8 bg-sepia-panel sticky top-0 z-30 min-h-14 md:min-h-[3.25rem]">
       {/* Left side - Navigation */}
-      <div className="flex items-center gap-2 md:gap-4 text-muted-gray-text min-w-0 flex-1">
+      <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 text-muted-gray-text min-w-0 flex-1">
         <IconButton
           icon={isSidebarCollapsed ? "menu" : "menu_open"}
-          label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          label={isSidebarCollapsed ? "Show chapters" : "Hide chapters"}
           onClick={() => setSidebarCollapsed()}
-        />
+        />{" "}
         <IconButton
           icon="arrow_back"
           label="Back to Library"

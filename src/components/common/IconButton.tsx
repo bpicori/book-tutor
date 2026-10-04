@@ -27,7 +27,11 @@ export const IconButton = memo(function IconButton({
 
   const variantStyles = {
     default: `
-      rounded-xl h-11 md:h-10 ${text ? "gap-2.5 px-4 min-h-[44px]" : "w-11 md:w-10 min-w-[44px] md:min-w-0"}
+      rounded-xl h-11 md:h-10 ${
+        text
+          ? "gap-1.5 sm:gap-2.5 px-2.5 sm:px-4 min-h-[44px]"
+          : "w-11 md:w-10 min-w-[44px] md:min-w-0 min-h-[44px] md:min-h-0"
+      }
       bg-hover-warm/60 backdrop-blur-sm
       text-muted-gray-text
       border border-border-warm/60
@@ -74,10 +78,11 @@ export const IconButton = memo(function IconButton({
     <button
       onClick={onClick}
       disabled={disabled}
+      title={text ?? label}
       className={`${baseClasses} ${variantStyles[variant]} disabled:opacity-30 disabled:pointer-events-none`}
       aria-label={label}
     >
-      <span className="material-symbols-outlined text-xl">{icon}</span>
+      <span className="material-symbols-outlined text-xl shrink-0">{icon}</span>
       {text && (
         <span className="hidden sm:inline text-sm font-medium tracking-wide">
           {text}
