@@ -25,9 +25,7 @@ export interface BookMetadata {
     | Array<{ name?: string | Record<string, string> }>;
   /** Author(s) - can be string, array of strings, or array of objects with name */
   author?:
-    | string
-    | string[]
-    | Array<{ name?: string | Record<string, string> }>;
+    string | string[] | Array<{ name?: string | Record<string, string> }>;
   /** Book description */
   description?: string | Record<string, string>;
   /** Language code */
@@ -130,6 +128,11 @@ export interface LibraryBook {
   progress: number;
   /** CFI location string for resuming reading position */
   lastLocation: string | null;
+  /**
+   * Table of contents depth that counts as "a chapter" for this book.
+   * `null` keeps the default behaviour.
+   */
+  chapterScopeDepth?: number | null;
 }
 
 // Chat Types
@@ -164,7 +167,14 @@ export interface ChapterPreview {
   chunkingApplied?: boolean;
 }
 
-export type ChapterChats = Record<string, ChatMessage[]>;
+/** One conversation, keyed by `bookId:chapterHref` in `ChapterChats`. */
+export interface ChapterChatStore {
+  messages: ChatMessage[];
+  /** Last content change; used to trim the oldest conversations under quota. */
+  updatedAt: number;
+}
+
+export type ChapterChats = Record<string, ChapterChatStore>;
 export type ChapterPreviews = Record<string, ChapterPreview>;
 
 // Progress Types
@@ -202,6 +212,25 @@ export interface Highlight {
   note?: string;
   chapterHref?: string;
   chapterLabel?: string;
+  createdAt: number;
+}
+
+/**
+ * A reading position the user saved on purpose.
+ *
+ * `cfi` is the whole-page location reported by the reader, so it can be handed
+ * straight back to `view.goTo()`.
+ */
+export interface Bookmark {
+  id: string;
+  bookId: string;
+  cfi: string;
+  sectionIndex: number;
+  /** Auto-generated label, e.g. `2. Operational vs Analytics · 42%`. */
+  label: string;
+  chapterHref?: string;
+  chapterLabel?: string;
+  fraction: number;
   createdAt: number;
 }
 

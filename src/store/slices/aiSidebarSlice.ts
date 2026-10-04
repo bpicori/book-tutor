@@ -38,12 +38,20 @@ export const initialAISidebarState = {
   pendingQuote: null as string | null,
 };
 
-/** Sidebar fields reset on navigation; preserves chapterPreviews and pendingQuote. */
+/** Sidebar fields reset on navigation; preserves chapter chats and previews. */
 export const navigationAISidebarReset = {
   activeAiTab: initialAISidebarState.activeAiTab,
-  chapterChats: initialAISidebarState.chapterChats,
   previewLoading: initialAISidebarState.previewLoading,
 };
+
+/** Deletes a conversation key instead of storing an empty entry. */
+function withoutChapter(
+  chapterChats: ChapterChats,
+  chapterHref: string
+): ChapterChats {
+  const { [chapterHref]: _removed, ...rest } = chapterChats;
+  return rest;
+}
 
 export const createAISidebarSlice: StateCreator<AISidebarSlice> = (set) => ({
   // Initial state
@@ -56,39 +64,49 @@ export const createAISidebarSlice: StateCreator<AISidebarSlice> = (set) => ({
 
   addChatMessage: (chapterHref, message) =>
     set((state) => {
-      const currentMessages = state.chapterChats[chapterHref] || [];
+      const existing = state.chapterChats[chapterHref];
       return {
         chapterChats: {
           ...state.chapterChats,
-          [chapterHref]: [...currentMessages, message],
+          [chapterHref]: {
+            messages: [...(existing?.messages ?? []), message],
+            updatedAt: Date.now(),
+          },
         },
       };
     }),
 
   updateLastChatMessage: (chapterHref, content, isStreaming) =>
     set((state) => {
-      const messages = [...(state.chapterChats[chapterHref] || [])];
-      if (messages.length > 0) {
-        const lastMessage = messages[messages.length - 1];
-        messages[messages.length - 1] = {
-          ...lastMessage,
-          content,
-          isStreaming: isStreaming ?? false,
-        };
+      const existing = state.chapterChats[chapterHref];
+      if (!existing || existing.messages.length === 0) return state;
+
+      const lastMessage = existing.messages[existing.messages.length - 1];
+      // Only a reply that is being streamed may be rewritten. Without this
+      // guard a stray update would overwrite the reader's own question.
+      if (lastMessage.role !== "assistant" || !lastMessage.isStreaming) {
+        return state;
       }
+
+      const messages = [...existing.messages];
+      messages[messages.length - 1] = {
+        ...lastMessage,
+        content,
+        isStreaming: isStreaming ?? false,
+      };
+
       return {
         chapterChats: {
           ...state.chapterChats,
-          [chapterHref]: messages,
+          [chapterHref]: { messages, updatedAt: Date.now() },
         },
       };
     }),
 
   clearChapterChat: (chapterHref) =>
-    set((state) => {
-      const { [chapterHref]: _, ...rest } = state.chapterChats;
-      return { chapterChats: rest };
-    }),
+    set((state) => ({
+      chapterChats: withoutChapter(state.chapterChats, chapterHref),
+    })),
 
   setChapterPreview: (chapterHref, preview) =>
     set((state) => ({

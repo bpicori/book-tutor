@@ -9,6 +9,8 @@ export interface LibrarySlice {
   removeBookFromLibrary: (bookId: string) => void;
   updateBookProgress: (bookId: string, progress: number) => void;
   updateBookLocation: (bookId: string, location: string) => void;
+  /** Sets which table of contents depth counts as a chapter for this book. */
+  setBookChapterScopeDepth: (bookId: string, depth: number | null) => void;
 }
 
 export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
@@ -32,6 +34,13 @@ export const createLibrarySlice: StateCreator<LibrarySlice> = (set) => ({
     set((state) => ({
       library: state.library.map((b) =>
         b.id === bookId ? { ...b, lastLocation: location } : b
+      ),
+    })),
+
+  setBookChapterScopeDepth: (bookId, depth) =>
+    set((state) => ({
+      library: state.library.map((b) =>
+        b.id === bookId ? { ...b, chapterScopeDepth: depth } : b
       ),
     })),
 });

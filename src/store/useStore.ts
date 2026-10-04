@@ -1,7 +1,13 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type { ChapterChats } from "../types";
+import { persist, createJSONStorage } from "zustand/middleware";
+import type { Bookmark, ChapterChats } from "../types";
 import { STORAGE_KEY } from "../constants";
+import {
+  readSnapshot,
+  stripStreaming,
+  writeWithQuotaRecovery,
+  type PersistedEnvelope,
+} from "./persistStorage";
 import { createLibrarySlice, type LibrarySlice } from "./slices/librarySlice";
 import { createReaderSlice, type ReaderSlice } from "./slices/readerSlice";
 import { createUISlice, type UISlice } from "./slices/uiSlice";
@@ -33,17 +39,47 @@ export interface AppState
     AnnotationsSlice {}
 
 function migrateChapterChats(
-  chapterChats: ChapterChats | undefined,
+  persistedChats: unknown,
   currentBookId: string | null | undefined
 ): ChapterChats {
-  if (!chapterChats || !currentBookId) return chapterChats ?? {};
+  if (!persistedChats || typeof persistedChats !== "object") return {};
+  const chats = persistedChats as Record<string, unknown>;
+  if (!currentBookId) return chats as ChapterChats;
 
   const migrated: ChapterChats = {};
-  for (const [key, messages] of Object.entries(chapterChats)) {
+  for (const [key, value] of Object.entries(chats)) {
+    if (!value || typeof value !== "object") continue;
     const migratedKey = key.includes(":") ? key : `${currentBookId}:${key}`;
-    migrated[migratedKey] = messages;
+    // Snapshots written before conversations carried metadata.
+    migrated[migratedKey] = Array.isArray(value)
+      ? { messages: value, updatedAt: Date.now() }
+      : (value as ChapterChats[string]);
   }
   return migrated;
+}
+
+/**
+ * Bookmarks are one per book. Snapshots from the first release stored a list,
+ * so the most recent bookmark of each book is kept and the rest are dropped.
+ */
+function migrateBookmarks(
+  persistedBookmarks: unknown
+): AnnotationsSlice["bookmarks"] {
+  if (!persistedBookmarks) return {};
+  if (!Array.isArray(persistedBookmarks)) {
+    return persistedBookmarks as AnnotationsSlice["bookmarks"];
+  }
+
+  const newestPerBook: AnnotationsSlice["bookmarks"] = {};
+  for (const entry of persistedBookmarks) {
+    const bookmark = entry as Bookmark | undefined;
+    if (!bookmark?.bookId || !bookmark.cfi) continue;
+    const existing = newestPerBook[bookmark.bookId];
+    if (!existing || bookmark.createdAt > existing.createdAt) {
+      newestPerBook[bookmark.bookId] = bookmark;
+    }
+  }
+  return newestPerBook;
 }
 
 export const useStore = create<AppState>()(
@@ -78,11 +114,14 @@ export const useStore = create<AppState>()(
                 ([key]) => !key.startsWith(`${bookId}:`)
               )
             );
+            const { [bookId]: _removedBookmark, ...remainingBookmarks } =
+              state.bookmarks;
             return {
               library: state.library.filter((b) => b.id !== bookId),
               chapterPreviews: filteredPreviews,
               chapterChats: filteredChats,
               highlights: state.highlights.filter((h) => h.bookId !== bookId),
+              bookmarks: remainingBookmarks,
             };
           });
         },
@@ -90,17 +129,39 @@ export const useStore = create<AppState>()(
     },
     {
       name: STORAGE_KEY,
-      partialize: (state) => ({
-        currentBookId: state.currentBookId,
-        library: state.library,
-        isSidebarCollapsed: state.isSidebarCollapsed,
-        isAiSidebarOpen: state.isAiSidebarOpen,
-        settings: state.settings,
-        words: state.words,
-        chapterPreviews: state.chapterPreviews,
-        highlights: state.highlights,
-        cloudSync: state.cloudSync,
-      }),
+      // Local storage writes a quota-safe snapshot: in-flight streaming
+      // messages are stripped, and a full quota trims old conversations
+      // instead of losing state.
+      storage: createJSONStorage(() => ({
+        getItem: (): string | null => readSnapshot(),
+        setItem: (_name: string, value: string): void => {
+          try {
+            writeWithQuotaRecovery(JSON.parse(value) as PersistedEnvelope);
+          } catch (error) {
+            console.error("Failed to persist state:", error);
+          }
+        },
+        removeItem: (): void => {
+          window.localStorage.removeItem(STORAGE_KEY);
+        },
+      })),
+      partialize: (state) => {
+        const persistedChats = stripStreaming(state.chapterChats);
+        return {
+          currentBookId: state.currentBookId,
+          library: state.library,
+          isSidebarCollapsed: state.isSidebarCollapsed,
+          isAiSidebarOpen: state.isAiSidebarOpen,
+          settings: state.settings,
+          words: state.words,
+          chapterPreviews: state.chapterPreviews,
+          // Conversations survive navigation and refresh.
+          chapterChats: persistedChats,
+          highlights: state.highlights,
+          bookmarks: state.bookmarks,
+          cloudSync: state.cloudSync,
+        };
+      },
       merge: (persistedState: unknown, currentState: AppState) => {
         try {
           const persisted = (persistedState || {}) as Partial<AppState>;
@@ -111,6 +172,7 @@ export const useStore = create<AppState>()(
               persisted.chapterChats,
               persisted.currentBookId
             ),
+            bookmarks: migrateBookmarks(persisted.bookmarks),
           };
         } catch (error) {
           console.error("Error merging persisted state:", error);

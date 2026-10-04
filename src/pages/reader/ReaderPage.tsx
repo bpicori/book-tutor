@@ -65,7 +65,7 @@ export function ReaderPage() {
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <Header onPrev={handlePrev} onNext={handleNext} />
         <Reader viewRef={viewRef} />
-        <Footer />
+        <Footer onNavigate={handleNavigate} />
       </main>
       <AISidebar />
     </div>

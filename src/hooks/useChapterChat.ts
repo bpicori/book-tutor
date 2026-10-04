@@ -56,7 +56,7 @@ export function useChapterChat({
   const chapterKey = makeChapterKey(currentBookId, chapterHref);
   const previewKey = makeChapterKey(currentBookId, previewHref);
   const chatMessages = useMemo(
-    () => chapterChats[chapterKey] || [],
+    () => chapterChats[chapterKey]?.messages ?? [],
     [chapterChats, chapterKey]
   );
   const [chapterContent, setChapterContent] = useState<string>("");
