@@ -307,6 +307,7 @@ export const PreviewTab = memo(function PreviewTab() {
     <div className="flex flex-col h-full">
       <ChapterContextBar
         chapterLabel={chapterLabel}
+        scopeLabel={previewLabel}
         actions={
           preview && !isLoading ? (
             <button

@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, useMemo } from "react";
+import { useCallback, useRef, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useStore } from "../store/useStore";
 import {
@@ -22,7 +22,8 @@ import { useLLMAskSettings } from "./useLLMSettings";
 interface UseChapterChatOptions {
   chapterHref: string;
   chapterLabel: string;
-  previewHref: string;
+  /** Preview to take context from, when it covers more than the chat scope. */
+  previewHref?: string;
 }
 
 export function useChapterChat({
@@ -54,39 +55,36 @@ export function useChapterChat({
 
   const llmSettings = useLLMAskSettings();
   const chapterKey = makeChapterKey(currentBookId, chapterHref);
-  const previewKey = makeChapterKey(currentBookId, previewHref);
+  const previewKey = makeChapterKey(currentBookId, previewHref ?? chapterHref);
   const chatMessages = useMemo(
     () => chapterChats[chapterKey]?.messages ?? [],
     [chapterChats, chapterKey]
   );
-  const [chapterContent, setChapterContent] = useState<string>("");
+  const chapterContentRef = useRef<string>("");
 
   const preview = chapterPreviews[previewKey];
 
-  useEffect(() => {
-    let cancelled = false;
+  /**
+   * Loads the chapter text for the current chapter, reusing it within a
+   * conversation so a send never waits on a repeat read.
+   */
+  const loadChapterContent = useCallback(async (): Promise<string> => {
+    if (chapterContentRef.current) return chapterContentRef.current;
 
-    async function loadContent() {
-      const content = await loadTocScopedText(
-        book,
-        book?.toc,
-        chapterHref,
-        chapterLabel
-      );
-      if (!cancelled) {
-        setChapterContent(
-          content.startsWith("[Chapter content could not be loaded")
-            ? ""
-            : content
-        );
-      }
-    }
+    const content = await loadTocScopedText(
+      book,
+      book?.toc,
+      chapterHref,
+      chapterLabel
+    );
+    const usable = content.startsWith("[Chapter content could not be loaded")
+      ? ""
+      : content;
 
-    loadContent();
-    return () => {
-      cancelled = true;
-    };
-  }, [book, book?.toc, chapterHref, chapterLabel]);
+    chapterContentRef.current = usable;
+    return usable;
+    // `book` covers `book.toc`, which the loader reads for scope boundaries.
+  }, [book, chapterHref, chapterLabel]);
 
   const sendMessage = useCallback(
     async (message: string) => {
@@ -110,7 +108,11 @@ export function useChapterChat({
 
       const bookTitle = getBookTitle(book?.metadata);
       const bookAuthor = getBookAuthor(book?.metadata);
-      const contentForChat = resolveContentForChat(preview, chapterContent);
+
+      // Await the chapter text instead of sending an empty context when the
+      // reader asks a question before it has finished loading.
+      const content = chapterContentRef.current || (await loadChapterContent());
+      const contentForChat = resolveContentForChat(preview, content);
       const conversationHistory = buildConversationHistory(
         chatMessages,
         message
@@ -150,7 +152,7 @@ export function useChapterChat({
     [
       chapterKey,
       chapterLabel,
-      chapterContent,
+      loadChapterContent,
       book,
       chatMessages,
       preview,

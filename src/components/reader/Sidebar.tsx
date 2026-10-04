@@ -3,7 +3,8 @@ import type { FoliateView, Highlight } from "../../types";
 import { useStore } from "../../store/useStore";
 import { getBookAuthor, getBookTitle } from "../../utils/metadata";
 import { getHighlightHex } from "../../constants";
-import { TOCLink } from "./TOCLink";
+import { ChapterScopeSelector } from "./ChapterScopeSelector";
+import { TocTree } from "./TocTree";
 
 type SidebarTab = "contents" | "notes";
 
@@ -150,17 +151,14 @@ export const Sidebar = memo(function Sidebar({
 
         <div className="flex-1 overflow-y-auto p-4 pt-4 scrollbar-thin">
           {activeTab === "contents" ? (
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col">
+              <ChapterScopeSelector toc={book?.toc ?? []} />
               {book?.toc ? (
-                book.toc.map((item, idx) => (
-                  <TOCLink
-                    key={idx}
-                    item={item}
-                    level={0}
-                    currentHref={currentTocHref}
-                    onNavigate={handleNavigate}
-                  />
-                ))
+                <TocTree
+                  items={book.toc}
+                  currentHref={currentTocHref}
+                  onNavigate={handleNavigate}
+                />
               ) : (
                 <p className="text-light-gray-text text-sm px-3 py-2">
                   No book loaded
