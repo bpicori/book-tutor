@@ -118,4 +118,3 @@ export async function loadTocScopedText(
     return `[Chapter content could not be loaded. Please generate based on the chapter title "${fallbackLabel}" and book context.]`;
   }
 }
-

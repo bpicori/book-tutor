@@ -56,8 +56,7 @@ export async function importBackup(file: File): Promise<{
 
     try {
       const persistData = backup.localStorage as
-        | { state?: unknown; version?: number }
-        | Record<string, unknown>;
+        { state?: unknown; version?: number } | Record<string, unknown>;
 
       const restoredState =
         "state" in persistData && persistData.state

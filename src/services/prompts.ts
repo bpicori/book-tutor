@@ -2,6 +2,8 @@
  * Prompts used for LLM interactions
  */
 
+import { ROLLING_SUMMARY_CONTEXT_CHARS } from "../constants";
+
 /**
  * System prompt template for chapter chat/ask functionality.
  * Creates a context-aware prompt that helps the AI assist with reading comprehension.
@@ -20,30 +22,37 @@ export function createChatSystemPrompt(
 ): string {
   const priorChaptersSection = bookContext?.trim()
     ? `
-THE BOOK SO FAR (from earlier chapters you previewed):
+THE BOOK SO FAR (summaries of chapters the reader already previewed):
 ---
 ${bookContext}
 ---
-
-Use this prior context when the user asks how this chapter connects to earlier parts of the book.
 `
     : "";
 
-  return `You are a helpful reading assistant. The user is currently reading "${bookTitle}" by ${bookAuthor}, specifically the chapter "${chapterLabel}".
+  return `You are a reading assistant. The reader is reading "${bookTitle}" by ${bookAuthor}.
+They are currently in the chapter or section "${chapterLabel}", partway through
+the book. The text below is only that part of the book, so do not assume you
+have seen the rest of it.
 ${priorChaptersSection}
-CHAPTER CONTENT:
+TEXT OF "${chapterLabel}":
 ---
 ${chapterContent}
 ---
 
-Help them understand this chapter by:
+Use the text above as your primary source. It may be marked with
+"OPENING OF THE CHAPTER" and "CLOSING OF THE CHAPTER", with a summary of what
+lies between them in the middle. Treat that summary as a description of text
+you cannot see, not as text to quote.
+
+Help the reader by:
 - Explaining concepts, themes, or plot points
 - Clarifying confusing passages
 - Connecting ideas to earlier parts of the book
 - Analyzing character motivations
 - Discussing the deeper meaning or significance
 
-Be concise but thorough in your responses. If the user asks about something specific, focus your explanation on that. Use the chapter content above as your primary reference when answering questions.`;
+Be concise but thorough. If the reader asks about something specific, focus on
+that. If the answer is not in the text above, say so rather than inventing it.`;
 }
 
 /**
@@ -96,12 +105,35 @@ export function createChapterPreviewUserPrompt(
 Book: "${bookTitle}" by ${bookAuthor}
 Chapter: "${chapterLabel}"
 
+The text below is this one chapter of the book, not the whole book.
+
 CHAPTER CONTENT:
 ---
 ${truncatedContent}
 ---
 
 Based on the chapter content above, create a preview that will help orient and prime the reader. Remember to respond with valid JSON only.`;
+}
+
+/**
+ * Follow-up prompt used when the model's reply could not be parsed as JSON.
+ * @param originalPrompt - The prompt that produced the unusable reply
+ * @param failure - Why the reply could not be used
+ * @returns The formatted retry prompt
+ */
+export function createChapterPreviewRetryPrompt(
+  originalPrompt: string,
+  failure: string
+): string {
+  return `Your previous reply could not be used (${failure}).
+
+Reply again with a single valid JSON object and nothing else. No markdown, no
+code fences, no explanation before or after the object. Keep every string on a
+single line and keep the whole object well under 2000 characters.
+
+For reference, this was the original request:
+
+${originalPrompt}`;
 }
 
 /**
@@ -118,15 +150,15 @@ export function createWordDefinitionPrompt(word: string): string {
  * System prompt for generating rolling summaries of chapter chunks.
  * Each summary builds on the previous one to maintain narrative context.
  */
-export const ROLLING_SUMMARY_SYSTEM_PROMPT = `You are a reading assistant that creates concise summaries of book chapters. Your task is to summarize the provided section of text, incorporating context from previous sections when available.
+export const ROLLING_SUMMARY_SYSTEM_PROMPT = `You are a reading assistant that creates concise summaries of sections of a book. You summarize the section you are given, carrying forward only what matters from the sections before it.
 
 IMPORTANT GUIDELINES:
-- Create a clear, coherent summary that captures the main ideas, events, and themes
-- If previous context is provided, incorporate it naturally to show how this section builds on what came before
-- Maintain narrative flow and continuity
+- Create a clear, coherent summary that captures the main ideas, events, and themes of the section you are given
+- Fold in the earlier context only where it changes how this section reads; do not restate it in full
+- Keep a stable length: the summary replaces the earlier context, it does not add to it
 - Focus on key plot points, character development, concepts, or arguments
-- Keep summaries concise but comprehensive (aim for 200-400 words)
-- Preserve important details that will be needed for understanding later sections
+- Aim for 200-400 words regardless of how long the text so far is
+- Keep details that later sections will need to make sense
 - Use clear, readable prose`;
 
 /**
@@ -142,11 +174,18 @@ export function createRollingSummaryPrompt(
   position: string
 ): string {
   if (previousSummary) {
-    return `Summarize the following section of text (${position} of the chapter), building on the previous context:
+    // Only the tail of the running summary is carried, so the prompt stays a
+    // fixed size however long the chapter is.
+    const carriedContext =
+      previousSummary.length > ROLLING_SUMMARY_CONTEXT_CHARS
+        ? previousSummary.slice(-ROLLING_SUMMARY_CONTEXT_CHARS)
+        : previousSummary;
 
-PREVIOUS CONTEXT:
+    return `Summarize the following section of text (${position} of the chapter), carrying forward what still matters from the earlier context:
+
+EARLIER CONTEXT (tail of the running summary):
 ---
-${previousSummary}
+${carriedContext}
 ---
 
 CURRENT SECTION TO SUMMARIZE:
@@ -154,7 +193,7 @@ CURRENT SECTION TO SUMMARIZE:
 ${chunkContent}
 ---
 
-Create a comprehensive summary that incorporates both the previous context and the new section. The summary should flow naturally and show how this section builds on what came before.`;
+Write one summary of at most 400 words covering the whole chapter so far. Merge the earlier context into it rather than repeating it.`;
   }
 
   return `Summarize the following section of text (${position} of the chapter):
@@ -163,5 +202,5 @@ Create a comprehensive summary that incorporates both the previous context and t
 ${chunkContent}
 ---
 
-Create a clear, comprehensive summary that captures the main ideas, events, themes, and important details.`;
+Write one summary of at most 400 words that captures the main ideas, events, themes, and important details.`;
 }

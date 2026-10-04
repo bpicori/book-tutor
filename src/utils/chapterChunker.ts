@@ -1,5 +1,5 @@
 import {
-  CHAPTER_CHUNK_TARGET_CHARS,
+  CHAPTER_CONTEXT_CHAR_BUDGET,
   CHAPTER_SPLIT_SEARCH_WINDOW,
 } from "../constants";
 
@@ -15,17 +15,20 @@ export interface Chunk {
 }
 
 /**
- * Calculate optimal number of chunks based on chapter length
- * Target: ~40k characters per chunk for optimal LLM comprehension
- * No maximum cap - quality over speed/cost
+ * Calculate optimal number of chunks based on chapter length.
+ *
+ * Anything that fits in one request is left whole: only chapters past the
+ * context budget are split. There is no maximum cap on the number of chunks.
  */
-export function calculateOptimalChunks(chapterLength: number): number {
-  // Skip chunking for short chapters
-  if (chapterLength < CHAPTER_CHUNK_TARGET_CHARS) {
+export function calculateOptimalChunks(
+  chapterLength: number,
+  budget = CHAPTER_CONTEXT_CHAR_BUDGET
+): number {
+  if (chapterLength <= budget) {
     return 1;
   }
 
-  return Math.ceil(chapterLength / CHAPTER_CHUNK_TARGET_CHARS);
+  return Math.ceil(chapterLength / budget);
 }
 
 /**

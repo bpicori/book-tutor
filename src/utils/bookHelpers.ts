@@ -1,4 +1,5 @@
 import type { Book, ChapterPreviews, TOCItem } from "../types";
+import { BOOK_MEMORY_CHAR_BUDGET } from "../constants";
 import { makeChapterKey } from "./chapterKeys";
 export { getBookTitle, getBookAuthor } from "./metadata";
 
@@ -36,6 +37,13 @@ export function flattenTocHrefs(toc: TOCItem[]): string[] {
   return hrefs;
 }
 
+/**
+ * Summaries of chapters the reader has already passed, for the Ask AI prompt.
+ *
+ * The budget is spent on the most recent chapters first, because those are the
+ * ones a question about "what came before" usually refers to, then the collected
+ * summaries are put back into reading order.
+ */
 export function buildBookMemory(
   book: Book | null | undefined,
   chapterPreviews: ChapterPreviews,
@@ -50,28 +58,31 @@ export function buildBookMemory(
 
   const priorHrefs = orderedHrefs.slice(0, currentIndex);
   const sections: string[] = [];
+  let used = 0;
 
-  for (const href of priorHrefs) {
+  for (let i = priorHrefs.length - 1; i >= 0; i--) {
+    const href = priorHrefs[i];
     const preview = chapterPreviews[makeChapterKey(bookId, href)];
     if (!preview) continue;
 
-    let content = "";
-    if (preview.fullSummary) {
-      content = preview.fullSummary;
-    } else if (preview.themes?.length || preview.keyConcepts?.length) {
-      const parts: string[] = [];
-      if (preview.themes?.length) {
-        parts.push(`Themes: ${preview.themes.join(", ")}`);
-      }
-      if (preview.keyConcepts?.length) {
-        parts.push(`Key concepts: ${preview.keyConcepts.join(", ")}`);
-      }
-      content = parts.join(". ");
-    }
+    const content = preview.fullSummary
+      ? preview.fullSummary
+      : [
+          preview.themes?.length ? `Themes: ${preview.themes.join(", ")}` : "",
+          preview.keyConcepts?.length
+            ? `Key concepts: ${preview.keyConcepts.join(", ")}`
+            : "",
+        ]
+          .filter(Boolean)
+          .join(". ");
 
-    if (content) {
-      sections.push(`### ${preview.chapterLabel}\n${content}`);
-    }
+    if (!content) continue;
+
+    const section = `### ${preview.chapterLabel}\n${content}`;
+    if (used + section.length > BOOK_MEMORY_CHAR_BUDGET) break;
+
+    sections.unshift(section);
+    used += section.length;
   }
 
   return sections.join("\n\n");

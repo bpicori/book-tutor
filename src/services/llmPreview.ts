@@ -3,9 +3,11 @@ import {
   calculateOptimalChunks,
   splitChapterIntoChunks,
 } from "../utils/chapterChunker";
+import { CHAPTER_CONTEXT_CHAR_BUDGET } from "../constants";
 import {
   CHAPTER_PREVIEW_SYSTEM_PROMPT,
   createChapterPreviewUserPrompt,
+  createChapterPreviewRetryPrompt,
   createWordDefinitionPrompt,
 } from "./prompts";
 import {
@@ -26,12 +28,21 @@ interface PreviewResponse {
 }
 
 interface PreparedContent {
+  /** Text used for the preview request. */
   content: string;
   summaries?: ChapterSummary[];
   fullSummary?: string;
   chunkingApplied: boolean;
 }
 
+/**
+ * Prepares chapter text for a preview request.
+ *
+ * Modern models accept whole chapters, so raw text is preferred and kept even
+ * when the chapter has to be summarized first. Earlier versions replaced the
+ * chapter with the last rolling summary, which meant the preview described a
+ * summary instead of the chapter itself.
+ */
 async function prepareContentForPreview(
   chapterContent: string,
   settings: LLMSettings,
@@ -41,36 +52,62 @@ async function prepareContentForPreview(
   ) => void
 ): Promise<PreparedContent> {
   const numChunks = calculateOptimalChunks(chapterContent.length);
-  const needsChunking = numChunks > 1;
 
-  if (needsChunking) {
-    onProgress?.("Chunking chapter...");
-    const chunks = splitChapterIntoChunks(chapterContent, numChunks);
-
-    onProgress?.("Generating summaries...");
-    const summaries = await generateChapterSummaries(
-      chunks,
-      settings,
-      (current, total) => {
-        onProgress?.("Generating summaries...", { current, total });
-      }
-    );
-
-    const fullSummary =
-      summaries[summaries.length - 1]?.summary || chapterContent;
-
+  if (numChunks <= 1) {
     return {
-      content: fullSummary,
-      summaries,
-      fullSummary,
-      chunkingApplied: true,
+      content: chapterContent,
+      chunkingApplied: false,
     };
   }
 
+  onProgress?.("Chunking chapter...");
+  const chunks = splitChapterIntoChunks(chapterContent, numChunks);
+
+  onProgress?.("Summarizing long chapter...");
+  const summaries = await generateChapterSummaries(
+    chunks,
+    settings,
+    (current, total) => {
+      onProgress?.("Summarizing long chapter...", { current, total });
+    }
+  );
+
+  const fullSummary = summaries.map((s) => s.summary).join("\n\n");
+
   return {
-    content: chapterContent,
-    chunkingApplied: false,
+    content: buildOversizedChapterContext(chunks, fullSummary),
+    summaries,
+    fullSummary,
+    chunkingApplied: true,
   };
+}
+
+/**
+ * Context for a chapter that does not fit in one request: the opening section
+ * verbatim, the running summary of the whole chapter, and the closing section
+ * verbatim. Openings and endings carry the chapter's framing, and the summary
+ * keeps the middle available without sending it twice.
+ */
+function buildOversizedChapterContext(
+  chunks: ReturnType<typeof splitChapterIntoChunks>,
+  fullSummary: string
+): string {
+  const perSectionBudget = Math.floor(CHAPTER_CONTEXT_CHAR_BUDGET / 3);
+  const first = chunks[0]?.content ?? "";
+  const last = chunks[chunks.length - 1]?.content ?? "";
+  const firstPart = first.slice(0, perSectionBudget);
+  const lastPart = chunks.length > 1 ? last.slice(-perSectionBudget) : "";
+
+  const parts = [
+    `OPENING OF THE CHAPTER (verbatim):\n---\n${firstPart}\n---`,
+    `SUMMARY OF THE CHAPTER SO FAR:\n---\n${fullSummary}\n---`,
+  ];
+
+  if (lastPart) {
+    parts.push(`CLOSING OF THE CHAPTER (verbatim):\n---\n${lastPart}\n---`);
+  }
+
+  return parts.join("\n\n");
 }
 
 function validatePreviewResponse(
@@ -129,6 +166,37 @@ function validatePreviewResponse(
   };
 }
 
+/**
+ * Reads a JSON object out of a model response.
+ *
+ * Models sometimes wrap JSON in a code fence or add a sentence around it even
+ * when a JSON response format was requested, so the object is located rather
+ * than assumed to be the whole message.
+ */
+export function parsePreviewJson(content: string): PreviewResponse {
+  const attempts: string[] = [content.trim()];
+
+  const fenced = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenced?.[1]) attempts.push(fenced[1].trim());
+
+  const braces = content.match(/\{[\s\S]*\}/);
+  if (braces?.[0]) attempts.push(braces[0]);
+
+  for (const attempt of attempts) {
+    try {
+      const parsed = JSON.parse(attempt) as PreviewResponse;
+      if (parsed && typeof parsed === "object") return parsed;
+    } catch {
+      // Try the next candidate.
+    }
+  }
+
+  throw new LLMServiceError(
+    "The AI reply was not valid JSON. Please try again.",
+    "PARSE_ERROR"
+  );
+}
+
 export async function generateChapterPreview(
   bookTitle: string,
   bookAuthor: string,
@@ -158,15 +226,16 @@ export async function generateChapterPreview(
     preparedContent.content
   );
 
-  try {
+  const requestPreview = async (prompt: string): Promise<PreviewResponse> => {
     const response = await client.chat.completions.create({
       model: settings.model,
       messages: [
         { role: "system", content: CHAPTER_PREVIEW_SYSTEM_PROMPT },
-        { role: "user", content: userPrompt },
+        { role: "user", content: prompt },
       ],
       response_format: { type: "json_object" },
-      temperature: 0.7,
+      // Structured extraction: a low temperature keeps the fields consistent.
+      temperature: 0.3,
     });
 
     const content = response.choices[0]?.message?.content;
@@ -176,8 +245,25 @@ export async function generateChapterPreview(
         "EMPTY_RESPONSE"
       );
     }
+    return parsePreviewJson(content);
+  };
 
-    const parsed: PreviewResponse = JSON.parse(content);
+  try {
+    let parsed: PreviewResponse;
+    try {
+      parsed = await requestPreview(userPrompt);
+    } catch (error) {
+      // One corrective retry, which usually fixes a malformed or truncated
+      // JSON reply without making the reader click again.
+      if (!(error instanceof LLMServiceError) || error.code !== "PARSE_ERROR") {
+        throw error;
+      }
+      onProgress?.("Retrying preview...");
+      parsed = await requestPreview(
+        createChapterPreviewRetryPrompt(userPrompt, error.message)
+      );
+    }
+
     const validated = validatePreviewResponse(parsed);
 
     return {

@@ -13,8 +13,36 @@ export const DB_NAME = "read-with-ai-books";
 export const DB_VERSION = 1;
 export const DB_STORE_NAME = "books";
 
+/**
+ * Characters sent to the model in one request before a chapter is summarized
+ * in chunks instead.
+ *
+ * Character counting is a rough proxy for tokens (~4 characters each), but it
+ * avoids depending on a tokenizer. 200k characters is about 50k tokens, which
+ * current long-context models accept comfortably. When this was 40k, ordinary
+ * book chapters were being split and re-summarized needlessly.
+ */
+export const CHAPTER_CONTEXT_CHAR_BUDGET = 200_000;
+
+/** Legacy chunk target; kept for callers that request a specific chunk count. */
 export const CHAPTER_CHUNK_TARGET_CHARS = 40_000;
 export const CHAPTER_SPLIT_SEARCH_WINDOW = 5_000;
+
+/**
+ * How much of the previous rolling summary is carried into the next chunk.
+ * Without a cap the prompt grows with the chapter, which is what made long
+ * chapters slow and expensive.
+ */
+export const ROLLING_SUMMARY_CONTEXT_CHARS = 4_000;
+
+/** Characters of raw chapter text an Ask AI prompt may carry. */
+export const CHAT_CONTEXT_CHAR_BUDGET = 32_000;
+
+/** Characters of conversation history an Ask AI prompt may carry. */
+export const CHAT_HISTORY_CHAR_BUDGET = 12_000;
+
+/** Characters of earlier-chapter summaries an Ask AI prompt may carry. */
+export const BOOK_MEMORY_CHAR_BUDGET = 12_000;
 
 export const DEFAULT_LLM_MODELS: LLMModelConfig = {
   previewModel: "gpt-4o-mini",
