@@ -48,18 +48,13 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
 
   return (
     <header className="flex items-center justify-between gap-2 sm:gap-3 border-b border-solid border-border-warm px-2 sm:px-4 md:px-8 bg-sepia-panel sticky top-0 z-30 min-h-14 md:min-h-[3.25rem]">
-      {/* Left side - Navigation */}
+      {/* Left side - the chapters toggle stands alone away from the Library
+          action, which is on the right. */}
       <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 text-muted-gray-text min-w-0 flex-1">
         <IconButton
           icon={isSidebarCollapsed ? "menu" : "menu_open"}
           label={isSidebarCollapsed ? "Show chapters" : "Hide chapters"}
           onClick={() => setSidebarCollapsed()}
-        />{" "}
-        <IconButton
-          icon="arrow_back"
-          label="Back to Library"
-          text="Library"
-          onClick={goToLibrary}
         />
         <Logo size="sm" />
         <h2 className="text-muted-gray-text text-sm md:text-lg font-bold leading-tight tracking-[-0.015em] truncate hidden sm:block">
@@ -79,6 +74,12 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
 
         {/* Desktop: Show all buttons */}
         <div className="hidden md:flex items-center gap-2">
+          <IconButton
+            icon="arrow_back"
+            label="Back to Library"
+            text="Library"
+            onClick={goToLibrary}
+          />
           <IconButton
             icon="book_2"
             label="Vocabulary"
@@ -102,6 +103,18 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
           />
           {showMenu && (
             <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg py-1 min-w-[160px] border border-border-warm z-50">
+              <button
+                onClick={() => {
+                  goToLibrary();
+                  setShowMenu(false);
+                }}
+                className="w-full px-4 py-2 text-left text-sm text-muted-gray-text hover:bg-hover-warm flex items-center gap-2 transition-colors"
+              >
+                <span className="material-symbols-outlined text-lg">
+                  arrow_back
+                </span>
+                Library
+              </button>
               <button
                 onClick={() => {
                   goToVocabulary();
