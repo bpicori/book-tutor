@@ -27,6 +27,14 @@ export const DB_NAME = "read-with-ai-books";
 export const DB_VERSION = 1;
 export const DB_STORE_NAME = "books";
 
+/** IndexedDB database for synthesized read-aloud audio. */
+export const SPEECH_CACHE_DB_NAME = "read-with-ai-speech";
+export const SPEECH_CACHE_DB_VERSION = 1;
+export const SPEECH_CACHE_META_STORE = "meta";
+export const SPEECH_CACHE_AUDIO_STORE = "audio";
+/** LRU byte budget for persisted speech audio (Gemini PCM WAV is ~2.9 MB/min). */
+export const SPEECH_CACHE_MAX_BYTES = 128 * 1024 * 1024;
+
 /**
  * Characters sent to the model in one request before a chapter is summarized
  * in chunks instead.

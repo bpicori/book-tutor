@@ -1,4 +1,4 @@
-import type { TOCItem } from "../types";
+import type { Book, TOCItem } from "../types";
 
 export interface FlatTocEntry {
   item: TOCItem;
@@ -83,6 +83,64 @@ export function resolveScopeEntry(
     if (path[i].depth <= depth) return path[i];
   }
   return path[0];
+}
+
+/** Inclusive section range covered by one chapter scope. */
+export interface ChapterScope {
+  start: number;
+  end: number;
+}
+
+function isDescendantOf(
+  entry: FlatTocEntry,
+  ancestor: FlatTocEntry,
+  entries: FlatTocEntry[]
+): boolean {
+  let parentHref = entry.parentHref;
+  while (parentHref) {
+    if (parentHref === ancestor.href) return true;
+    parentHref =
+      entries.find((item) => item.href === parentHref)?.parentHref ?? null;
+  }
+  return false;
+}
+
+/**
+ * Chapter scope for a starting point, following the book's "A chapter is"
+ * depth the same way previews do. Returns the inclusive section range.
+ */
+export function computeChapterScope(
+  book: Book | null,
+  toc: TOCItem[] | undefined,
+  href: string | null,
+  depth: number | null
+): ChapterScope | null {
+  if (!book?.sections?.length) return null;
+  const lastSection = book.sections.length - 1;
+  if (!href || !toc?.length) return { start: 0, end: lastSection };
+
+  const scope = resolveScopeEntry(href, toc, depth ?? 0);
+  if (!scope) return { start: 0, end: lastSection };
+
+  const startResolved = book.resolveHref?.(scope.href);
+  if (!startResolved) return { start: 0, end: lastSection };
+
+  const start = startResolved.index;
+  let end = lastSection;
+  const entries = flattenTocWithDepth(toc);
+  const scopeIndex = entries.findIndex((entry) => entry.href === scope.href);
+
+  for (let i = scopeIndex + 1; i < entries.length; i++) {
+    const entry = entries[i];
+    if (isDescendantOf(entry, scope, entries)) continue;
+    const resolved = book.resolveHref?.(entry.href);
+    if (resolved && resolved.index > start) {
+      end = resolved.index - 1;
+      break;
+    }
+  }
+
+  return { start, end };
 }
 
 export function findTocEntry(

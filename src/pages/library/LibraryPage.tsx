@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useStore } from "../../store/useStore";
 import { useNavigation } from "../../hooks/useNavigation";
 import { deleteBookFile } from "../../store/bookStorage";
+import { removeSpeechForBook } from "../../services/speechStore";
 import { useAddBook } from "../../hooks/useAddBook";
 import { LoadingSpinner, IconButton } from "../../components/common";
 import { PageShell } from "../../components/layout/PageShell";
@@ -30,6 +31,9 @@ export function LibraryPage() {
       ) {
         await deleteBookFile(bookId);
         removeBookFromLibrary(bookId);
+        void removeSpeechForBook(bookId).catch(() => {
+          // Cache cleanup is best-effort; LRU eviction reclaims it otherwise.
+        });
       }
     },
     [removeBookFromLibrary]
