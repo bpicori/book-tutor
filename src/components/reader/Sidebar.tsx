@@ -10,11 +10,14 @@ type SidebarTab = "contents" | "notes";
 
 interface SidebarProps {
   onNavigate: (href: string) => void;
+  /** Starts read-aloud at a chapter's first paragraph. */
+  onReadFromHere: (href: string) => void;
   viewRef: React.MutableRefObject<FoliateView | null>;
 }
 
 export const Sidebar = memo(function Sidebar({
   onNavigate,
+  onReadFromHere,
   viewRef,
 }: SidebarProps) {
   const {
@@ -42,6 +45,14 @@ export const Sidebar = memo(function Sidebar({
 
   const handleNavigate = (href: string) => {
     onNavigate(href);
+    setCurrentTocHref(href);
+    if (window.innerWidth < 768) {
+      setSidebarCollapsed(true);
+    }
+  };
+
+  const handleReadFromHere = (href: string) => {
+    onReadFromHere(href);
     setCurrentTocHref(href);
     if (window.innerWidth < 768) {
       setSidebarCollapsed(true);
@@ -158,6 +169,7 @@ export const Sidebar = memo(function Sidebar({
                   items={book.toc}
                   currentHref={currentTocHref}
                   onNavigate={handleNavigate}
+                  onReadFromHere={handleReadFromHere}
                 />
               ) : (
                 <p className="text-light-gray-text text-sm px-3 py-2">

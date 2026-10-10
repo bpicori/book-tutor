@@ -12,6 +12,7 @@ import { PageShell } from "../../components/layout/PageShell";
 import {
   TypographyTab,
   LLMTab,
+  SpeechTab,
   BackupTab,
   ThemeTab,
   CloudSyncTab,
@@ -23,13 +24,13 @@ interface SettingsTabProps {
   onUpdate: (settings: Partial<ReaderSettings>) => void;
 }
 
-const SETTINGS_TAB_COMPONENTS: Record<
-  "typography" | "theme" | "llm",
-  ComponentType<SettingsTabProps>
+const SETTINGS_TAB_COMPONENTS: Partial<
+  Record<SettingsTabId, ComponentType<SettingsTabProps>>
 > = {
   typography: TypographyTab,
   theme: ThemeTab,
   llm: LLMTab,
+  speech: SpeechTab,
 };
 
 export const SettingsPage = memo(function SettingsPage() {
@@ -59,7 +60,8 @@ export const SettingsPage = memo(function SettingsPage() {
       <CloudSyncTab />
     ) : (
       (() => {
-        const ActiveTabComponent = SETTINGS_TAB_COMPONENTS[activeTab];
+        const ActiveTabComponent =
+          SETTINGS_TAB_COMPONENTS[activeTab] ?? TypographyTab;
         return (
           <ActiveTabComponent settings={settings} onUpdate={updateSettings} />
         );

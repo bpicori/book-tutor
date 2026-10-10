@@ -8,9 +8,15 @@ import { IconButton, Logo } from "../common";
 interface HeaderProps {
   onPrev: () => void;
   onNext: () => void;
+  /** While read-aloud plays, navigation and actions move to the footer. */
+  isReadAloudActive?: boolean;
 }
 
-export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
+export const Header = memo(function Header({
+  onPrev,
+  onNext,
+  isReadAloudActive = false,
+}: HeaderProps) {
   const { book, setAiSidebarOpen, setSidebarCollapsed, isSidebarCollapsed } =
     useStore();
   const { goToLibrary, goToVocabulary, goToSettings } = useNavigation();
@@ -62,98 +68,111 @@ export const Header = memo(function Header({ onPrev, onNext }: HeaderProps) {
         </h2>
       </div>
 
-      {/* Right side - Actions */}
+      {/* Right side - Actions. Hidden while read-aloud owns navigation so the
+          footer player is the only control surface. */}
       <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-        {/* Navigation buttons - always visible */}
-        <IconButton
-          icon="chevron_left"
-          label="Previous page"
-          onClick={onPrev}
-        />
-        <IconButton icon="chevron_right" label="Next page" onClick={onNext} />
+        {!isReadAloudActive && (
+          <>
+            {/* Navigation buttons - always visible */}
+            <IconButton
+              icon="chevron_left"
+              label="Previous page"
+              onClick={onPrev}
+            />
+            <IconButton
+              icon="chevron_right"
+              label="Next page"
+              onClick={onNext}
+            />
 
-        {/* Desktop: Show all buttons */}
-        <div className="hidden md:flex items-center gap-2">
-          <IconButton
-            icon="arrow_back"
-            label="Back to Library"
-            text="Library"
-            onClick={goToLibrary}
-          />
-          <IconButton
-            icon="book_2"
-            label="Vocabulary"
-            onClick={goToVocabulary}
-          />
-          <IconButton icon="settings" label="Settings" onClick={goToSettings} />
-          <IconButton
-            icon="smart_toy"
-            label="Toggle AI Assistant"
-            text="AI Assistant"
-            onClick={() => setAiSidebarOpen()}
-          />
-        </div>
-
-        {/* Mobile: Dropdown menu */}
-        <div className="relative md:hidden" ref={menuRef}>
-          <IconButton
-            icon="more_vert"
-            label="More options"
-            onClick={() => setShowMenu(!showMenu)}
-          />
-          {showMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg py-1 min-w-[160px] border border-border-warm z-50">
-              <button
-                onClick={() => {
-                  goToLibrary();
-                  setShowMenu(false);
-                }}
-                className="w-full px-4 py-2 text-left text-sm text-muted-gray-text hover:bg-hover-warm flex items-center gap-2 transition-colors"
-              >
-                <span className="material-symbols-outlined text-lg">
-                  arrow_back
-                </span>
-                Library
-              </button>
-              <button
-                onClick={() => {
-                  goToVocabulary();
-                  setShowMenu(false);
-                }}
-                className="w-full px-4 py-2 text-left text-sm text-muted-gray-text hover:bg-hover-warm flex items-center gap-2 transition-colors"
-              >
-                <span className="material-symbols-outlined text-lg">
-                  book_2
-                </span>
-                Vocabulary
-              </button>
-              <button
-                onClick={() => {
-                  goToSettings();
-                  setShowMenu(false);
-                }}
-                className="w-full px-4 py-2 text-left text-sm text-muted-gray-text hover:bg-hover-warm flex items-center gap-2 transition-colors"
-              >
-                <span className="material-symbols-outlined text-lg">
-                  settings
-                </span>
-                Settings
-              </button>
-              <button
-                onClick={() => {
-                  setAiSidebarOpen();
-                  setShowMenu(false);
-                }}
-                className="w-full px-4 py-2 text-left text-sm text-muted-gray-text hover:bg-hover-warm flex items-center gap-2 transition-colors"
-              >
-                <span className="material-symbols-outlined text-lg">
-                  smart_toy
-                </span>
-                AI Assistant
-              </button>
+            {/* Desktop: Show all buttons */}
+            <div className="hidden md:flex items-center gap-2">
+              <IconButton
+                icon="arrow_back"
+                label="Back to Library"
+                text="Library"
+                onClick={goToLibrary}
+              />
+              <IconButton
+                icon="book_2"
+                label="Vocabulary"
+                onClick={goToVocabulary}
+              />
+              <IconButton
+                icon="settings"
+                label="Settings"
+                onClick={goToSettings}
+              />
+              <IconButton
+                icon="smart_toy"
+                label="Toggle AI Assistant"
+                text="AI Assistant"
+                onClick={() => setAiSidebarOpen()}
+              />
             </div>
-          )}
-        </div>
+
+            {/* Mobile: Dropdown menu */}
+            <div className="relative md:hidden" ref={menuRef}>
+              <IconButton
+                icon="more_vert"
+                label="More options"
+                onClick={() => setShowMenu(!showMenu)}
+              />
+              {showMenu && (
+                <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg py-1 min-w-[160px] border border-border-warm z-50">
+                  <button
+                    onClick={() => {
+                      goToLibrary();
+                      setShowMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-muted-gray-text hover:bg-hover-warm flex items-center gap-2 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      arrow_back
+                    </span>
+                    Library
+                  </button>
+                  <button
+                    onClick={() => {
+                      goToVocabulary();
+                      setShowMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-muted-gray-text hover:bg-hover-warm flex items-center gap-2 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      book_2
+                    </span>
+                    Vocabulary
+                  </button>
+                  <button
+                    onClick={() => {
+                      goToSettings();
+                      setShowMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-muted-gray-text hover:bg-hover-warm flex items-center gap-2 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      settings
+                    </span>
+                    Settings
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAiSidebarOpen();
+                      setShowMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-muted-gray-text hover:bg-hover-warm flex items-center gap-2 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      smart_toy
+                    </span>
+                    AI Assistant
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </header>
   );

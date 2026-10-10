@@ -7,12 +7,16 @@ import { SelectionActionBar } from "../selection-action-bar";
 import { HighlightPopup } from "../selection-action-bar/HighlightPopup";
 import { useSelectionHandler } from "../../hooks/useSelectionHandler";
 import { useAskQuestion } from "../../hooks/useAskQuestion";
+import type { ReadAloudPlayer } from "../../hooks/useReadAloud";
+import { getParagraphBlocks, paragraphRange } from "../../utils/ttsChunker";
+import { ParagraphPlayButton } from "./ParagraphPlayButton";
 // @ts-expect-error - foliate-js module has no type declarations
 import { Overlayer } from "../../foliate-js/overlayer.js";
 import "../../foliate-js/view.js";
 
 interface ReaderProps {
   viewRef: React.MutableRefObject<FoliateView | null>;
+  player: ReadAloudPlayer;
 }
 
 interface ActiveHighlightPopup {
@@ -22,11 +26,34 @@ interface ActiveHighlightPopup {
   position: "above" | "below";
 }
 
-export function Reader({ viewRef }: ReaderProps) {
+export function Reader({ viewRef, player }: ReaderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewReady, setViewReady] = useState(false);
   const [activeHighlightPopup, setActiveHighlightPopup] =
     useState<ActiveHighlightPopup | null>(null);
+  const [hoverButton, setHoverButton] = useState<{
+    left: number;
+    top: number;
+    range: Range;
+  } | null>(null);
+  const hoverBlockRef = useRef<Element | null>(null);
+  const hideTimerRef = useRef<number | null>(null);
+
+  const cancelHide = useCallback(() => {
+    if (hideTimerRef.current !== null) {
+      window.clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleHide = useCallback(() => {
+    cancelHide();
+    hideTimerRef.current = window.setTimeout(() => {
+      setHoverButton(null);
+      hoverBlockRef.current = null;
+      hideTimerRef.current = null;
+    }, 180);
+  }, [cancelHide]);
 
   const { setProgress, setCurrentTocHref, setCurrentSectionIndex, settings } =
     useStore();
@@ -38,6 +65,17 @@ export function Reader({ viewRef }: ReaderProps) {
   });
 
   const askQuestion = useAskQuestion();
+
+  const pauseReadAloud = player.pause;
+  const startReadAloud = player.startFrom;
+
+  // A text selection pauses playback so the two highlights never fight.
+  useEffect(() => {
+    if (!selection) return;
+    pauseReadAloud();
+    setHoverButton(null);
+    hoverBlockRef.current = null;
+  }, [selection, pauseReadAloud]);
 
   const handleAskAI = useCallback(
     (text: string) => {
@@ -186,12 +224,102 @@ export function Reader({ viewRef }: ReaderProps) {
     };
   }, [handleRelocate, viewRef]);
 
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view || !viewReady) return;
+
+    const cleanups = new Map<Document, () => void>();
+
+    const attach = (doc: Document) => {
+      if (cleanups.has(doc)) return;
+      const blocks = getParagraphBlocks(doc);
+
+      const handleOver = (event: Event) => {
+        const target = event.target as Element | null;
+        const block = target
+          ? blocks.find(
+              (candidate) => candidate === target || candidate.contains(target)
+            )
+          : undefined;
+
+        if (!block) {
+          if (hoverBlockRef.current) scheduleHide();
+          return;
+        }
+        if (hoverBlockRef.current === block) return;
+
+        cancelHide();
+        hoverBlockRef.current = block;
+
+        const rect = block.getBoundingClientRect();
+        const frame = doc.defaultView?.frameElement as HTMLElement | null;
+        const frameRect = frame?.getBoundingClientRect();
+        if (!frameRect) return;
+
+        const size = 32;
+        let left = frameRect.left + rect.left - size;
+        if (left < 4) left = frameRect.left + rect.left + 2;
+        left = Math.max(4, Math.min(left, window.innerWidth - size - 4));
+        const top = Math.max(
+          4,
+          Math.min(frameRect.top + rect.top + 2, window.innerHeight - size - 4)
+        );
+
+        setHoverButton({ left, top, range: paragraphRange(doc, block) });
+      };
+
+      const handleLeave = () => scheduleHide();
+
+      doc.addEventListener("mouseover", handleOver);
+      doc.addEventListener("mouseleave", handleLeave);
+      cleanups.set(doc, () => {
+        doc.removeEventListener("mouseover", handleOver);
+        doc.removeEventListener("mouseleave", handleLeave);
+      });
+    };
+
+    const handleLoad = (event: Event) => {
+      const { doc } = (event as CustomEvent).detail as { doc?: Document };
+      if (doc) attach(doc);
+    };
+
+    view.addEventListener("load", handleLoad);
+    view.renderer?.getContents?.().forEach(({ doc }) => attach(doc));
+
+    return () => {
+      view.removeEventListener("load", handleLoad);
+      for (const cleanup of cleanups.values()) cleanup();
+      cleanups.clear();
+      if (hideTimerRef.current !== null) {
+        window.clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+    };
+  }, [viewRef, viewReady, cancelHide, scheduleHide]);
+
+  const handleHoverPlay = useCallback(() => {
+    if (!hoverButton) return;
+    startReadAloud(hoverButton.range);
+    setHoverButton(null);
+    hoverBlockRef.current = null;
+    cancelHide();
+  }, [hoverButton, startReadAloud, cancelHide]);
+
   return (
     <>
       <div
         ref={containerRef}
         className="flex-1 overflow-hidden bg-sepia-panel"
       />
+      {hoverButton && player.status !== "error" && !selection && (
+        <ParagraphPlayButton
+          left={hoverButton.left}
+          top={hoverButton.top}
+          onPlay={handleHoverPlay}
+          onMouseEnter={cancelHide}
+          onMouseLeave={scheduleHide}
+        />
+      )}
       <div data-selection-bar>
         <SelectionActionBar
           selection={selection}

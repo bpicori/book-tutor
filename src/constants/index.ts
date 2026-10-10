@@ -1,4 +1,9 @@
-import type { ReaderSettings, HighlightColor, LLMModelConfig } from "../types";
+import type {
+  ReaderSettings,
+  HighlightColor,
+  LLMModelConfig,
+  SpeechProviderConfig,
+} from "../types";
 
 export { ROUTES, SETTINGS_TABS, isValidSettingsTabId } from "./routes";
 export type { SettingsTabId } from "./routes";
@@ -7,6 +12,15 @@ export type { ThemePaletteEntry } from "./themePalette";
 
 export const APP_NAME = "Book Tutor";
 export const DEFAULT_LLM_BASE_URL = "https://api.openai.com/v1";
+export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+
+export const DEFAULT_SPEECH_PROVIDER: SpeechProviderConfig = {
+  type: "openrouter",
+  baseUrl: OPENROUTER_BASE_URL,
+  apiKey: "",
+  model: "google/gemini-3.8-flash-lite-tts",
+  voice: "Kore",
+};
 
 export const STORAGE_KEY = "read-with-ai-storage";
 export const DB_NAME = "read-with-ai-books";
@@ -78,4 +92,5 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
     apiKey: "",
   },
   llmModels: DEFAULT_LLM_MODELS,
+  speechProvider: DEFAULT_SPEECH_PROVIDER,
 };

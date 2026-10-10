@@ -9,6 +9,7 @@ export const SETTINGS_TABS = [
   { id: "typography", label: "Typography", icon: "text_fields" },
   { id: "theme", label: "Theme", icon: "palette" },
   { id: "llm", label: "LLM", icon: "smart_toy" },
+  { id: "speech", label: "Speech", icon: "record_voice_over" },
   { id: "backup", label: "Backup", icon: "download" },
   { id: "cloudsync", label: "Cloud Sync", icon: "cloud_sync" },
 ] as const;

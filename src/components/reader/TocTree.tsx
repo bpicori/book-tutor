@@ -7,6 +7,8 @@ interface TocTreeProps {
   items: TOCItem[];
   currentHref: string | null;
   onNavigate: (href: string) => void;
+  /** Starts read-aloud at a chapter's first paragraph. */
+  onReadFromHere: (href: string) => void;
 }
 
 /**
@@ -20,6 +22,7 @@ export const TocTree = memo(function TocTree({
   items,
   currentHref,
   onNavigate,
+  onReadFromHere,
 }: TocTreeProps) {
   const [expandedKeys, setExpandedKeys] = useState<ReadonlySet<string>>(
     () => new Set()
@@ -115,6 +118,7 @@ export const TocTree = memo(function TocTree({
           level={0}
           currentHref={currentHref}
           onNavigate={onNavigate}
+          onReadFromHere={onReadFromHere}
           isExpanded={isExpanded}
           onToggle={onToggle}
         />

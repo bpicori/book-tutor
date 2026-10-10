@@ -2,10 +2,14 @@ import { useEffect } from "react";
 import type { FoliateView } from "../types";
 
 export function useKeyboardNavigation(
-  viewRef: React.MutableRefObject<FoliateView | null>
+  viewRef: React.MutableRefObject<FoliateView | null>,
+  disabled = false
 ) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Read-aloud owns page turns while it is playing.
+      if (disabled) return;
+
       // Ignore if typing in an input
       if (
         e.target instanceof HTMLInputElement ||
@@ -20,5 +24,5 @@ export function useKeyboardNavigation(
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [viewRef]);
+  }, [viewRef, disabled]);
 }

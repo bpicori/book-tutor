@@ -11,6 +11,8 @@ interface TOCLinkProps {
   level: number;
   currentHref: string | null;
   onNavigate: (href: string) => void;
+  /** Starts read-aloud at the beginning of this chapter. */
+  onReadFromHere: (href: string) => void;
   isExpanded: (item: TOCItem) => boolean;
   onToggle: (item: TOCItem) => void;
 }
@@ -20,6 +22,7 @@ export const TOCLink = memo(function TOCLink({
   level,
   currentHref,
   onNavigate,
+  onReadFromHere,
   isExpanded,
   onToggle,
 }: TOCLinkProps) {
@@ -46,7 +49,7 @@ export const TOCLink = memo(function TOCLink({
 
   return (
     <>
-      <div className="flex items-stretch gap-0.5">
+      <div className="group flex items-stretch gap-0.5">
         {hasChildren ? (
           <button
             type="button"
@@ -81,6 +84,20 @@ export const TOCLink = memo(function TOCLink({
             {item.label}
           </p>
         </a>
+
+        <button
+          type="button"
+          onClick={() => onReadFromHere(item.href)}
+          aria-label={`Read from here: ${item.label}`}
+          title="Read from here"
+          className={`w-7 shrink-0 flex items-center justify-center rounded-md text-light-gray-text hover:bg-hover-warm hover:text-forest-green transition-opacity ${
+            isActive
+              ? "opacity-100"
+              : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+          }`}
+        >
+          <span className="material-symbols-outlined text-lg">play_arrow</span>
+        </button>
       </div>
 
       {expanded &&
@@ -91,6 +108,7 @@ export const TOCLink = memo(function TOCLink({
             level={level + 1}
             currentHref={currentHref}
             onNavigate={onNavigate}
+            onReadFromHere={onReadFromHere}
             isExpanded={isExpanded}
             onToggle={onToggle}
           />

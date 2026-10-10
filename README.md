@@ -1,10 +1,11 @@
 # Book Tutor
 
-An AI-powered EPUB reader that helps you understand what you're reading. Everything runs in the browser — your books, progress, and settings stay on your device. The only external call is to the LLM API you configure in Settings.
+An AI-powered EPUB reader that helps you understand what you're reading. Everything runs in the browser — your books, progress, and settings stay on your device. The only external calls are to the LLM and speech providers you configure in Settings.
 
 - Read EPUBs with a table of contents, progress tracking, and resumable reading position
 - Generate spoiler-free chapter previews before you start reading
 - Ask the AI about the current chapter while you read
+- Read aloud paragraph by paragraph, from any paragraph or chapter, with a cloud voice you configure
 - Select text to translate, highlight, copy, save to vocabulary, or ask AI about a passage
 - Review saved words on a personal vocabulary page with AI-generated definitions
 - Highlights and notes in the reader sidebar

@@ -68,6 +68,10 @@ export interface Book {
 export interface FoliateRenderer extends HTMLElement {
   /** Apply CSS styles to the rendered content */
   setStyles?(styles: string): void;
+  /** Scroll to (and page to) a range, element, or anchor function result. */
+  scrollToAnchor?(anchor: Element | Range | number): Promise<void>;
+  /** Currently rendered section documents. */
+  getContents?(): Array<{ doc: Document; index: number }>;
 }
 
 /**
@@ -288,6 +292,35 @@ export interface LLMSettings {
 }
 
 /**
+ * Speech provider presets. OpenRouter and OpenAI both expose the same
+ * OpenAI-compatible `/audio/speech` shape, so a single config covers both;
+ * the preset only decides defaults and how models/voices are discovered.
+ */
+export type SpeechProviderType = "openrouter" | "openai" | "custom";
+
+/**
+ * Configuration for the text-to-speech provider, independent of the LLM
+ * provider used by preview/ask/translation.
+ */
+export interface SpeechProviderConfig {
+  type: SpeechProviderType;
+  baseUrl: string;
+  apiKey: string;
+  /** TTS model id, e.g. `google/gemini-3.8-flash-lite-tts`. */
+  model: string;
+  /** Provider-dependent voice id, e.g. `Kore` or `alloy`. */
+  voice: string;
+}
+
+/**
+ * Reader voice settings. Kept separate from `LLMSettings` because reading
+ * aloud bills a different provider with its own key.
+ */
+export interface SpeechSettings {
+  speechProvider: SpeechProviderConfig;
+}
+
+/**
  * Theme settings for the application
  */
 export type Theme = "sepia" | "solarized" | "nord" | "dark";
@@ -300,4 +333,9 @@ export interface ThemeSettings {
  * Combined reader settings (composed of separate concerns)
  */
 export interface ReaderSettings
-  extends TypographySettings, ViewSettings, LLMSettings, ThemeSettings {}
+  extends
+    TypographySettings,
+    ViewSettings,
+    LLMSettings,
+    SpeechSettings,
+    ThemeSettings {}

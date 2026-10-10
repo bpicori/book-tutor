@@ -5,6 +5,7 @@ import { useCurrentBookId } from "../../hooks/useNavigation";
 
 import { useBookLoader } from "../../hooks/useBookLoader";
 import { useKeyboardNavigation } from "../../hooks/useKeyboardNavigation";
+import { useReadAloud } from "../../hooks/useReadAloud";
 import { LoadingSpinner } from "../../components/common";
 import { Sidebar, Header, Reader, Footer } from "../../components/reader";
 import { AISidebar } from "../../components/chat";
@@ -22,14 +23,28 @@ export function ReaderPage() {
   }, [currentBookId]);
   const { isLoading, error } = useBookLoader(viewRef);
 
-  useKeyboardNavigation(viewRef);
+  const player = useReadAloud({ viewRef, ready: !isLoading });
+
+  useKeyboardNavigation(viewRef, player.isActive);
+
+  const stopReadAloud = player.stop;
 
   const handleNavigate = useCallback(
-    (href: string) => viewRef.current?.goTo(href),
-    []
+    (href: string) => {
+      // Any manual jump stops the player first; it owns navigation while on.
+      stopReadAloud();
+      return viewRef.current?.goTo(href);
+    },
+    [stopReadAloud]
   );
-  const handlePrev = useCallback(() => viewRef.current?.prev(), []);
-  const handleNext = useCallback(() => viewRef.current?.next(), []);
+  const handlePrev = useCallback(() => {
+    stopReadAloud();
+    return viewRef.current?.prev();
+  }, [stopReadAloud]);
+  const handleNext = useCallback(() => {
+    stopReadAloud();
+    return viewRef.current?.next();
+  }, [stopReadAloud]);
 
   // Update progress in library
   useEffect(() => {
@@ -61,11 +76,19 @@ export function ReaderPage() {
   return (
     <div className="flex h-screen w-full overflow-hidden">
       {isLoading && <LoadingSpinner message="Loading book..." fullScreen />}
-      <Sidebar onNavigate={handleNavigate} viewRef={viewRef} />
+      <Sidebar
+        onNavigate={handleNavigate}
+        onReadFromHere={player.startChapter}
+        viewRef={viewRef}
+      />
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        <Header onPrev={handlePrev} onNext={handleNext} />
-        <Reader viewRef={viewRef} />
-        <Footer onNavigate={handleNavigate} />
+        <Header
+          onPrev={handlePrev}
+          onNext={handleNext}
+          isReadAloudActive={player.isActive}
+        />
+        <Reader viewRef={viewRef} player={player} />
+        <Footer onNavigate={handleNavigate} player={player} />
       </main>
       <AISidebar />
     </div>

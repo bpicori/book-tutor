@@ -2,13 +2,20 @@ import { memo } from "react";
 import { useStore } from "../../store/useStore";
 import { useBookmarks } from "../../hooks/useBookmarks";
 import { ProgressBar } from "../common";
+import { PlayerControls } from "./PlayerControls";
+import type { ReadAloudPlayer } from "../../hooks/useReadAloud";
 
 interface FooterProps {
   /** Navigates to a location in the book. */
   onNavigate: (cfi: string) => void;
+  /** Read-aloud state; when active it replaces the bookmark/location cluster. */
+  player?: ReadAloudPlayer;
 }
 
-export const Footer = memo(function Footer({ onNavigate }: FooterProps) {
+export const Footer = memo(function Footer({
+  onNavigate,
+  player,
+}: FooterProps) {
   const { book, progress } = useStore();
   const { bookmark, isCurrentPageBookmarked, canBookmark, toggleBookmark } =
     useBookmarks();
@@ -31,58 +38,64 @@ export const Footer = memo(function Footer({ onNavigate }: FooterProps) {
             {progress.tocLabel || "Reading Progress"}
           </p>
           <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-            <button
-              type="button"
-              onClick={toggleBookmark}
-              disabled={!canBookmark}
-              title={bookmarkLabel}
-              aria-label={bookmarkLabel}
-              aria-pressed={isCurrentPageBookmarked}
-              className={`flex items-center gap-1 h-7 px-2 rounded-md text-xs md:text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                isCurrentPageBookmarked
-                  ? "text-forest-green bg-active-green-light hover:bg-forest-green/15"
-                  : "text-light-gray-text hover:text-forest-green hover:bg-hover-warm"
-              }`}
-            >
-              <span
-                className="material-symbols-outlined text-lg shrink-0"
-                style={
-                  isCurrentPageBookmarked
-                    ? { fontVariationSettings: '"FILL" 1' }
-                    : undefined
-                }
-                aria-hidden="true"
-              >
-                bookmark
-              </span>
-              <span>{isCurrentPageBookmarked ? "Saved" : "Bookmark"}</span>
-            </button>
-
-            {canGoToBookmark && (
-              <button
-                type="button"
-                onClick={() => bookmark && onNavigate(bookmark.cfi)}
-                title={`Go to bookmark: ${bookmark.label}`}
-                aria-label={`Go to bookmark: ${bookmark.label}`}
-                className="flex items-center justify-center w-7 h-7 rounded-md text-forest-green hover:bg-forest-green/15 transition-colors"
-              >
-                <span
-                  className="material-symbols-outlined text-lg shrink-0"
-                  aria-hidden="true"
+            {player?.isActive ? (
+              <PlayerControls player={player} />
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={toggleBookmark}
+                  disabled={!canBookmark}
+                  title={bookmarkLabel}
+                  aria-label={bookmarkLabel}
+                  aria-pressed={isCurrentPageBookmarked}
+                  className={`flex items-center gap-1 h-7 px-2 rounded-md text-xs md:text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                    isCurrentPageBookmarked
+                      ? "text-forest-green bg-active-green-light hover:bg-forest-green/15"
+                      : "text-light-gray-text hover:text-forest-green hover:bg-hover-warm"
+                  }`}
                 >
-                  arrow_forward
-                </span>
-              </button>
-            )}
+                  <span
+                    className="material-symbols-outlined text-lg shrink-0"
+                    style={
+                      isCurrentPageBookmarked
+                        ? { fontVariationSettings: '"FILL" 1' }
+                        : undefined
+                    }
+                    aria-hidden="true"
+                  >
+                    bookmark
+                  </span>
+                  <span>{isCurrentPageBookmarked ? "Saved" : "Bookmark"}</span>
+                </button>
 
-            {progress.location && (
-              <p className="text-muted-gray-text text-xs md:text-sm whitespace-nowrap">
-                {progress.location.current + 1} / {progress.location.total}
-              </p>
+                {canGoToBookmark && (
+                  <button
+                    type="button"
+                    onClick={() => bookmark && onNavigate(bookmark.cfi)}
+                    title={`Go to bookmark: ${bookmark.label}`}
+                    aria-label={`Go to bookmark: ${bookmark.label}`}
+                    className="flex items-center justify-center w-7 h-7 rounded-md text-forest-green hover:bg-forest-green/15 transition-colors"
+                  >
+                    <span
+                      className="material-symbols-outlined text-lg shrink-0"
+                      aria-hidden="true"
+                    >
+                      arrow_forward
+                    </span>
+                  </button>
+                )}
+
+                {progress.location && (
+                  <p className="text-muted-gray-text text-xs md:text-sm whitespace-nowrap">
+                    {progress.location.current + 1} / {progress.location.total}
+                  </p>
+                )}
+                <p className="text-light-gray-text text-xs md:text-sm whitespace-nowrap">
+                  {percent}%
+                </p>
+              </>
             )}
-            <p className="text-light-gray-text text-xs md:text-sm whitespace-nowrap">
-              {percent}%
-            </p>
           </div>
         </div>
         <ProgressBar value={progress.fraction} />
