@@ -50,6 +50,10 @@ export interface ReadAloudPlayer {
   status: ReadAloudStatus;
   error: string | null;
   isActive: boolean;
+  /** Current audio playback speed, one of 1, 1.25, 1.5, or 2. */
+  playbackRate: number;
+  /** Changes playback speed immediately and persists the choice. */
+  setPlaybackRate: (rate: number) => void;
   canPrev: boolean;
   canNext: boolean;
   /** Starts reading at a paragraph range, e.g. from the hover affordance. */
@@ -82,6 +86,8 @@ export function useReadAloud({
   const book = useStore((state) => state.book);
   const currentBookId = useStore((state) => state.currentBookId) ?? null;
   const currentTocHref = useStore((state) => state.currentTocHref);
+  const playbackRate = useStore((state) => state.settings.playbackRate ?? 1);
+  const updateSettings = useStore((state) => state.updateSettings);
   const chapterScopeDepth = useChapterScopeDepth();
   const speechSettings = useSpeechSettings();
 
@@ -110,6 +116,7 @@ export function useReadAloud({
   const advanceRef = useRef<() => void>(() => {});
   const followRef = useRef<((range: Range) => void) | null>(null);
   const prefetchTimerRef = useRef<number | null>(null);
+  const rateRef = useRef(playbackRate);
 
   const stateRef = useRef({
     book,
@@ -125,6 +132,12 @@ export function useReadAloud({
       speechSettings,
     };
   }, [book, currentTocHref, chapterScopeDepth, speechSettings]);
+
+  // Keep the audio elements in sync with the persisted playback speed.
+  useEffect(() => {
+    rateRef.current = playbackRate;
+    audioRef.current?.setRate(playbackRate);
+  }, [playbackRate]);
 
   const updateStatus = useCallback((next: ReadAloudStatus) => {
     statusRef.current = next;
@@ -142,6 +155,7 @@ export function useReadAloud({
   const getAudio = useCallback((): SpeechAudio => {
     if (!audioRef.current) {
       audioRef.current = new SpeechAudio(() => advanceRef.current());
+      audioRef.current.setRate(rateRef.current);
     }
     return audioRef.current;
   }, []);
@@ -492,6 +506,15 @@ export function useReadAloud({
     [beginAtSection]
   );
 
+  const setPlaybackRate = useCallback(
+    (rate: number) => {
+      updateSettings({ playbackRate: rate });
+      rateRef.current = rate;
+      audioRef.current?.setRate(rate);
+    },
+    [updateSettings]
+  );
+
   const pause = useCallback(() => {
     if (statusRef.current !== "playing") return;
     clearPrefetchTimer();
@@ -573,6 +596,8 @@ export function useReadAloud({
     status,
     error,
     isActive: status !== "idle",
+    playbackRate,
+    setPlaybackRate,
     canPrev: paragraphIndex > 0,
     canNext: paragraphCount > 0,
     startFrom,

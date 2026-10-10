@@ -11,6 +11,11 @@ const CONTROL_BUTTON =
 const TEXT_BUTTON =
   "flex items-center gap-1 h-8 px-2.5 rounded-md text-xs md:text-sm font-medium text-forest-green bg-active-green-light hover:bg-forest-green/20 transition-colors";
 
+const RATE_BUTTON =
+  "flex items-center justify-center h-8 min-w-11 px-2 rounded-md text-xs font-semibold text-muted-gray-text tabular-nums transition-colors hover:text-forest-green hover:bg-hover-warm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-green/40";
+
+const RATES = [1, 1.25, 1.5, 2] as const;
+
 /**
  * Footer read-aloud controls. Rendered only while the player is active, in
  * place of the bookmark and location cluster so the footer keeps its height.
@@ -98,12 +103,26 @@ export const PlayerControls = memo(function PlayerControls({
   const isLoading = status === "loading";
   const isPlaying = status === "playing";
 
+  const cycleRate = () => {
+    const index = RATES.indexOf(player.playbackRate as (typeof RATES)[number]);
+    player.setPlaybackRate(RATES[(index + 1) % RATES.length] ?? 1);
+  };
+
   return (
     <div
       className="flex items-center gap-1"
       role="group"
       aria-label="Read aloud"
     >
+      <button
+        type="button"
+        onClick={cycleRate}
+        className={RATE_BUTTON}
+        aria-label={`Playback speed ${player.playbackRate}x. Click to change.`}
+        title="Playback speed"
+      >
+        {player.playbackRate}x
+      </button>
       <button
         type="button"
         onClick={prev}

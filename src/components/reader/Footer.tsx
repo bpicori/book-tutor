@@ -33,7 +33,7 @@ export const Footer = memo(function Footer({
   return (
     <footer className="p-4 md:p-6 border-t border-border-warm bg-sepia-panel">
       <div className="flex flex-col gap-2">
-        <div className="flex gap-3 md:gap-6 justify-between items-center">
+        <div className="flex h-8 gap-3 md:gap-6 justify-between items-center">
           <p className="text-muted-gray-text text-xs md:text-sm font-medium leading-normal truncate flex-1 min-w-0">
             {progress.tocLabel || "Reading Progress"}
           </p>

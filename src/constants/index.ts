@@ -101,4 +101,5 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   },
   llmModels: DEFAULT_LLM_MODELS,
   speechProvider: DEFAULT_SPEECH_PROVIDER,
+  playbackRate: 1,
 };

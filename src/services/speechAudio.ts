@@ -14,6 +14,7 @@ export class SpeechAudio {
   private readonly elements: [HTMLAudioElement, HTMLAudioElement];
   private activeIndex = 0;
   private preloadedUrl: string | null = null;
+  private rate = 1;
   private readonly onEnded: () => void;
   private readonly handleEnded = (event: Event) => {
     if (event.target === this.elements[this.activeIndex]) this.onEnded();
@@ -66,6 +67,19 @@ export class SpeechAudio {
       });
   }
 
+  /**
+   * Sets the playback speed on both elements. `defaultPlaybackRate` matters
+   * because the media load algorithm (src swaps, `load()` in `stop()`) resets
+   * `playbackRate` to it.
+   */
+  setRate(rate: number): void {
+    this.rate = rate;
+    for (const audio of this.elements) {
+      audio.defaultPlaybackRate = rate;
+      audio.playbackRate = rate;
+    }
+  }
+
   /** Loads the next paragraph onto the idle element without starting it. */
   preload(url: string): void {
     const idle = this.idle;
@@ -83,6 +97,8 @@ export class SpeechAudio {
       target.src = url;
     }
     target.currentTime = 0;
+    target.defaultPlaybackRate = this.rate;
+    target.playbackRate = this.rate;
 
     // Swap before playing so `ended` is attributed to the new active element.
     const previous = this.active;
@@ -97,6 +113,8 @@ export class SpeechAudio {
       try {
         previous.src = url;
         previous.currentTime = 0;
+        previous.defaultPlaybackRate = this.rate;
+        previous.playbackRate = this.rate;
         await previous.play();
         this.activeIndex = 1 - this.activeIndex;
         return;

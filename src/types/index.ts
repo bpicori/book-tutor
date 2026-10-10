@@ -267,6 +267,14 @@ export interface ViewSettings {
 }
 
 /**
+ * Read-aloud playback preferences.
+ */
+export interface PlaybackSettings {
+  /** Audio playback speed, one of 1, 1.25, 1.5, or 2. */
+  playbackRate: number;
+}
+
+/**
  * Simplified LLM Provider configuration (OpenAI Compatible)
  */
 export interface LLMProviderConfig {
@@ -338,4 +346,5 @@ export interface ReaderSettings
     ViewSettings,
     LLMSettings,
     SpeechSettings,
+    PlaybackSettings,
     ThemeSettings {}
