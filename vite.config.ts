@@ -31,7 +31,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icons/icon-192x192.svg", "icons/icon-512x512.svg"],
+      includeAssets: [
+        "icons/apple-touch-icon-180x180.png",
+        "icons/favicon-32x32.png",
+        "icons/favicon-16x16.png",
+        "icons/logo-192.png",
+        "favicon.ico",
+      ],
       manifest: {
         name: "Book Tutor",
         short_name: "BookTutor",
@@ -43,20 +49,22 @@ export default defineConfig({
         start_url: "/book-tutor/",
         icons: [
           {
-            src: "icons/icon-192x192.svg",
+            src: "icons/icon-192x192.png",
             sizes: "192x192",
-            type: "image/svg+xml",
+            type: "image/png",
+            purpose: "any",
           },
           {
-            src: "icons/icon-512x512.svg",
+            src: "icons/icon-512x512.png",
             sizes: "512x512",
-            type: "image/svg+xml",
+            type: "image/png",
+            purpose: "any",
           },
           {
-            src: "icons/icon-512x512.svg",
+            src: "icons/icon-512x512.png",
             sizes: "512x512",
-            type: "image/svg+xml",
-            purpose: "any maskable",
+            type: "image/png",
+            purpose: "maskable",
           },
         ],
       },
