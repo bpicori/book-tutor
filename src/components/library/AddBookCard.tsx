@@ -60,7 +60,7 @@ export const AddBookCard = memo(function AddBookCard({
           }
           ${
             isHero
-              ? "aspect-[2/3] gap-4 shadow-sm hover:shadow-md"
+              ? "gap-4 px-6 py-8 md:py-10 shadow-sm hover:shadow-md"
               : "aspect-[2/3] gap-3"
           }
         `

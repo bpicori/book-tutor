@@ -58,9 +58,9 @@ export function LibraryPage() {
       {isLoading && <LoadingSpinner message="Adding book..." />}
 
       {isEmpty ? (
-        <div className="flex-1 flex items-center justify-center py-8 md:py-12">
+        <div className="flex-1 flex items-center justify-center py-6 md:py-8">
           <div className="w-full max-w-lg mx-auto text-center">
-            <div className="mb-8 space-y-3">
+            <div className="mb-6 space-y-3">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-forest-green/10">
                 <span className="material-symbols-outlined text-4xl text-forest-green/70">
                   auto_stories
