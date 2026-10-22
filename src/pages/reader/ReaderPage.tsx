@@ -225,10 +225,7 @@ export function ReaderPage() {
       <div className="reader-stage">
         <div className="reader-inner">
           <div className="reading-body">
-            <div
-              className="reading-view"
-              style={{ maxWidth: `${settings.readingWidth}px` }}
-            >
+            <div className="reading-view">
               <Reader viewRef={viewRef} player={player} />
             </div>
           </div>
@@ -240,8 +237,6 @@ export function ReaderPage() {
         <ReaderPager
           onPrev={handlePrev}
           onNext={handleNext}
-          current={progress.location?.current}
-          total={progress.location?.total}
           percent={percent}
         />
       )}

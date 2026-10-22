@@ -556,8 +556,10 @@ body.guide-open .margin-note {
 }
 .reading-view {
   width: 100%;
+  max-width: var(--reading-width);
   height: 100%;
   min-height: 0;
+  margin: 0 auto;
   background: var(--page-bg);
   position: relative;
 }

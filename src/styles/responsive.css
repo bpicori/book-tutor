@@ -677,3 +677,52 @@ body.reduce-motion .guide,
 body.reduce-motion .toc {
   transition: none;
 }
+
+/* Two-page spread on wide landscape screens. Foliate's paginator switches
+   to two columns once the reading area is wider than one column; the margin
+   note is hidden here because the spread needs the full width. */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .reader-bar-in {
+    max-width: 1240px;
+  }
+  .reader-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+    max-width: 1440px;
+    height: 100%;
+    padding: 32px 48px 48px;
+  }
+  .reader-inner .reading-body {
+    height: 100%;
+    width: 100%;
+    max-width: none;
+  }
+  .reading-view {
+    max-width: calc(var(--reading-width) * 2 + 96px);
+  }
+  .reader-page .margin-note {
+    display: none;
+  }
+}
+
+/* The guide overlays the page; keep a single, centered column underneath it so
+   the spread never runs under the panel. */
+@media (min-width: 1024px) and (orientation: landscape) {
+  body.guide-open .reader-inner {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    max-width: 760px;
+    padding: 28px 40px 44px;
+  }
+  body.guide-open .reader-inner .reading-body {
+    flex: 1;
+    width: 100%;
+    max-width: none;
+  }
+  body.guide-open .reading-view {
+    max-width: var(--reading-width);
+    margin: 0 auto;
+  }
+}
