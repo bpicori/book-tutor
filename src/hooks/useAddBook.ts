@@ -4,7 +4,6 @@ import { useStore } from "../store/useStore";
 import { saveBookFile } from "../store/bookStorage";
 import { blobToDataUrl, generateBookId } from "../utils/formatters";
 import {
-  formatMetadataValue,
   getBookAuthor,
   getBookTitle,
   getTitleFromFilename,
@@ -15,7 +14,6 @@ type FoliateImportView = HTMLElement & {
     metadata?: {
       title?: unknown;
       author?: unknown;
-      description?: unknown;
     };
     getCover?(): Promise<Blob | null>;
   };
@@ -26,7 +24,6 @@ export interface BookDraft {
   file: File;
   title: string;
   author: string;
-  description?: string;
   coverDataUrl: string | null;
 }
 
@@ -77,9 +74,6 @@ export function useAddBook() {
         const title =
           getBookTitle(book?.metadata, fallbackTitle) || fallbackTitle;
         const author = getBookAuthor(book?.metadata, "");
-        const description = formatMetadataValue(
-          book?.metadata?.description
-        ).trim();
 
         let coverDataUrl: string | null = null;
         if (book?.getCover) {
@@ -95,7 +89,6 @@ export function useAddBook() {
           file,
           title,
           author,
-          description: description || undefined,
           coverDataUrl,
         };
       } catch (err) {
@@ -131,7 +124,6 @@ export function useAddBook() {
           title: overrides.title?.trim() || draft.title,
           author: overrides.author?.trim() || draft.author || "Unknown Author",
           coverDataUrl: draft.coverDataUrl,
-          description: draft.description,
           addedAt: Date.now(),
           lastReadAt: null,
           progress: 0,

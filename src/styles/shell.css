@@ -1089,14 +1089,6 @@ dialog::backdrop {
   color: var(--muted);
   margin-bottom: 14px;
 }
-.bd-desc {
-  font-family: var(--font-display);
-  font-size: 15.5px;
-  line-height: 1.55;
-  color: var(--fg);
-  margin-bottom: 18px;
-  text-wrap: pretty;
-}
 .bd-meta {
   display: flex;
   flex-wrap: wrap;

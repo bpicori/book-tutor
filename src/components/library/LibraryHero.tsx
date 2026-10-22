@@ -22,7 +22,6 @@ export function LibraryHero({ book, onContinue, onPreview }: LibraryHeroProps) {
         <p className="eyebrow">Continue reading</p>
         <h2>{book.title}</h2>
         <p className="byline">{book.author}</p>
-        {book.description && <p className="quote">{book.description}</p>}
         <div className="now-progress">
           <div className="progress-meta">
             <span>

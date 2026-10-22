@@ -28,7 +28,7 @@
   }
   .book-head,
   .book-row {
-    grid-template-columns: 58px minmax(0, 1fr) 150px 96px 22px;
+    grid-template-columns: 58px minmax(0, 1fr) 150px 96px 32px;
     gap: 16px;
   }
   .settings-shell {
@@ -88,11 +88,10 @@
     display: none;
   }
   .book-row {
-    grid-template-columns: 48px minmax(0, 1fr) 120px;
+    grid-template-columns: 48px minmax(0, 1fr) 120px 32px;
     gap: 14px;
   }
-  .book-meta,
-  .row-arrow {
+  .book-meta {
     display: none;
   }
   .book-thumb {
@@ -244,10 +243,6 @@
   .now h2 {
     font-size: 30px;
   }
-  .now .quote {
-    font-size: 16px;
-    margin: 14px 0 18px;
-  }
   .now .byline {
     font-size: 11px;
   }
@@ -267,9 +262,13 @@
     font-size: 22px;
   }
   .book-row {
-    grid-template-columns: 42px minmax(0, 1fr) 88px;
+    grid-template-columns: 42px minmax(0, 1fr) 88px 32px;
     padding: 12px 0;
     gap: 12px;
+  }
+  .row-details {
+    opacity: 1;
+    transform: translateY(-50%);
   }
   .book-title {
     font-size: 17px;
@@ -443,9 +442,6 @@
   .bd-cover {
     width: 92px;
   }
-  .bd-desc {
-    font-size: 14px;
-  }
   .player {
     left: 14px;
     right: 14px;
@@ -570,11 +566,8 @@
   .now {
     grid-template-columns: 84px minmax(0, 1fr);
   }
-  .now .quote {
-    display: none;
-  }
   .book-row {
-    grid-template-columns: 36px minmax(0, 1fr) 76px;
+    grid-template-columns: 36px minmax(0, 1fr) 76px 32px;
   }
   .book-thumb {
     width: 32px;

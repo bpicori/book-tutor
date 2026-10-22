@@ -173,7 +173,8 @@ export function LibraryPage() {
             <LibraryRow
               key={book.id}
               book={book}
-              onOpen={() => setDetailId(book.id)}
+              onOpen={() => openBook(book.id)}
+              onDetails={() => setDetailId(book.id)}
             />
           ))}
 

@@ -26,8 +26,6 @@ export interface BookMetadata {
   /** Author(s) - can be string, array of strings, or array of objects with name */
   author?:
     string | string[] | Array<{ name?: string | Record<string, string> }>;
-  /** Book description */
-  description?: string | Record<string, string>;
   /** Language code */
   language?: string;
 }
@@ -130,8 +128,6 @@ export interface LibraryBook {
   addedAt: number;
   lastReadAt: number | null;
   progress: number;
-  /** Description from the EPUB metadata, when the book has one. */
-  description?: string;
   /** CFI location string for resuming reading position */
   lastLocation: string | null;
   /**

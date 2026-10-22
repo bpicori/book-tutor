@@ -84,9 +84,6 @@ export function BookDetailDialog({
         </div>
         <div>
           <p className="bd-author">{book.author}</p>
-          <p className="bd-desc">
-            {book.description || "No description saved for this book."}
-          </p>
           <p className="bd-meta">
             <span>{percent}% through</span>
             <span>{lastRead}</span>

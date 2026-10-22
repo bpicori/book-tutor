@@ -57,18 +57,9 @@
   font-size: 12.5px;
   color: var(--muted);
 }
-.now .quote {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 18.5px;
-  line-height: 1.5;
-  color: var(--fg);
-  max-width: 46ch;
-  margin: 22px 0 26px;
-  text-wrap: pretty;
-}
 .now-progress {
   max-width: 430px;
+  margin-top: 22px;
 }
 .progress-meta {
   display: flex;
@@ -165,9 +156,12 @@
 .book-head,
 .book-row {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) 190px 130px 24px;
+  grid-template-columns: 64px minmax(0, 1fr) 190px 130px 32px;
   gap: 20px;
   align-items: center;
+}
+.book-row-wrap {
+  position: relative;
 }
 .book-head {
   padding: 12px 0 10px;
@@ -178,19 +172,16 @@
   color: var(--muted);
 }
 .book-row {
+  width: 100%;
   padding: 14px 0;
   border-bottom: 1px solid var(--border);
   cursor: pointer;
   position: relative;
   transition: background 0.12s ease;
 }
-.book-row:hover {
+.book-row:hover,
+.book-row-wrap:hover .book-row {
   background: var(--fg-soft);
-}
-.book-row:hover .row-arrow,
-.book-row:focus-visible .row-arrow {
-  opacity: 1;
-  transform: translateX(0);
 }
 .book-thumb {
   width: 40px;
@@ -243,17 +234,37 @@
   color: var(--muted);
   text-transform: uppercase;
 }
-.row-arrow {
-  display: flex;
-  justify-content: flex-end;
+.row-details {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
   color: var(--muted);
-  opacity: 0.4;
+  opacity: 0.45;
+  transform: translateY(-50%) translateX(-3px);
   transition:
     opacity 0.15s ease,
-    transform 0.15s ease;
-  transform: translateX(-3px);
+    transform 0.15s ease,
+    color 0.15s ease;
 }
-.row-arrow svg {
+.book-row-wrap:hover .row-details,
+.row-details:focus-visible {
+  opacity: 1;
+  transform: translateY(-50%);
+  color: var(--fg);
+}
+.row-details:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: -4px;
+}
+.row-details:hover {
+  color: var(--fg);
+}
+.row-details svg {
   width: 15px;
   height: 15px;
 }
@@ -264,12 +275,6 @@
   color: var(--muted);
 }
 /* ─── real-library additions ───────────────────────────────────────── */
-.now .quote {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 .now-cover .thumb-fallback {
   font-family: var(--font-display);
   font-size: 34px;

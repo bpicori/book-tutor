@@ -186,8 +186,6 @@ export function normalizeLibraryBook(raw: unknown): LibraryBook | null {
         ? source.lastReadAt
         : null,
     progress,
-    description:
-      typeof source.description === "string" ? source.description : undefined,
     lastLocation:
       typeof source.lastLocation === "string" ? source.lastLocation : null,
     chapterScopeDepth:

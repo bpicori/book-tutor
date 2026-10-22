@@ -43,6 +43,7 @@ body.hide-progress .reader-progress {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
+  transition: padding-right 0.2s ease;
 }
 .reader-book {
   display: flex;
@@ -79,12 +80,27 @@ body.hide-progress .reader-progress {
   max-width: 240px;
 }
 .rb-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   font: 400 8.5px/1.3 var(--font-mono);
   letter-spacing: 0.09em;
   color: var(--page-muted);
   text-transform: uppercase;
   margin-top: 3px;
+}
+.rb-chapter {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+.rb-sep,
+.rb-percent {
+  flex: none;
 }
 .reader-tools {
   display: flex;
@@ -897,7 +913,7 @@ body.guide-open .margin-note {
 
 /* Keep the bar's tools clear of the fixed guide on wide screens. */
 @media (min-width: 1321px) {
-  .reader-bar-in {
+  body.guide-open .reader-bar-in {
     padding-right: 468px;
   }
 }

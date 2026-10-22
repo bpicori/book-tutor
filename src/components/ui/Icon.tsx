@@ -24,6 +24,7 @@ export type IconName =
   | "trash"
   | "refresh"
   | "check"
+  | "more"
   | "chevronDown"
   | "chevronRight";
 
@@ -148,6 +149,13 @@ const ICONS: Record<IconName, ReactNode> = {
     </>
   ),
   check: <path d="m5 12 4 4L19 6" />,
+  more: (
+    <g fill="currentColor" stroke="none">
+      <circle cx="5" cy="12" r="1.4" />
+      <circle cx="12" cy="12" r="1.4" />
+      <circle cx="19" cy="12" r="1.4" />
+    </g>
+  ),
   chevronDown: <path d="m6 9 6 6 6-6" />,
   chevronRight: <path d="m9 6 6 6-6 6" />,
 };

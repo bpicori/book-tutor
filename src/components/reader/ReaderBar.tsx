@@ -77,7 +77,11 @@ export function ReaderBar({
           <div>
             <p className="rb-title">{title}</p>
             <p className="rb-meta">
-              {chapterLabel} · {percent}%
+              <span className="rb-chapter">{chapterLabel}</span>
+              <span className="rb-sep" aria-hidden="true">
+                ·
+              </span>
+              <span className="rb-percent">{percent}%</span>
             </p>
           </div>
         </div>
