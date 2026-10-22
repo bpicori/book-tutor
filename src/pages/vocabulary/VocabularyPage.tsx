@@ -1,121 +1,170 @@
-import { memo, useState, useMemo } from "react";
-import Markdown from "react-markdown";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useStore } from "../../store/useStore";
-import { useNavigation } from "../../hooks/useNavigation";
-import { IconButton, PaginationControls } from "../../components/common";
-import { PageShell } from "../../components/layout/PageShell";
+import { Chip } from "../../components/ui/Chip";
+import { SearchField } from "../../components/ui/SearchField";
+import { Page, PageHeader } from "../../components/layout/Page";
+import { useToast } from "../../components/ui/Toast";
+import { PracticeCard } from "../../components/vocabulary/PracticeCard";
+import { WordRow } from "../../components/vocabulary/WordRow";
 
-const WORDS_PER_PAGE = 10;
+type WordFilter = "all" | "review" | "known";
 
 export const VocabularyPage = memo(function VocabularyPage() {
-  const { words, removeWord } = useStore();
-  const { goToLibrary, goToSettings } = useNavigation();
-  const [currentPage, setCurrentPage] = useState(1);
+  const words = useStore((state) => state.words);
+  const removeWord = useStore((state) => state.removeWord);
+  const restoreWord = useStore((state) => state.restoreWord);
+  const setWordKnown = useStore((state) => state.setWordKnown);
+  const showToast = useToast();
 
-  const totalPages = Math.ceil(words.length / WORDS_PER_PAGE);
-  const displayedWords = useMemo(() => {
-    const start = (currentPage - 1) * WORDS_PER_PAGE;
-    return words.slice(start, start + WORDS_PER_PAGE);
-  }, [words, currentPage]);
+  const [filter, setFilter] = useState<WordFilter>("all");
+  const [query, setQuery] = useState("");
 
-  const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(1, prev - 1));
-  };
+  const counts = useMemo(
+    () => ({
+      all: words.length,
+      review: words.filter((word) => !word.known).length,
+      known: words.filter((word) => word.known).length,
+    }),
+    [words]
+  );
 
-  const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
-  };
+  const groups = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    const filtered = words
+      .filter((word) => {
+        if (filter === "review" && word.known) return false;
+        if (filter === "known" && !word.known) return false;
+        if (
+          normalizedQuery &&
+          !`${word.word} ${word.definition}`
+            .toLowerCase()
+            .includes(normalizedQuery)
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .sort((a, b) => a.word.localeCompare(b.word));
+
+    const result = new Map<string, typeof filtered>();
+    for (const word of filtered) {
+      const letter = word.word[0]?.toUpperCase() ?? "#";
+      const list = result.get(letter) ?? [];
+      list.push(word);
+      result.set(letter, list);
+    }
+    return Array.from(result.entries());
+  }, [words, filter, query]);
+
+  const handleRemove = useCallback(
+    (wordId: string) => {
+      const index = words.findIndex((word) => word.id === wordId);
+      if (index < 0) return;
+      const removed = words[index];
+      removeWord(wordId);
+      showToast({
+        message: `“${removed.word}” removed.`,
+        actionLabel: "Undo",
+        onAction: () => restoreWord(removed, index),
+      });
+    },
+    [words, removeWord, restoreWord, showToast]
+  );
+
+  const handleReviewAll = useCallback(() => {
+    for (const word of words) {
+      if (word.known) setWordKnown(word.id, false);
+    }
+    showToast({ message: "All words are back in review." });
+  }, [words, setWordKnown, showToast]);
+
+  const hasWords = words.length > 0;
+  const hasMatches = groups.length > 0;
 
   return (
-    <PageShell
-      variant="subpage"
-      title="Vocabulary"
-      onBack={goToLibrary}
-      backText="Library"
-      mainClassName="flex-1 max-w-4xl mx-auto w-full px-4 md:px-6 py-6 md:py-8"
-      actions={
-        <IconButton icon="settings" label="Settings" onClick={goToSettings} />
-      }
-    >
-      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="text-sm text-light-gray-text">
-          {words.length === 0
-            ? 'No words saved yet. Select text in a book and click "New Word" to add one.'
-            : `${words.length} saved word${words.length === 1 ? "" : "s"}`}
-        </div>
+    <Page>
+      <PageHeader
+        eyebrow={
+          <>
+            Lexicon · {words.length} word{words.length === 1 ? "" : "s"}
+          </>
+        }
+        title="Words you kept."
+        lead="Saved while reading, with the chapter still attached. Review them without leaving the page."
+      />
 
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPrev={handlePrevPage}
-          onNext={handleNextPage}
+      <div className="vocab-tools">
+        <div className="chips" role="group" aria-label="Filter words">
+          <Chip
+            active={filter === "all"}
+            count={counts.all}
+            onClick={() => setFilter("all")}
+          >
+            All
+          </Chip>
+          <Chip
+            active={filter === "review"}
+            count={counts.review}
+            onClick={() => setFilter("review")}
+          >
+            To review
+          </Chip>
+          <Chip
+            active={filter === "known"}
+            count={counts.known}
+            onClick={() => setFilter("known")}
+          >
+            Known
+          </Chip>
+        </div>
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          placeholder="Find a word"
+          label="Search vocabulary"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {displayedWords.map((word) => (
-          <div
-            key={word.id}
-            className="relative group p-3 rounded-lg bg-white border border-border-warm hover:border-forest-green/30 hover:shadow-md transition-all duration-200"
-          >
-            <div className="flex justify-between items-start gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2 mb-1">
-                  <h3 className="text-base font-serif font-bold text-forest-green">
-                    {word.word}
-                  </h3>
-                  {word.bookTitle && (
-                    <span
-                      className="text-[10px] text-light-gray-text truncate max-w-[150px]"
-                      title={word.bookTitle}
-                    >
-                      from {word.bookTitle}
-                    </span>
-                  )}
-                </div>
-
-                <div className="text-muted-gray-text text-xs leading-normal prose prose-stone max-w-none line-clamp-3">
-                  <Markdown
-                    components={{
-                      p: ({ children }) => <>{children}</>,
-                    }}
-                  >
-                    {word.definition}
-                  </Markdown>
-                </div>
-
-                <div className="mt-2 text-[10px] text-light-gray-text flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[10px]">
-                    calendar_today
-                  </span>
-                  Added {new Date(word.savedAt).toLocaleDateString()}
-                </div>
+      <div className="vocab-layout">
+        <div className="vocab-list">
+          {!hasWords && (
+            <p className="empty-words">
+              No words yet. Select a word while reading and save it to the
+              lexicon.
+            </p>
+          )}
+          {hasWords && !hasMatches && (
+            <p className="empty-words">No words match that.</p>
+          )}
+          {groups.map(([letter, list]) => (
+            <div key={letter}>
+              <div className="letter-head">
+                <span>{letter}</span>
               </div>
-
-              <button
-                onClick={() => removeWord(word.id)}
-                className="opacity-0 group-hover:opacity-100 transition-all duration-200 p-1 text-light-gray-text hover:text-red-600 hover:bg-red-50 rounded-md transform translate-x-2 group-hover:translate-x-0"
-                title="Remove word"
-              >
-                <span className="material-symbols-outlined text-base">
-                  delete
-                </span>
-              </button>
+              {list.map((word) => (
+                <WordRow
+                  key={word.id}
+                  word={word}
+                  onToggleKnown={(known) => setWordKnown(word.id, known)}
+                  onRemove={() => handleRemove(word.id)}
+                />
+              ))}
             </div>
-          </div>
-        ))}
-      </div>
-
-      {totalPages > 1 && (
-        <div className="mt-6 md:mt-8 flex justify-center">
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPrev={handlePrevPage}
-            onNext={handleNextPage}
-          />
+          ))}
         </div>
-      )}
-    </PageShell>
+
+        <PracticeCard
+          words={words}
+          onMarkKnown={(wordId) => {
+            const word = words.find((entry) => entry.id === wordId);
+            setWordKnown(wordId, true);
+            if (word) {
+              showToast({ message: `“${word.word}” marked known.` });
+            }
+          }}
+          onReviewAll={handleReviewAll}
+        />
+      </div>
+    </Page>
   );
 });

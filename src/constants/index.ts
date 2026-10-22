@@ -1,18 +1,42 @@
 import type {
+  ReaderFont,
   ReaderSettings,
   HighlightColor,
   LLMModelConfig,
   SpeechProviderConfig,
 } from "../types";
 
-export { ROUTES, SETTINGS_TABS, isValidSettingsTabId } from "./routes";
+export {
+  ROUTES,
+  SETTINGS_TABS,
+  SETTINGS_TAB_ALIASES,
+  isValidSettingsTabId,
+  resolveSettingsTab,
+} from "./routes";
 export type { SettingsTabId } from "./routes";
 export { THEME_PALETTE, THEMES } from "./themePalette";
 export type { ThemePaletteEntry } from "./themePalette";
 
 export const APP_NAME = "Book Tutor";
+export const APP_DISPLAY_NAME = "Read with AI";
 export const DEFAULT_LLM_BASE_URL = "https://api.openai.com/v1";
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+
+/** Font stacks used by the reading typography controls. */
+export const READER_FONTS: Record<ReaderFont, string> = {
+  iowan: "'Iowan Old Style','Charter',Georgia,'Times New Roman',serif",
+  charter: "'Charter','Bitstream Charter',Georgia,serif",
+  sans: "-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif",
+};
+
+export const READER_FONT_OPTIONS: { value: ReaderFont; label: string }[] = [
+  { value: "iowan", label: "Iowan" },
+  { value: "charter", label: "Charter" },
+  { value: "sans", label: "Sans" },
+];
+
+export const READER_LINE_HEIGHTS = [1.55, 1.72, 1.9] as const;
+export const READER_WIDTHS = [560, 620, 680] as const;
 
 export const DEFAULT_SPEECH_PROVIDER: SpeechProviderConfig = {
   type: "openrouter",
@@ -90,11 +114,15 @@ export function getHighlightHex(color: HighlightColor): string {
 }
 
 export const DEFAULT_SETTINGS: ReaderSettings = {
-  fontFamily: "Literata",
-  fontSize: 16,
-  lineHeight: 1.6,
+  fontFamily: "iowan",
+  fontSize: 19.5,
+  lineHeight: 1.72,
+  readingWidth: 620,
   viewMode: "paginated",
-  theme: "sepia",
+  showProgress: true,
+  reduceMotion: false,
+  carryBookMemory: true,
+  theme: "paper",
   llmProvider: {
     baseUrl: DEFAULT_LLM_BASE_URL,
     apiKey: "",

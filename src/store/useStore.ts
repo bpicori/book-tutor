@@ -1,7 +1,12 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Bookmark, ChapterChats } from "../types";
+import type { Bookmark, ChapterChats, LibraryBook, SavedWord } from "../types";
 import { STORAGE_KEY } from "../constants";
+import {
+  normalizeLibraryBook,
+  normalizeSettings,
+  normalizeWord,
+} from "./migrations";
 import {
   readSnapshot,
   stripStreaming,
@@ -165,9 +170,23 @@ export const useStore = create<AppState>()(
       merge: (persistedState: unknown, currentState: AppState) => {
         try {
           const persisted = (persistedState || {}) as Partial<AppState>;
+          const words = Array.isArray(persisted.words)
+            ? persisted.words
+                .map(normalizeWord)
+                .filter((word): word is SavedWord => word !== null)
+            : currentState.words;
+          const library = Array.isArray(persisted.library)
+            ? persisted.library
+                .map(normalizeLibraryBook)
+                .filter((book): book is LibraryBook => book !== null)
+            : currentState.library;
+
           return {
             ...currentState,
             ...persisted,
+            settings: normalizeSettings(persisted.settings),
+            words,
+            library,
             chapterChats: migrateChapterChats(
               persisted.chapterChats,
               persisted.currentBookId

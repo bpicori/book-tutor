@@ -16,6 +16,10 @@ export function leaveReaderContext(
     ...(library ? { library } : {}),
     ...initialReaderState,
     ...navigationAISidebarReset,
+    // Enter the next book with the panels closed; the library's preview
+    // action reopens the guide after navigation.
+    isSidebarCollapsed: true,
+    isAiSidebarOpen: false,
   });
 }
 

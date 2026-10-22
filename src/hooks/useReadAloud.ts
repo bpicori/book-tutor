@@ -50,7 +50,11 @@ export interface ReadAloudPlayer {
   status: ReadAloudStatus;
   error: string | null;
   isActive: boolean;
-  /** Current audio playback speed, one of 1, 1.25, 1.5, or 2. */
+  /** Zero-based paragraph currently being read. */
+  paragraphIndex: number;
+  /** Number of paragraphs in the current section queue. */
+  paragraphCount: number;
+  /** Current audio playback speed, between 0.6 and 1.6. */
   playbackRate: number;
   /** Changes playback speed immediately and persists the choice. */
   setPlaybackRate: (rate: number) => void;
@@ -451,8 +455,7 @@ export function useReadAloud({
           )
         : { start: sectionIndex, end: (state.book?.sections?.length ?? 1) - 1 };
 
-      const doc = docRef.current;
-      if (doc && sectionIndexRef.current === sectionIndex) {
+      const queueForDoc = (doc: Document): number => {
         const queue = buildQueue(doc);
         let startIndex = 0;
         const resolved = href ? state.book?.resolveHref?.(href) : null;
@@ -460,7 +463,24 @@ export function useReadAloud({
         if (anchor instanceof Element) {
           startIndex = findParagraphIndex(queue, paragraphRange(doc, anchor));
         }
-        void playIndex(startIndex);
+        return startIndex;
+      };
+
+      const doc = docRef.current;
+      if (doc && sectionIndexRef.current === sectionIndex) {
+        void playIndex(queueForDoc(doc));
+        return;
+      }
+
+      // The section may already be rendered without a fresh `load` event
+      // (for example when the reader turns back to the section they are in).
+      const renderedDoc = view.renderer
+        ?.getContents?.()
+        .find((content) => content.index === sectionIndex)?.doc;
+      if (renderedDoc) {
+        docRef.current = renderedDoc;
+        sectionIndexRef.current = sectionIndex;
+        void playIndex(queueForDoc(renderedDoc));
         return;
       }
 
@@ -596,6 +616,8 @@ export function useReadAloud({
     status,
     error,
     isActive: status !== "idle",
+    paragraphIndex,
+    paragraphCount,
     playbackRate,
     setPlaybackRate,
     canPrev: paragraphIndex > 0,

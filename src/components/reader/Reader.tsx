@@ -91,12 +91,14 @@ export function Reader({ viewRef, player }: ReaderProps) {
     [createHighlight]
   );
 
-  const handleSelectionAskAI = useCallback(() => {
-    if (!selection?.text) return;
-    const prompt = `Can you explain this passage from the book?\n\n"${selection.text}"`;
-    handleAskAI(prompt);
-    dismissSelection();
-  }, [selection, handleAskAI, dismissSelection]);
+  const handleSelectionAskAI = useCallback(
+    (question: string) => {
+      if (!question.trim()) return;
+      handleAskAI(question);
+      dismissSelection();
+    },
+    [handleAskAI, dismissSelection]
+  );
 
   const handleRelocate = useCallback(
     (event: Event) => {
@@ -307,10 +309,7 @@ export function Reader({ viewRef, player }: ReaderProps) {
 
   return (
     <>
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-hidden bg-sepia-panel"
-      />
+      <div ref={containerRef} className="reader-foliate" />
       {hoverButton && player.status !== "error" && !selection && (
         <ParagraphPlayButton
           left={hoverButton.left}

@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef } from "react";
 import type { TOCItem } from "../../types";
+import { Icon } from "../ui/Icon";
 
 /** Expandable entries are keyed by href, which is unique inside a book. */
 export function tocItemKey(item: TOCItem): string {
@@ -29,19 +30,13 @@ export const TOCLink = memo(function TOCLink({
   const isActive = currentHref === item.href;
   const hasChildren = Boolean(item.subitems?.length);
   const expanded = hasChildren && isExpanded(item);
-  const linkRef = useRef<HTMLAnchorElement>(null);
+  const linkRef = useRef<HTMLButtonElement>(null);
 
-  // Keep the entry the reader is in visible without scrolling the whole list.
   useEffect(() => {
     if (isActive) {
       linkRef.current?.scrollIntoView({ block: "nearest" });
     }
   }, [isActive]);
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    onNavigate(item.href);
-  };
 
   const toggleLabel = expanded
     ? `Collapse ${item.label}`
@@ -49,61 +44,48 @@ export const TOCLink = memo(function TOCLink({
 
   return (
     <>
-      <div className="group flex items-stretch gap-0.5">
+      <div className="toc-entry">
         {hasChildren ? (
           <button
             type="button"
+            className="toc-entry-toggle"
             onClick={() => onToggle(item)}
             aria-expanded={expanded}
             aria-label={toggleLabel}
             title={toggleLabel}
-            className="w-6 shrink-0 flex items-center justify-center rounded-md text-light-gray-text hover:bg-hover-warm hover:text-forest-green transition-colors"
           >
-            <span className="material-symbols-outlined text-base shrink-0">
-              {expanded ? "expand_more" : "chevron_right"}
-            </span>
+            <Icon name={expanded ? "chevronDown" : "chevronRight"} size={13} />
           </button>
         ) : (
-          <span className="w-6 shrink-0" aria-hidden="true" />
+          <span className="toc-entry-toggle" aria-hidden="true" />
         )}
 
-        <a
+        <button
           ref={linkRef}
-          href="#"
-          onClick={handleClick}
-          className={`flex flex-1 min-w-0 items-center gap-2 px-2 py-2 rounded-lg transition-colors ${
-            isActive
-              ? "bg-active-green-light text-forest-green"
-              : "text-muted-gray-text hover:bg-hover-warm"
-          }`}
+          type="button"
+          className={`toc-entry-link${isActive ? " is-current" : ""}`}
+          style={{ paddingLeft: 8 + level * 14 }}
+          aria-current={isActive ? "page" : undefined}
+          onClick={() => onNavigate(item.href)}
         >
-          <span className="material-symbols-outlined text-lg shrink-0">
-            {level > 0 ? "subdirectory_arrow_right" : "description"}
-          </span>
-          <p className="text-sm font-medium leading-normal truncate">
-            {item.label}
-          </p>
-        </a>
+          <span className="toc-label">{item.label}</span>
+        </button>
 
         <button
           type="button"
+          className="toc-entry-play"
           onClick={() => onReadFromHere(item.href)}
           aria-label={`Read from here: ${item.label}`}
           title="Read from here"
-          className={`w-7 shrink-0 flex items-center justify-center rounded-md text-light-gray-text hover:bg-hover-warm hover:text-forest-green transition-opacity ${
-            isActive
-              ? "opacity-100"
-              : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
-          }`}
         >
-          <span className="material-symbols-outlined text-lg">play_arrow</span>
+          <Icon name="play" size={10} />
         </button>
       </div>
 
       {expanded &&
-        item.subitems?.map((subitem, idx) => (
+        item.subitems?.map((subitem, index) => (
           <TOCLink
-            key={subitem.href || idx}
+            key={subitem.href || index}
             item={subitem}
             level={level + 1}
             currentHref={currentHref}

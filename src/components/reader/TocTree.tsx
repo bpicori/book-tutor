@@ -110,7 +110,7 @@ export const TocTree = memo(function TocTree({
   );
 
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="toc-tree-list">
       {items.map((item, idx) => (
         <TOCLink
           key={item.href || idx}

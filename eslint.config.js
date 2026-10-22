@@ -24,6 +24,8 @@ export default [
         window: "readonly",
         HTMLElement: "readonly",
         HTMLDivElement: "readonly",
+        HTMLDialogElement: "readonly",
+        SVGSVGElement: "readonly",
         HTMLTextAreaElement: "readonly",
         HTMLInputElement: "readonly",
         HTMLButtonElement: "readonly",

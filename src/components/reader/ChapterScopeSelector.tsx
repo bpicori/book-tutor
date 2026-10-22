@@ -25,9 +25,7 @@ interface ChapterScopeSelectorProps {
  *
  * Books differ: some have flat chapters, others nest sections two or three
  * levels deep. The choice is stored per book and is the single scope used by
- * both the chapter preview and Ask AI, so picking "Top level" makes the
- * preview cover the whole top-level chapter rather than just the sub-section
- * the reader happens to be in.
+ * both the chapter preview and Ask AI.
  */
 export const ChapterScopeSelector = memo(function ChapterScopeSelector({
   toc,
@@ -39,20 +37,14 @@ export const ChapterScopeSelector = memo(function ChapterScopeSelector({
   const selectedDepth = useChapterScopeDepth();
 
   const options = getTocDepthOptions(toc);
-
-  // A flat book has only one sensible scope, so the control would be noise.
   if (!currentBookId || options.length < 2) return null;
 
   return (
-    <div className="mb-3 px-2">
-      <label
-        htmlFor="chapter-scope-depth"
-        className="block text-[11px] font-medium text-light-gray-text uppercase tracking-wide mb-1"
-      >
-        A chapter is
-      </label>
+    <div className="field">
+      <label htmlFor="chapter-scope-depth">A chapter is</label>
       <select
         id="chapter-scope-depth"
+        className="input"
         value={selectedDepth === null ? "default" : String(selectedDepth)}
         onChange={(event) =>
           setBookChapterScopeDepth(
@@ -60,7 +52,6 @@ export const ChapterScopeSelector = memo(function ChapterScopeSelector({
             event.target.value === "default" ? null : Number(event.target.value)
           )
         }
-        className="w-full text-sm bg-warm-off-white border border-border-warm rounded-lg px-2 py-1.5 text-muted-gray-text outline-none focus:ring-1 focus:ring-forest-green"
       >
         <option value="default">Automatic</option>
         {options.map((option) => (
@@ -70,7 +61,7 @@ export const ChapterScopeSelector = memo(function ChapterScopeSelector({
           </option>
         ))}
       </select>
-      <p className="text-[11px] text-light-gray-text leading-snug mt-1">
+      <p className="note">
         {selectedDepth === null
           ? "Sub-sections preview with the section above them; Ask AI reads the entry you are in."
           : `Preview and Ask AI both cover the ${depthName(

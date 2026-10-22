@@ -14,8 +14,10 @@ export interface UISlice {
 }
 
 export const createUISlice: StateCreator<UISlice> = (set) => ({
-  isAiSidebarOpen: true,
-  isSidebarCollapsed: false,
+  // The guide and contents start closed; the reader is the only place they
+  // exist, and the rail opens them on demand.
+  isAiSidebarOpen: false,
+  isSidebarCollapsed: true,
   settings: DEFAULT_SETTINGS,
 
   setAiSidebarOpen: (open) =>

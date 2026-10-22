@@ -1,9 +1,10 @@
 import type { ReaderSettings } from "../types";
-import { THEME_PALETTE } from "../constants";
+import { READER_FONTS, THEME_PALETTE } from "../constants";
 
 export function generateReaderCSS(settings: ReaderSettings): string {
   const { fontFamily, fontSize, lineHeight, theme } = settings;
-  const colors = THEME_PALETTE[theme].reader;
+  const colors = THEME_PALETTE[theme]?.reader ?? THEME_PALETTE.paper.reader;
+  const font = READER_FONTS[fontFamily] ?? READER_FONTS.iowan;
 
   return `
     @namespace epub "http://www.idpf.org/2007/ops";
@@ -12,7 +13,7 @@ export function generateReaderCSS(settings: ReaderSettings): string {
         background-color: ${colors.bg} !important;
     }
     body {
-        font-family: "${fontFamily}", serif;
+        font-family: ${font};
         font-size: ${fontSize}px;
         background-color: ${colors.bg} !important;
         color: ${colors.text} !important;
@@ -27,7 +28,7 @@ export function generateReaderCSS(settings: ReaderSettings): string {
         background-color: ${colors.bg} !important;
     }
     p, li, blockquote, dd {
-        font-family: "${fontFamily}", serif;
+        font-family: ${font};
         font-size: ${fontSize}px;
         line-height: ${lineHeight};
         text-align: start;
@@ -38,6 +39,7 @@ export function generateReaderCSS(settings: ReaderSettings): string {
         -webkit-hyphenate-limit-lines: 2;
         hanging-punctuation: allow-end last;
         widows: 2;
+        orphans: 2;
     }
     a, a:link, a:visited, a:hover, a:active {
         color: ${colors.text} !important;

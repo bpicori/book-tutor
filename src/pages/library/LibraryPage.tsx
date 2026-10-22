@@ -1,17 +1,39 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useStore } from "../../store/useStore";
 import { useNavigation } from "../../hooks/useNavigation";
 import { deleteBookFile } from "../../store/bookStorage";
 import { removeSpeechForBook } from "../../services/speechStore";
-import { useAddBook } from "../../hooks/useAddBook";
-import { LoadingSpinner, IconButton } from "../../components/common";
-import { PageShell } from "../../components/layout/PageShell";
-import { BookCard, AddBookCard } from "../../components/library";
+import { APP_DISPLAY_NAME } from "../../constants";
+import { Button } from "../../components/ui/Button";
+import { Icon } from "../../components/ui/Icon";
+import { Page } from "../../components/layout/Page";
+import { useToast } from "../../components/ui/Toast";
+import { LibraryHero } from "../../components/library/LibraryHero";
+import { LibraryRow } from "../../components/library/LibraryRow";
+import {
+  LibraryToolbar,
+  type LibraryFilter,
+} from "../../components/library/LibraryToolbar";
+import { AddBookDialog } from "../../components/library/AddBookDialog";
+import { BookDetailDialog } from "../../components/library/BookDetailDialog";
+import type { LibraryBook } from "../../types";
 
 export function LibraryPage() {
-  const { library, removeBookFromLibrary } = useStore();
-  const { openBook, goToVocabulary, goToSettings } = useNavigation();
-  const { addBook, isLoading } = useAddBook();
+  const library = useStore((state) => state.library);
+  const words = useStore((state) => state.words);
+  const removeBookFromLibrary = useStore(
+    (state) => state.removeBookFromLibrary
+  );
+  const setAiSidebarOpen = useStore((state) => state.setAiSidebarOpen);
+  const setActiveAiTab = useStore((state) => state.setActiveAiTab);
+  const { openBook } = useNavigation();
+  const showToast = useToast();
+
+  const [filter, setFilter] = useState<LibraryFilter>("all");
+  const [query, setQuery] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [removing, setRemoving] = useState(false);
 
   const sortedLibrary = useMemo(
     () =>
@@ -24,88 +46,166 @@ export function LibraryPage() {
     [library]
   );
 
-  const handleDeleteBook = useCallback(
-    async (bookId: string) => {
+  const counts = useMemo(
+    () => ({
+      all: library.length,
+      reading: library.filter((book) => book.progress > 0 && book.progress < 1)
+        .length,
+      finished: library.filter((book) => book.progress >= 1).length,
+    }),
+    [library]
+  );
+
+  const filteredLibrary = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return sortedLibrary.filter((book) => {
+      if (filter === "reading" && !(book.progress > 0 && book.progress < 1)) {
+        return false;
+      }
+      if (filter === "finished" && book.progress < 1) return false;
       if (
-        confirm("Are you sure you want to remove this book from your library?")
+        normalizedQuery &&
+        !`${book.title} ${book.author}`.toLowerCase().includes(normalizedQuery)
       ) {
-        await deleteBookFile(bookId);
-        removeBookFromLibrary(bookId);
-        void removeSpeechForBook(bookId).catch(() => {
+        return false;
+      }
+      return true;
+    });
+  }, [sortedLibrary, filter, query]);
+
+  const recentBook =
+    sortedLibrary.find((book) => book.lastReadAt !== null) ?? null;
+  const selectedBook = detailId
+    ? (library.find((book) => book.id === detailId) ?? null)
+    : null;
+
+  const handlePreview = useCallback(
+    (book: LibraryBook) => {
+      openBook(book.id);
+      setAiSidebarOpen(true);
+      setActiveAiTab("preview");
+    },
+    [openBook, setAiSidebarOpen, setActiveAiTab]
+  );
+
+  const handleRemove = useCallback(
+    async (book: LibraryBook) => {
+      setRemoving(true);
+      try {
+        await deleteBookFile(book.id);
+        removeBookFromLibrary(book.id);
+        void removeSpeechForBook(book.id).catch(() => {
           // Cache cleanup is best-effort; LRU eviction reclaims it otherwise.
         });
+        setDetailId(null);
+        showToast({ message: `Removed “${book.title}”.` });
+      } catch (error) {
+        console.error("Failed to remove book:", error);
+        showToast({ message: "Could not remove this book. Try again." });
+      } finally {
+        setRemoving(false);
       }
     },
-    [removeBookFromLibrary]
+    [removeBookFromLibrary, showToast]
   );
 
   const isEmpty = library.length === 0;
 
   return (
-    <PageShell
-      variant="home"
-      actions={
-        <>
-          <IconButton
-            icon="book_2"
-            label="Vocabulary"
-            onClick={goToVocabulary}
-          />
-          <IconButton icon="settings" label="Settings" onClick={goToSettings} />
-        </>
-      }
-    >
-      {isLoading && <LoadingSpinner message="Adding book..." />}
+    <Page>
+      <header className="lib-head">
+        <div>
+          <p className="wordmark">
+            <Icon name="spark" size={13} />
+            {APP_DISPLAY_NAME}
+          </p>
+          <p className="eyebrow">
+            Library · {library.length} book{library.length === 1 ? "" : "s"} ·{" "}
+            {words.length} word{words.length === 1 ? "" : "s"}
+          </p>
+          <h1 className="display">Your library</h1>
+        </div>
+        <Button variant="secondary" onClick={() => setAddOpen(true)}>
+          Add a book
+        </Button>
+      </header>
+
+      {recentBook && (
+        <LibraryHero
+          book={recentBook}
+          onContinue={() => openBook(recentBook.id)}
+          onPreview={() => handlePreview(recentBook)}
+        />
+      )}
 
       {isEmpty ? (
-        <div className="flex-1 flex items-center justify-center py-6 md:py-8">
-          <div className="w-full max-w-lg mx-auto text-center">
-            <div className="mb-6 space-y-3">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-forest-green/10">
-                <span className="material-symbols-outlined text-4xl text-forest-green/70">
-                  auto_stories
-                </span>
-              </div>
-              <h2 className="text-xl md:text-2xl font-semibold text-muted-gray-text">
-                Your library is empty
-              </h2>
-              <p className="text-light-gray-text text-sm md:text-base max-w-sm mx-auto leading-relaxed">
-                Add an EPUB to start reading with chapter previews, highlights,
-                and AI help along the way.
-              </p>
-            </div>
-
-            <AddBookCard variant="hero" onFileSelect={addBook} />
-
-            <p className="mt-6 text-xs text-light-gray-text">
-              EPUB files only · stored locally in your browser
-            </p>
-          </div>
+        <div className="empty-library">
+          <p className="eyebrow">Nothing on the shelf yet</p>
+          <h2>Start your library.</h2>
+          <p>
+            Add an EPUB to read with chapter previews, a guide in the margin,
+            and a lexicon of the words you keep.
+          </p>
+          <Button variant="primary" onClick={() => setAddOpen(true)}>
+            Add your first book
+          </Button>
+          <p className="note">EPUB only · nothing is uploaded</p>
         </div>
       ) : (
         <>
-          <div className="mb-6 md:mb-8">
-            <h2 className="text-lg md:text-xl font-semibold text-muted-gray-text mb-1">
-              Your Library
-            </h2>
-            <p className="text-light-gray-text text-sm">
-              {library.length} book{library.length === 1 ? "" : "s"}
-            </p>
+          <LibraryToolbar
+            filter={filter}
+            onFilterChange={setFilter}
+            query={query}
+            onQueryChange={setQuery}
+            counts={counts}
+          />
+
+          <div className="book-head" aria-hidden="true">
+            <span />
+            <span>Title</span>
+            <span>Progress</span>
+            <span>Last opened</span>
+            <span />
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-            <AddBookCard onFileSelect={addBook} />
-            {sortedLibrary.map((book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                onOpen={() => openBook(book.id)}
-                onDelete={() => handleDeleteBook(book.id)}
-              />
-            ))}
-          </div>
+          {filteredLibrary.map((book) => (
+            <LibraryRow
+              key={book.id}
+              book={book}
+              onOpen={() => setDetailId(book.id)}
+            />
+          ))}
+
+          {filteredLibrary.length === 0 && (
+            <p className="empty">No books match that.</p>
+          )}
+
+          <button
+            type="button"
+            className="add-row"
+            onClick={() => setAddOpen(true)}
+          >
+            <span className="add-plus" aria-hidden="true">
+              +
+            </span>
+            <span>Add an EPUB to your library</span>
+            <span className="add-note">EPUB only · no upload</span>
+          </button>
         </>
       )}
-    </PageShell>
+
+      <AddBookDialog open={addOpen} onClose={() => setAddOpen(false)} />
+      <BookDetailDialog
+        book={selectedBook}
+        removing={removing}
+        onClose={() => setDetailId(null)}
+        onOpen={(book) => {
+          setDetailId(null);
+          openBook(book.id);
+        }}
+        onRemove={handleRemove}
+      />
+    </Page>
   );
 }

@@ -19,7 +19,7 @@ function injectHighlightStyle(doc: Document): void {
   const style = doc.createElement("style");
   style.id = HIGHLIGHT_STYLE_ID;
   style.textContent =
-    "::highlight(read-aloud) { background-color: rgba(46, 125, 50, 0.28); }";
+    "::highlight(read-aloud) { background-color: rgba(171, 91, 78, 0.26); }";
   (doc.head ?? doc.documentElement).appendChild(style);
 }
 

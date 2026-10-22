@@ -41,9 +41,10 @@ export default defineConfig({
       manifest: {
         name: "Book Tutor",
         short_name: "BookTutor",
-        description: "Read books with AI assistance",
-        theme_color: "#f7f3eb",
-        background_color: "#f7f3eb",
+        description:
+          "A calm, editorial reading app with a guide that lives in the margin.",
+        theme_color: "#fbfaf6",
+        background_color: "#fbfaf6",
         display: "standalone",
         scope: "/book-tutor/",
         start_url: "/book-tutor/",

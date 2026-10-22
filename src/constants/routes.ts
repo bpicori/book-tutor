@@ -6,15 +6,24 @@ export const ROUTES = {
 } as const;
 
 export const SETTINGS_TABS = [
-  { id: "typography", label: "Typography", icon: "text_fields" },
-  { id: "theme", label: "Theme", icon: "palette" },
-  { id: "llm", label: "LLM", icon: "smart_toy" },
-  { id: "speech", label: "Speech", icon: "record_voice_over" },
-  { id: "backup", label: "Backup", icon: "download" },
-  { id: "cloudsync", label: "Cloud Sync", icon: "cloud_sync" },
+  { id: "typography", label: "Typography", index: "01" },
+  { id: "appearance", label: "Appearance", index: "02" },
+  { id: "guide", label: "The guide", index: "03" },
+  { id: "voice", label: "Voice", index: "04" },
+  { id: "data", label: "Data", index: "05" },
+  { id: "cloud", label: "Cloud", index: "06" },
 ] as const;
 
 export type SettingsTabId = (typeof SETTINGS_TABS)[number]["id"];
+
+/** Old routes kept working for bookmarks and in-app links. */
+export const SETTINGS_TAB_ALIASES: Record<string, SettingsTabId> = {
+  theme: "appearance",
+  llm: "guide",
+  speech: "voice",
+  backup: "data",
+  cloudsync: "cloud",
+};
 
 export function isValidSettingsTabId(
   tab: string | undefined
@@ -23,4 +32,10 @@ export function isValidSettingsTabId(
     tab !== undefined &&
     SETTINGS_TABS.some((settingsTab) => settingsTab.id === tab)
   );
+}
+
+export function resolveSettingsTab(tab: string | undefined): SettingsTabId {
+  if (isValidSettingsTabId(tab)) return tab;
+  if (tab && SETTINGS_TAB_ALIASES[tab]) return SETTINGS_TAB_ALIASES[tab];
+  return "typography";
 }

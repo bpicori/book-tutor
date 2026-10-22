@@ -130,6 +130,8 @@ export interface LibraryBook {
   addedAt: number;
   lastReadAt: number | null;
   progress: number;
+  /** Description from the EPUB metadata, when the book has one. */
+  description?: string;
   /** CFI location string for resuming reading position */
   lastLocation: string | null;
   /**
@@ -246,17 +248,24 @@ export interface SavedWord {
   savedAt: number;
   bookId?: string;
   bookTitle?: string;
+  /** False means the word still shows up in the practice queue. */
+  known: boolean;
 }
 
 // Settings Types
+
+/** The three typefaces offered by the redesign. */
+export type ReaderFont = "iowan" | "charter" | "sans";
 
 /**
  * Typography settings for the reader
  */
 export interface TypographySettings {
-  fontFamily: string;
-  fontSize: number; // 12-24
-  lineHeight: number; // 1.2-2.0
+  fontFamily: ReaderFont;
+  fontSize: number; // 16-24
+  lineHeight: number; // one of 1.55, 1.72, 1.9
+  /** The reading column width in pixels. */
+  readingWidth: number; // one of 560, 620, 680
 }
 
 /**
@@ -264,13 +273,19 @@ export interface TypographySettings {
  */
 export interface ViewSettings {
   viewMode: "paginated" | "scroll";
+  /** Draw the 2px progress line at the top of the reader. */
+  showProgress: boolean;
+  /** Disable panel and page animations. */
+  reduceMotion: boolean;
+  /** Let Ask AI use summaries from earlier chapters. */
+  carryBookMemory: boolean;
 }
 
 /**
  * Read-aloud playback preferences.
  */
 export interface PlaybackSettings {
-  /** Audio playback speed, one of 1, 1.25, 1.5, or 2. */
+  /** Audio playback speed, between 0.6 and 1.6. */
   playbackRate: number;
 }
 
@@ -331,7 +346,7 @@ export interface SpeechSettings {
 /**
  * Theme settings for the application
  */
-export type Theme = "sepia" | "solarized" | "nord" | "dark";
+export type Theme = "paper" | "sepia" | "solarized" | "night";
 
 export interface ThemeSettings {
   theme: Theme;

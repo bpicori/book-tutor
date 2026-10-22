@@ -13,16 +13,24 @@ import {
  * Orchestrates file loading, book opening, cover loading, title updates, and style application
  */
 export function useBookLoader(
-  viewRef: React.MutableRefObject<FoliateView | null>
+  viewRef: React.MutableRefObject<FoliateView | null>,
+  bookIdOverride?: string | null
 ) {
-  const { currentBookId, setBook, setCoverUrl, settings, library } = useStore();
+  const {
+    currentBookId: storeBookId,
+    setBook,
+    setCoverUrl,
+    settings,
+    library,
+  } = useStore();
+  const currentBookId = bookIdOverride ?? storeBookId;
 
   // Get the saved location for the current book
   const currentBook = library.find((b) => b.id === currentBookId);
   const savedLocation = currentBook?.lastLocation || undefined;
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const loadAttemptedRef = useRef(false);
+  const loadAttemptedRef = useRef<string | null>(null);
   const { loadBookFile } = useBookFile();
 
   const openBookFile = useCallback(
@@ -61,18 +69,20 @@ export function useBookLoader(
   );
 
   useEffect(() => {
-    if (loadAttemptedRef.current) return;
-    loadAttemptedRef.current = true;
+    if (!currentBookId) {
+      setError("No book selected");
+      setIsLoading(false);
+      return;
+    }
+    if (loadAttemptedRef.current === currentBookId) return;
+    loadAttemptedRef.current = currentBookId;
+    setIsLoading(true);
+    setError(null);
+    const bookId = currentBookId;
 
     async function loadBook() {
-      if (!currentBookId) {
-        setError("No book selected");
-        setIsLoading(false);
-        return;
-      }
-
       // Load file from storage
-      const file = await loadBookFile(currentBookId);
+      const file = await loadBookFile(bookId);
       if (!file) {
         setError("Book file not found");
         setIsLoading(false);

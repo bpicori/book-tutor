@@ -40,6 +40,7 @@ export function useChapterChat({
     addChatMessage,
     updateLastChatMessage,
     clearChapterChat,
+    carryBookMemory,
   } = useStore(
     useShallow((state) => ({
       book: state.book,
@@ -50,6 +51,7 @@ export function useChapterChat({
       addChatMessage: state.addChatMessage,
       updateLastChatMessage: state.updateLastChatMessage,
       clearChapterChat: state.clearChapterChat,
+      carryBookMemory: state.settings.carryBookMemory,
     }))
   );
 
@@ -90,6 +92,8 @@ export function useChapterChat({
     async (message: string) => {
       if (!message.trim()) return;
 
+      addChatMessage(chapterKey, { role: "user", content: message });
+
       if (!llmSettings) {
         addChatMessage(chapterKey, {
           role: "assistant",
@@ -99,7 +103,6 @@ export function useChapterChat({
         return;
       }
 
-      addChatMessage(chapterKey, { role: "user", content: message });
       addChatMessage(chapterKey, {
         role: "assistant",
         content: "",
@@ -117,12 +120,9 @@ export function useChapterChat({
         chatMessages,
         message
       );
-      const bookContext = buildBookMemory(
-        book,
-        chapterPreviews,
-        currentBookId,
-        currentTocHref
-      );
+      const bookContext = carryBookMemory
+        ? buildBookMemory(book, chapterPreviews, currentBookId, currentTocHref)
+        : "";
 
       try {
         let fullContent = "";
@@ -160,6 +160,7 @@ export function useChapterChat({
       currentBookId,
       currentTocHref,
       chapterPreviews,
+      carryBookMemory,
       addChatMessage,
       updateLastChatMessage,
     ]
