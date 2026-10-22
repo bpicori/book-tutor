@@ -13,8 +13,9 @@ export function generateReaderCSS(settings: ReaderSettings): string {
         background-color: ${colors.bg} !important;
     }
     body {
-        font-family: ${font};
-        font-size: ${fontSize}px;
+        font-family: ${font} !important;
+        font-size: ${fontSize}px !important;
+        line-height: ${lineHeight} !important;
         background-color: ${colors.bg} !important;
         color: ${colors.text} !important;
     }
@@ -28,9 +29,9 @@ export function generateReaderCSS(settings: ReaderSettings): string {
         background-color: ${colors.bg} !important;
     }
     p, li, blockquote, dd {
-        font-family: ${font};
-        font-size: ${fontSize}px;
-        line-height: ${lineHeight};
+        font-family: ${font} !important;
+        font-size: ${fontSize}px !important;
+        line-height: ${lineHeight} !important;
         text-align: start;
         -webkit-hyphens: manual;
         hyphens: manual;

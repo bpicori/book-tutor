@@ -19,11 +19,9 @@
 @keyframes screenIn {
   from {
     opacity: 0;
-    transform: translateY(5px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 .rail {
@@ -532,26 +530,40 @@ body.guide-open .guide {
   margin-top: 7px;
 }
 .guide-tabs {
-  display: flex;
-  gap: 22px;
-  padding: 20px 24px 0;
-  border-bottom: 1px solid var(--page-border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 18px 24px 0;
+  border: 1px solid var(--page-border);
+  border-radius: var(--radius);
 }
 .guide-tab {
-  padding-bottom: 11px;
-  font: 500 9.5px/1 var(--font-mono);
-  letter-spacing: 0.11em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 10px;
+  font: 500 12px/1 var(--font-mono);
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--page-muted);
-  border-bottom: 1px solid transparent;
-  margin-bottom: -1px;
+  border-right: 1px solid var(--page-border);
+  border-radius: var(--radius) 0 0 var(--radius);
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+.guide-tab:last-child {
+  border-right: 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
 }
 .guide-tab:hover {
   color: var(--page-fg);
+  background: color-mix(in oklch, var(--page-fg) 7%, transparent);
 }
 .guide-tab.is-on {
-  color: var(--page-fg);
-  border-bottom-color: var(--page-fg);
+  background: var(--page-fg);
+  color: var(--page-bg);
+  border-right-color: var(--page-fg);
 }
 .guide-body {
   flex: 1;
@@ -1519,21 +1531,6 @@ body.is-reading .toast button {
 }
 .toc-tree {
   padding: 4px 12px 14px;
-}
-.toc-foot {
-  padding: 14px 24px 20px;
-  border-top: 1px solid var(--page-border);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.toc-foot .btn {
-  width: 100%;
-}
-.toc-foot .note {
-  margin: 0;
-  font-size: 10px;
-  line-height: 1.5;
 }
 .note-list {
   display: flex;

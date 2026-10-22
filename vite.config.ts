@@ -32,6 +32,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
+        "icons/book.svg",
         "icons/apple-touch-icon-180x180.png",
         "icons/favicon-32x32.png",
         "icons/favicon-16x16.png",
@@ -40,11 +41,11 @@ export default defineConfig({
       ],
       manifest: {
         name: "Book Tutor",
-        short_name: "BookTutor",
+        short_name: "Book Tutor",
         description:
           "A calm, editorial reading app with a guide that lives in the margin.",
-        theme_color: "#fbfaf6",
-        background_color: "#fbfaf6",
+        theme_color: "#f9f8f5",
+        background_color: "#f9f8f5",
         display: "standalone",
         scope: "/book-tutor/",
         start_url: "/book-tutor/",

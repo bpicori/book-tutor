@@ -258,8 +258,9 @@ export function Reader({ viewRef, player }: ReaderProps) {
         const frameRect = frame?.getBoundingClientRect();
         if (!frameRect) return;
 
-        const size = 32;
-        let left = frameRect.left + rect.left - size;
+        const size = 30;
+        const gap = 10;
+        let left = frameRect.left + rect.left - size - gap;
         if (left < 4) left = frameRect.left + rect.left + 2;
         left = Math.max(4, Math.min(left, window.innerWidth - size - 4));
         const top = Math.max(

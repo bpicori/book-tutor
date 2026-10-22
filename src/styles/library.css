@@ -17,8 +17,8 @@
   margin-bottom: 20px;
 }
 .wordmark svg {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
 }
 .lib-head .eyebrow {
   margin-bottom: 14px;
@@ -263,42 +263,6 @@
   font-size: 26px;
   color: var(--muted);
 }
-.add-row {
-  width: 100%;
-  margin-top: 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 17px 16px;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-  color: var(--muted);
-  text-align: left;
-  transition:
-    border-color 0.15s ease,
-    color 0.15s ease,
-    background 0.15s ease;
-}
-.add-row:hover {
-  border-color: var(--fg);
-  color: var(--fg);
-  background: var(--fg-soft);
-}
-.add-plus {
-  font-family: var(--font-display);
-  font-size: 22px;
-  line-height: 1;
-  width: 20px;
-  text-align: center;
-}
-.add-row .add-note {
-  margin-left: auto;
-  font: 400 9px/1 var(--font-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
 /* ─── real-library additions ───────────────────────────────────────── */
 .now .quote {
   display: -webkit-box;
@@ -372,10 +336,6 @@
 }
 .empty-library .note {
   margin: 0;
-}
-.add-row:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 .now-actions .btn-quiet {
   gap: 7px;

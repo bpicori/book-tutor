@@ -280,9 +280,6 @@
   .book-progress .progress-meta {
     font-size: 7.5px;
   }
-  .add-row .add-note {
-    display: none;
-  }
   .reader-progress {
     top: auto;
   }
@@ -341,7 +338,8 @@
   .dropcap {
     font-size: 3.8em;
   }
-  .para-listen {
+  .para-listen,
+  .para-play {
     display: none;
   }
   .chapter-end h2 {
@@ -360,7 +358,7 @@
     font-size: 22px;
   }
   .guide-tabs {
-    padding: 16px 20px 0;
+    margin: 16px 20px 0;
   }
   .guide-scroll,
   .ask-stream {
@@ -497,9 +495,6 @@
     min-width: 58px;
     padding: 0 7px;
   }
-  #bookmark {
-    display: none;
-  }
   .type-pop .seg button {
     min-height: 44px;
   }
@@ -527,10 +522,7 @@
     inset: -11px -3px;
   }
   .guide-tab {
-    min-height: 44px;
-    display: inline-flex;
-    align-items: flex-end;
-    padding-bottom: 11px;
+    min-height: 48px;
   }
   .composer button {
     width: 44px;
@@ -650,9 +642,6 @@
   .voice-test-row {
     gap: 10px;
   }
-  .toc-foot {
-    padding-bottom: 16px;
-  }
   .note-list {
     padding-left: 20px;
     padding-right: 20px;
@@ -703,26 +692,5 @@ body.reduce-motion .toc {
   }
   .reader-page .margin-note {
     display: none;
-  }
-}
-
-/* The guide overlays the page; keep a single, centered column underneath it so
-   the spread never runs under the panel. */
-@media (min-width: 1024px) and (orientation: landscape) {
-  body.guide-open .reader-inner {
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-    max-width: 760px;
-    padding: 28px 40px 44px;
-  }
-  body.guide-open .reader-inner .reading-body {
-    flex: 1;
-    width: 100%;
-    max-width: none;
-  }
-  body.guide-open .reading-view {
-    max-width: var(--reading-width);
-    margin: 0 auto;
   }
 }

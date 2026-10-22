@@ -116,7 +116,7 @@ export function LibraryPage() {
       <header className="lib-head">
         <div>
           <p className="wordmark">
-            <Icon name="spark" size={13} />
+            <Icon name="brandBook" size={14} />
             {APP_DISPLAY_NAME}
           </p>
           <p className="eyebrow">
@@ -180,18 +180,6 @@ export function LibraryPage() {
           {filteredLibrary.length === 0 && (
             <p className="empty">No books match that.</p>
           )}
-
-          <button
-            type="button"
-            className="add-row"
-            onClick={() => setAddOpen(true)}
-          >
-            <span className="add-plus" aria-hidden="true">
-              +
-            </span>
-            <span>Add an EPUB to your library</span>
-            <span className="add-note">EPUB only · no upload</span>
-          </button>
         </>
       )}
 

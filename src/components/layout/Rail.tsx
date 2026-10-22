@@ -40,7 +40,7 @@ export function Rail() {
         title="Read with AI"
         onClick={() => goToLibrary()}
       >
-        <Icon name="spark" size={21} strokeWidth={1.4} />
+        <Icon name="brandBook" size={21} />
       </button>
       <nav className="rail-nav" aria-label="Primary">
         {ITEMS.map((item) => (

@@ -3,10 +3,8 @@ import type { FoliateView, Highlight } from "../../types";
 import { useStore } from "../../store/useStore";
 import { getBookAuthor, getBookTitle } from "../../utils/metadata";
 import { toPercent } from "../../utils/formatDates";
-import { useBookmarks } from "../../hooks/useBookmarks";
 import { BookCover } from "../ui/Cover";
 import { Icon } from "../ui/Icon";
-import { useToast } from "../ui/Toast";
 import { ChapterScopeSelector } from "./ChapterScopeSelector";
 import { NoteList } from "./NoteList";
 import { TocTree } from "./TocTree";
@@ -33,9 +31,6 @@ export function ContentsDrawer({
   const removeHighlight = useStore((state) => state.removeHighlight);
   const isSidebarCollapsed = useStore((state) => state.isSidebarCollapsed);
   const setSidebarCollapsed = useStore((state) => state.setSidebarCollapsed);
-  const { bookmark, isCurrentPageBookmarked, canBookmark, toggleBookmark } =
-    useBookmarks();
-  const showToast = useToast();
 
   const [tab, setTab] = useState<DrawerTab>("contents");
   const open = !isSidebarCollapsed;
@@ -71,15 +66,6 @@ export function ContentsDrawer({
       await view.deleteAnnotation({ value: highlight.cfi });
     }
     removeHighlight(highlight.id);
-  };
-
-  const handleBookmark = () => {
-    toggleBookmark();
-    showToast({
-      message: isCurrentPageBookmarked
-        ? "Bookmark removed."
-        : "Bookmark set on this page.",
-    });
   };
 
   return (
@@ -165,24 +151,6 @@ export function ContentsDrawer({
           />
         </div>
       )}
-
-      <div className="toc-foot">
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={handleBookmark}
-          disabled={!canBookmark}
-          aria-pressed={isCurrentPageBookmarked}
-        >
-          <Icon name="bookmark" size={14} />
-          {isCurrentPageBookmarked ? "Bookmarked" : "Bookmark this page"}
-        </button>
-        <p className="note">
-          {bookmark
-            ? `Bookmark: ${bookmark.label}`
-            : "A bookmark follows this book, wherever you read."}
-        </p>
-      </div>
     </aside>
   );
 }

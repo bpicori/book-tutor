@@ -2,6 +2,8 @@ import { memo, type ReactNode, type SVGProps } from "react";
 
 export type IconName =
   | "spark"
+  | "monogram"
+  | "brandBook"
   | "library"
   | "lexicon"
   | "settings"
@@ -28,6 +30,37 @@ export type IconName =
 const ICONS: Record<IconName, ReactNode> = {
   spark: (
     <path d="M12 2.5c.6 5.2 4.3 8.9 9.5 9.5-5.2.6-8.9 4.3-9.5 9.5C11.4 16.3 7.7 12.6 2.5 12 7.7 11.4 11.4 7.7 12 2.5Z" />
+  ),
+  monogram: (
+    <>
+      <path
+        fillRule="evenodd"
+        d="M3.7 3.6h3v5.8c1.2-.9 2.6-1.3 4.1-1.3 3.3 0 5.6 2.4 5.6 5.8s-2.3 5.8-5.6 5.8c-1.5 0-2.9-.4-4.1-1.3v1.3h-3V3.6ZM9.4 14.1a2.6 2.6 0 1 1 5.2 0 2.6 2.6 0 1 1-5.2 0Z"
+        fill="currentColor"
+        stroke="none"
+      />
+      <circle
+        cx="19"
+        cy="19.6"
+        r="1.35"
+        fill="var(--page-accent)"
+        stroke="none"
+      />
+    </>
+  ),
+  brandBook: (
+    <>
+      <path
+        d="M2.9 6.4c2.9-.8 5.9-.5 8.5 1.1v11.7c-2.6-1.6-5.6-1.9-8.5-1.1V6.4Z"
+        fill="currentColor"
+        stroke="none"
+      />
+      <path
+        d="M21.1 6.4c-2.9-.8-5.9-.5-8.5 1.1v11.7c2.6-1.6 5.6-1.9 8.5-1.1V6.4Z"
+        fill="var(--page-accent)"
+        stroke="none"
+      />
+    </>
   ),
   library: (
     <>
