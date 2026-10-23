@@ -13,11 +13,11 @@ An AI-powered EPUB reader that helps you understand what you're reading. Everyth
 - Export/import backups (books, progress, vocabulary, settings)
 - Optional cloud sync for your library backup
 
-![Library](./assets/library.png)
+![Library](./assets/library.webp)
 
-![Preview Tab](./assets/reader-preview.png)
+![Chapter preview in the reading guide](./assets/reader-preview.webp)
 
-![Ask Tab](./assets/reader-ask.png)
+![Asking the guide about the current chapter](./assets/reader-ask.webp)
 
 ```bash
 npm install
