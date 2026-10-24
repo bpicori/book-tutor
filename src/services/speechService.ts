@@ -1,17 +1,12 @@
-import {
-  DEFAULT_LLM_BASE_URL,
-  DEFAULT_SPEECH_PROVIDER,
-  OPENROUTER_BASE_URL,
-} from "../constants";
-import type { SpeechProviderConfig, SpeechProviderType } from "../types";
+import type { SpeechProviderConfig } from "../types";
 import { LLMServiceError } from "./llmClient";
 
 /**
  * Text-to-speech client for OpenAI-compatible `/audio/speech` endpoints.
  *
  * OpenRouter exposes the exact same request/response shape as OpenAI, so a
- * single fetch covers both providers; only the base URL, model naming, and
- * voice list differ. The response is a raw audio byte stream, not JSON.
+ * single fetch covers both; only the base URL, model naming, and voice list
+ * differ. The response is a raw audio byte stream, not JSON.
  */
 
 export interface SpeechRequestSettings {
@@ -24,38 +19,8 @@ export interface SpeechRequestSettings {
 export interface SpeechModelOption {
   id: string;
   name?: string;
-  /** Voices advertised by the provider for this model, when it publishes them. */
+  /** Voices advertised by the endpoint for this model, when it publishes them. */
   voices: string[];
-}
-
-/** Defaults applied when the reader picks a provider preset. */
-export const SPEECH_PROVIDER_PRESETS: Record<
-  SpeechProviderType,
-  { baseUrl: string; model: string; voice: string }
-> = {
-  openrouter: {
-    baseUrl: OPENROUTER_BASE_URL,
-    model: "google/gemini-3.8-flash-lite-tts",
-    voice: "Kore",
-  },
-  openai: {
-    baseUrl: DEFAULT_LLM_BASE_URL,
-    model: "gpt-4o-mini-tts",
-    voice: "alloy",
-  },
-  custom: {
-    baseUrl: "",
-    model: "",
-    voice: "",
-  },
-};
-
-export function resolveSpeechBaseUrl(provider: SpeechProviderConfig): string {
-  const base = provider.baseUrl?.trim();
-  if (base) return base.replace(/\/+$/, "");
-  if (provider.type === "openrouter") return OPENROUTER_BASE_URL;
-  if (provider.type === "openai") return DEFAULT_LLM_BASE_URL;
-  return "";
 }
 
 function validateSettings(
@@ -313,10 +278,63 @@ export async function generateSpeech(
   return blob;
 }
 
+/** Fetches a model list endpoint, translating network failures. */
+async function fetchSpeechModelList(
+  url: string,
+  apiKey: string
+): Promise<Response> {
+  try {
+    return await fetch(url, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+  } catch {
+    throw new LLMServiceError(
+      "Failed to connect to the speech provider. Check your network connection.",
+      "NETWORK_ERROR"
+    );
+  }
+}
+
+function parseSpeechModelList(payload: unknown): SpeechModelOption[] {
+  const data = (
+    payload as {
+      data?: Array<{
+        id?: string;
+        name?: string;
+        supported_voices?: string[];
+        voices?: string[];
+      }>;
+    } | null
+  )?.data;
+
+  if (!Array.isArray(data)) return [];
+
+  return data
+    .filter((model) => Boolean(model.id))
+    .map((model) => ({
+      id: model.id as string,
+      name: model.name,
+      voices: model.supported_voices ?? model.voices ?? [],
+    }));
+}
+
+async function readSpeechModelList(
+  response: Response
+): Promise<SpeechModelOption[]> {
+  try {
+    return parseSpeechModelList(await response.json());
+  } catch {
+    return [];
+  }
+}
+
 /**
- * Lists models the speech provider offers. On OpenRouter this asks for agents
- * whose output modality is speech; elsewhere it falls back to the plain model
- * list. Voices are returned when the provider publishes them.
+ * Lists models the configured speech endpoint offers.
+ *
+ * OpenRouter returns speech-capable models only when asked with
+ * `output_modalities=speech`; OpenAI and most compatible servers ignore the
+ * filter. Ask with it first, then retry without it when a server rejects the
+ * parameter. Voices are returned when the endpoint publishes them.
  */
 export async function listSpeechModels(
   provider: SpeechProviderConfig
@@ -328,7 +346,7 @@ export async function listSpeechModels(
     );
   }
 
-  const baseUrl = resolveSpeechBaseUrl(provider);
+  const baseUrl = provider.baseUrl?.trim().replace(/\/+$/, "");
   if (!baseUrl) {
     throw new LLMServiceError(
       "Speech provider URL is missing. Check the speech settings.",
@@ -336,21 +354,18 @@ export async function listSpeechModels(
     );
   }
 
-  const url =
-    provider.type === "openrouter"
-      ? `${baseUrl}/models?output_modalities=speech`
-      : `${baseUrl}/models`;
+  const modelsUrl = `${baseUrl}/models`;
+  let response = await fetchSpeechModelList(
+    `${modelsUrl}?output_modalities=speech`,
+    provider.apiKey
+  );
 
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      headers: { Authorization: `Bearer ${provider.apiKey}` },
-    });
-  } catch {
-    throw new LLMServiceError(
-      "Failed to connect to the speech provider. Check your network connection.",
-      "NETWORK_ERROR"
-    );
+  const rejectedFilter =
+    response.status === 400 ||
+    response.status === 404 ||
+    response.status === 422;
+  if (rejectedFilter) {
+    response = await fetchSpeechModelList(modelsUrl, provider.apiKey);
   }
 
   if (!response.ok) {
@@ -358,27 +373,5 @@ export async function listSpeechModels(
     throw errorForStatus(response.status, detail);
   }
 
-  const data = (await response.json()) as {
-    data?: Array<{
-      id?: string;
-      name?: string;
-      supported_voices?: string[];
-      voices?: string[];
-    }>;
-  };
-
-  return (data.data ?? [])
-    .filter((model) => Boolean(model.id))
-    .map((model) => ({
-      id: model.id as string,
-      name: model.name,
-      voices: model.supported_voices ?? model.voices ?? [],
-    }));
-}
-
-/** Speech provider with defaults filled in, for readers of persisted state. */
-export function withSpeechDefaults(
-  provider: SpeechProviderConfig | undefined
-): SpeechProviderConfig {
-  return provider ?? DEFAULT_SPEECH_PROVIDER;
+  return readSpeechModelList(response);
 }

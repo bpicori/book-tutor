@@ -311,18 +311,10 @@ export interface LLMSettings {
 }
 
 /**
- * Speech provider presets. OpenRouter and OpenAI both expose the same
- * OpenAI-compatible `/audio/speech` shape, so a single config covers both;
- * the preset only decides defaults and how models/voices are discovered.
- */
-export type SpeechProviderType = "openrouter" | "openai" | "custom";
-
-/**
- * Configuration for the text-to-speech provider, independent of the LLM
- * provider used by preview/ask/translation.
+ * Configuration for the text-to-speech endpoint, independent of the LLM
+ * endpoint used by preview/ask/translation.
  */
 export interface SpeechProviderConfig {
-  type: SpeechProviderType;
   baseUrl: string;
   apiKey: string;
   /** TTS model id, e.g. `google/gemini-3.8-flash-lite-tts`. */

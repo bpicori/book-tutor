@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
-import type { SpeechProviderConfig, SpeechProviderType } from "../../../types";
+import type { SpeechProviderConfig } from "../../../types";
 import { DEFAULT_SPEECH_PROVIDER } from "../../../constants";
 import {
-  SPEECH_PROVIDER_PRESETS,
   generateSpeech,
   listSpeechModels,
   type SpeechModelOption,
@@ -11,13 +10,6 @@ import { LLMServiceError } from "../../../services/llmClient";
 import { useStore } from "../../../store/useStore";
 import { Button } from "../../ui/Button";
 import { Field, Range, Select, TextInput } from "../../ui/Field";
-import { Segmented } from "../../ui/Segmented";
-
-const PRESET_OPTIONS: { value: SpeechProviderType; label: string }[] = [
-  { value: "openrouter", label: "OpenRouter" },
-  { value: "openai", label: "OpenAI" },
-  { value: "custom", label: "Custom" },
-];
 
 type Status = { state: "ok" | "error"; text: string } | null;
 
@@ -42,21 +34,6 @@ export function VoicePanel() {
     setStatus(null);
   };
 
-  const handlePreset = (type: SpeechProviderType) => {
-    const preset = SPEECH_PROVIDER_PRESETS[type];
-    updateSettings({
-      speechProvider: {
-        ...provider,
-        type,
-        baseUrl: preset.baseUrl || provider.baseUrl,
-        model: preset.model || provider.model,
-        voice: preset.voice || provider.voice,
-      },
-    });
-    setModels([]);
-    setStatus(null);
-  };
-
   const handleLoadModels = async () => {
     setStatus(null);
     setIsLoadingModels(true);
@@ -66,7 +43,7 @@ export function VoicePanel() {
       if (loaded.length === 0) {
         setStatus({
           state: "error",
-          text: "No speech models found for this provider.",
+          text: "No speech models found at this endpoint.",
         });
       }
     } catch (error) {
@@ -126,21 +103,11 @@ export function VoicePanel() {
         <h2>Voice</h2>
         <p>
           Listen while you read. Reading aloud sends each paragraph to the
-          speech provider you configure; it never uploads the book file itself.
+          speech endpoint you configure; it never uploads the book file itself.
         </p>
       </div>
 
       <div className="form-grid">
-        <div className="field span-2">
-          <label>Provider</label>
-          <Segmented
-            options={PRESET_OPTIONS}
-            value={provider.type}
-            onChange={handlePreset}
-            label="Speech provider"
-          />
-        </div>
-
         <Field label="Base URL" htmlFor="voice-url" span2>
           <TextInput
             id="voice-url"
@@ -172,7 +139,7 @@ export function VoicePanel() {
             </button>
           </div>
           <p className="note">
-            Stored in this browser and sent only to the speech provider.
+            Stored in this browser and sent only to the speech endpoint.
           </p>
         </Field>
 

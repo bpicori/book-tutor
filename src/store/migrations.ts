@@ -90,11 +90,6 @@ export function normalizeSettings(raw: unknown): ReaderSettings {
     source.speechProvider && typeof source.speechProvider === "object"
       ? (source.speechProvider as Record<string, unknown>)
       : {};
-  const speechType = speechProvider.type;
-  const speechTypeValid =
-    speechType === "openai" ||
-    speechType === "openrouter" ||
-    speechType === "custom";
 
   return {
     fontFamily: READER_FONTS[fontFamily]
@@ -124,7 +119,6 @@ export function normalizeSettings(raw: unknown): ReaderSettings {
       ),
     },
     speechProvider: {
-      type: speechTypeValid ? speechType : DEFAULT_SPEECH_PROVIDER.type,
       baseUrl: stringOr(
         speechProvider.baseUrl,
         DEFAULT_SPEECH_PROVIDER.baseUrl

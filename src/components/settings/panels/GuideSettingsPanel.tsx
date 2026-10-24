@@ -1,26 +1,10 @@
 import { useState } from "react";
-import { DEFAULT_LLM_BASE_URL, OPENROUTER_BASE_URL } from "../../../constants";
 import type { LLMModelConfig, LLMProviderConfig } from "../../../types";
 import { useStore } from "../../../store/useStore";
 import { Button } from "../../ui/Button";
 import { Field, TextInput } from "../../ui/Field";
-import { Segmented } from "../../ui/Segmented";
 import { Switch } from "../../ui/Switch";
 import { ModelConfig } from "../ModelConfig";
-
-type ProviderChoice = "openai" | "openrouter" | "custom";
-
-const PROVIDER_OPTIONS: { value: ProviderChoice; label: string }[] = [
-  { value: "openai", label: "OpenAI" },
-  { value: "openrouter", label: "OpenRouter" },
-  { value: "custom", label: "Custom" },
-];
-
-function inferProvider(baseUrl: string): ProviderChoice {
-  if (baseUrl.includes("openrouter.ai")) return "openrouter";
-  if (baseUrl.includes("api.openai.com")) return "openai";
-  return "custom";
-}
 
 type CheckStatus = { state: "ok" | "error"; text: string } | null;
 
@@ -28,27 +12,10 @@ export function GuideSettingsPanel() {
   const settings = useStore((state) => state.settings);
   const updateSettings = useStore((state) => state.updateSettings);
   const [showKey, setShowKey] = useState(false);
-  const [providerChoice, setProviderChoice] = useState<ProviderChoice>(() =>
-    inferProvider(settings.llmProvider.baseUrl)
-  );
   const [status, setStatus] = useState<CheckStatus>(null);
 
   const provider = settings.llmProvider;
   const models = settings.llmModels;
-
-  const handleProvider = (choice: ProviderChoice) => {
-    setProviderChoice(choice);
-    setStatus(null);
-    if (choice === "openai") {
-      updateSettings({
-        llmProvider: { ...provider, baseUrl: DEFAULT_LLM_BASE_URL },
-      });
-    } else if (choice === "openrouter") {
-      updateSettings({
-        llmProvider: { ...provider, baseUrl: OPENROUTER_BASE_URL },
-      });
-    }
-  };
 
   const handleProviderUpdate = (updates: Partial<LLMProviderConfig>) => {
     updateSettings({
@@ -107,21 +74,11 @@ export function GuideSettingsPanel() {
         <h2>The guide</h2>
         <p>
           The guide sees one chapter at a time. Your key stays in this browser
-          and goes only to the provider you choose.
+          and goes only to the endpoint you configure.
         </p>
       </div>
 
       <div className="form-grid">
-        <div className="field span-2">
-          <label>Provider</label>
-          <Segmented
-            options={PROVIDER_OPTIONS}
-            value={providerChoice}
-            onChange={handleProvider}
-            label="LLM provider"
-          />
-        </div>
-
         <Field label="Base URL" htmlFor="ai-url" span2>
           <TextInput
             id="ai-url"

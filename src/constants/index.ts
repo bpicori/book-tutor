@@ -39,7 +39,6 @@ export const READER_LINE_HEIGHTS = [1.55, 1.72, 1.9] as const;
 export const READER_WIDTHS = [560, 620, 680] as const;
 
 export const DEFAULT_SPEECH_PROVIDER: SpeechProviderConfig = {
-  type: "openrouter",
   baseUrl: OPENROUTER_BASE_URL,
   apiKey: "",
   model: "google/gemini-3.8-flash-lite-tts",
