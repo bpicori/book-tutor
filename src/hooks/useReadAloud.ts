@@ -44,7 +44,12 @@ import {
 const PREFETCH_DELAY_MS = 800;
 
 export type ReadAloudStatus =
-  "idle" | "loading" | "playing" | "paused" | "chapterEnd" | "error";
+  | "idle"
+  | "loading"
+  | "playing"
+  | "paused"
+  | "chapterEnd"
+  | "error";
 
 export interface ReadAloudPlayer {
   status: ReadAloudStatus;

@@ -25,7 +25,9 @@ export interface BookMetadata {
     | Array<{ name?: string | Record<string, string> }>;
   /** Author(s) - can be string, array of strings, or array of objects with name */
   author?:
-    string | string[] | Array<{ name?: string | Record<string, string> }>;
+    | string
+    | string[]
+    | Array<{ name?: string | Record<string, string> }>;
   /** Language code */
   language?: string;
 }
