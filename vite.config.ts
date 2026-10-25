@@ -43,7 +43,7 @@ export default defineConfig({
         name: "Book Tutor",
         short_name: "Book Tutor",
         description:
-          "A calm, editorial reading app with a guide that lives in the margin.",
+          "A local-first EPUB reader with a reading guide in the margin: spoiler-free chapter previews, answers about the chapter you're in, read-aloud, and a personal lexicon.",
         theme_color: "#f9f8f5",
         background_color: "#f9f8f5",
         display: "standalone",
@@ -67,6 +67,20 @@ export default defineConfig({
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
+          },
+        ],
+      },
+      workbox: {
+        // The sample book is fetched on demand, then kept so the demo still
+        // opens after the app has been installed and taken offline.
+        runtimeCaching: [
+          {
+            urlPattern: /\/demo\/.*\.epub$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "sample-book",
+              expiration: { maxEntries: 2 },
+            },
           },
         ],
       },

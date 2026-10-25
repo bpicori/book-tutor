@@ -18,7 +18,8 @@ export { THEME_PALETTE, THEMES } from "./themePalette";
 export type { ThemePaletteEntry } from "./themePalette";
 
 export const APP_NAME = "Book Tutor";
-export const APP_DISPLAY_NAME = "Read with AI";
+export const APP_DISPLAY_NAME = "Book Tutor";
+export const APP_TAGLINE = "A reading guide in the margin.";
 export const DEFAULT_LLM_BASE_URL = "https://api.openai.com/v1";
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 

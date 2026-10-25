@@ -36,8 +36,8 @@ export function Rail() {
       <button
         type="button"
         className="rail-mark"
-        aria-label="Read with AI — library"
-        title="Read with AI"
+        aria-label="Book Tutor — library"
+        title="Book Tutor"
         onClick={() => goToLibrary()}
       >
         <Icon name="brandBook" size={21} />

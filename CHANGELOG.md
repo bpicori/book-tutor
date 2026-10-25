@@ -30,16 +30,19 @@ settings live on your device.
   summaries of what you have already previewed, so answers cannot spoil later chapters.
 - **Listen** — paragraph-level read-aloud from any paragraph or chapter, with configurable
   cloud voice, speed, and a persistent LRU cache of synthesised audio.
-- **Selection actions** — translate, highlight, copy, save to the lexicon, or ask about a
-  passage.
+- **Selection actions** — highlight, copy, define or translate a word, save it to the lexicon, or
+  ask the guide about a passage.
 - **Lexicon** — a vocabulary page with AI definitions, review/known states, search, and
   practice cards.
 - **Highlights and notes** in the reader sidebar.
-- **Themes and appearance** — light/sepia/dark palettes with customizable typography.
 - **Backup** — export and import a full backup (books, progress, vocabulary, settings).
 - **Optional cloud sync** — an advanced, self-hosted Cloudflare Worker endpoint.
-- **Provider presets** — OpenAI, OpenRouter (including free-tier models), Groq, Ollama,
-  LM Studio, or any OpenAI-compatible endpoint. Your key stays in your browser.
+- **Themes and appearance** — paper, sepia, solarized and night palettes with adjustable typography.
+- **Sample book** — *The Time Machine* (public domain) ships with the app, with written guide
+  responses for its first three chapters, so the guide can be tried without a file or a model.
+- **Provider presets** — OpenRouter, OpenAI, Groq, Ollama, LM Studio, or any OpenAI-compatible
+  endpoint, with a key link and a cost hint. Model ids come from the provider's `/models` endpoint,
+  and empty fields fill with the first model found. Your key stays in your browser.
 - **Installable PWA** — offline shell, home-screen install, automatic updates.
 
 [Unreleased]: https://github.com/bpicori/book-tutor/compare/v0.1.0...HEAD
