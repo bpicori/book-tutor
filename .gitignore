@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Local planning / research notes (not part of the project)
+planning/
+redesing_v2/
+
+# Local tooling artifacts
+.playwright-cli/
+.cache/
+.npm-cache/
+
 # Editor directories and files
 .cursor/
 .vscode/*

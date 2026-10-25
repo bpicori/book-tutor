@@ -1,7 +1,28 @@
 {
   "name": "book-tutor",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "A free, local-first EPUB reader with a reading guide in the margin — spoiler-free chapter previews, in-context answers, read-aloud, and a personal lexicon.",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bpicori/book-tutor.git"
+  },
+  "homepage": "https://bpicori.github.io/book-tutor/",
+  "bugs": {
+    "url": "https://github.com/bpicori/book-tutor/issues"
+  },
+  "keywords": [
+    "epub-reader",
+    "local-first",
+    "ebook-reader",
+    "translation",
+    "language-learning",
+    "vocabulary",
+    "tts",
+    "ai",
+    "pwa"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",

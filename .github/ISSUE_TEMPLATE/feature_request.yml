@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest a change to how reading or the guide works.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The most useful requests start with the reading problem, not the solution.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The reading problem
+      description: When does this get in your way? Be concrete.
+      placeholder: I read in my second language, and when a sentence is long I lose the thread before I can look up two words.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like instead
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Including other apps — useful to know what you are comparing against.
+    validations:
+      required: false
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Please keep in mind
+      options:
+        - label: The app must stay fully local (no new servers, accounts, or telemetry)
+        - label: Previews and answers must stay spoiler-free for the current chapter

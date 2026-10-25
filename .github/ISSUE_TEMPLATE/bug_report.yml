@@ -1,0 +1,67 @@
+name: Bug report
+description: Something in the reader or the guide is not working.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please do not paste API keys, book files, or full book text —
+        the reader keeps everything on your device, and so should this issue.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the library
+        2. Add an EPUB
+        3. Open the guide and press Preview
+        4. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Library / importing books
+        - Reader / pagination
+        - The guide (preview or ask)
+        - Read aloud
+        - Selection actions / translation
+        - Lexicon / vocabulary
+        - Highlights and notes
+        - Settings / models
+        - Backup and import
+        - Install / PWA / offline
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Safari 18.4 on macOS 15.4
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Model and provider (only if the guide is involved)
+      placeholder: gpt-4o-mini via OpenAI, llama3 via Ollama, ...
+    validations:
+      required: false
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors
+      description: Open devtools → Console and paste anything red.
+      render: shell
+    validations:
+      required: false
