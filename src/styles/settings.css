@@ -90,6 +90,18 @@
   color: var(--fg);
   letter-spacing: 0.03em;
 }
+.preset-block {
+  margin-bottom: 26px;
+}
+.preset-block .note {
+  margin-top: 10px;
+}
+.preset-block .note a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
 .settings-shell .seg {
   display: flex;
   border: 1px solid var(--border);

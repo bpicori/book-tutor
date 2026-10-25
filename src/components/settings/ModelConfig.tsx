@@ -90,13 +90,28 @@ export function ModelConfig({
       }
       setAvailableModels(modelIds);
       setHasLoaded(true);
+
+      // Three empty fields are the slowest part of setup, so fill them with
+      // the provider's first model. Any of them can be changed afterwards.
+      const hasAnyModel =
+        models.previewModel.trim() ||
+        models.askModel.trim() ||
+        models.translationModel.trim();
+      if (modelIds.length > 0 && !hasAnyModel) {
+        const [first] = modelIds;
+        onModelChange({
+          previewModel: first,
+          askModel: first,
+          translationModel: first,
+        });
+      }
     } catch {
       setError("Failed to fetch models. Check your API key and base URL.");
       setAvailableModels([]);
     } finally {
       setIsLoading(false);
     }
-  }, [canLoad, provider]);
+  }, [canLoad, provider, models, onModelChange]);
 
   return (
     <div className="model-config">

@@ -7,6 +7,7 @@ import {
   type FormEvent,
 } from "react";
 import { useAddBook, type BookDraft } from "../../hooks/useAddBook";
+import { useSampleBook } from "../../hooks/useSampleBook";
 import { Button } from "../ui/Button";
 import { Dialog } from "../ui/Dialog";
 import { Field, TextInput } from "../ui/Field";
@@ -17,11 +18,18 @@ import { useToast } from "../ui/Toast";
 interface AddBookDialogProps {
   open: boolean;
   onClose: () => void;
+  /** Called with the new book id, so the caller can open it. */
+  onOpenBook?: (bookId: string) => void;
 }
 
-export function AddBookDialog({ open, onClose }: AddBookDialogProps) {
+export function AddBookDialog({
+  open,
+  onClose,
+  onOpenBook,
+}: AddBookDialogProps) {
   const { inspectBook, commitBook, isInspecting, isAdding, error, clearError } =
     useAddBook();
+  const { loadSampleBook, isLoading: sampleLoading } = useSampleBook();
   const showToast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,6 +96,13 @@ export function AddBookDialog({ open, onClose }: AddBookDialogProps) {
       onClose,
     ]
   );
+
+  const handleSample = useCallback(async () => {
+    const book = await loadSampleBook();
+    if (!book) return;
+    onClose();
+    onOpenBook?.(book.id);
+  }, [loadSampleBook, onClose, onOpenBook]);
 
   return (
     <Dialog
@@ -191,7 +206,17 @@ export function AddBookDialog({ open, onClose }: AddBookDialogProps) {
           </p>
         )}
 
-        <p className="note">EPUB only. Nothing is uploaded.</p>
+        <p className="note">
+          EPUB only. Nothing is uploaded.{" "}
+          <button
+            type="button"
+            className="link-inline"
+            onClick={() => void handleSample()}
+            disabled={sampleLoading}
+          >
+            {sampleLoading ? "Loading the sample…" : "Or open the sample book"}
+          </button>
+        </p>
       </form>
     </Dialog>
   );

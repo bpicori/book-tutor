@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useStore } from "../../store/useStore";
 import { useNavigation } from "../../hooks/useNavigation";
+import { useSampleBook } from "../../hooks/useSampleBook";
 import { deleteBookFile } from "../../store/bookStorage";
 import { removeSpeechForBook } from "../../services/speechStore";
 import { APP_DISPLAY_NAME } from "../../constants";
@@ -27,6 +28,11 @@ export function LibraryPage() {
   const setAiSidebarOpen = useStore((state) => state.setAiSidebarOpen);
   const setActiveAiTab = useStore((state) => state.setActiveAiTab);
   const { openBook } = useNavigation();
+  const {
+    loadSampleBook,
+    isLoading: sampleLoading,
+    error: sampleError,
+  } = useSampleBook();
   const showToast = useToast();
 
   const [filter, setFilter] = useState<LibraryFilter>("all");
@@ -88,6 +94,11 @@ export function LibraryPage() {
     [openBook, setAiSidebarOpen, setActiveAiTab]
   );
 
+  const handleSampleBook = useCallback(async () => {
+    const book = await loadSampleBook();
+    if (book) openBook(book.id);
+  }, [loadSampleBook, openBook]);
+
   const handleRemove = useCallback(
     async (book: LibraryBook) => {
       setRemoving(true);
@@ -141,15 +152,33 @@ export function LibraryPage() {
       {isEmpty ? (
         <div className="empty-library">
           <p className="eyebrow">Nothing on the shelf yet</p>
-          <h2>Start your library.</h2>
+          <h2>Start with a book.</h2>
           <p>
-            Add an EPUB to read with chapter previews, a guide in the margin,
-            and a lexicon of the words you keep.
+            Preview a chapter before you read it, ask about the passage you are
+            in, and keep the words you look up. Everything stays on this device.
           </p>
-          <Button variant="primary" onClick={() => setAddOpen(true)}>
-            Add your first book
-          </Button>
-          <p className="note">EPUB only · nothing is uploaded</p>
+          <div className="empty-actions">
+            <Button
+              variant="primary"
+              arrow
+              loading={sampleLoading}
+              onClick={() => void handleSampleBook()}
+            >
+              Open the sample book
+            </Button>
+            <Button variant="secondary" onClick={() => setAddOpen(true)}>
+              Add your own EPUB
+            </Button>
+          </div>
+          {sampleError && (
+            <p className="form-error" role="alert">
+              {sampleError}
+            </p>
+          )}
+          <p className="note">
+            The sample is <i>The Time Machine</i> (public domain) · EPUB only ·
+            nothing is uploaded
+          </p>
         </div>
       ) : (
         <>
@@ -184,7 +213,11 @@ export function LibraryPage() {
         </>
       )}
 
-      <AddBookDialog open={addOpen} onClose={() => setAddOpen(false)} />
+      <AddBookDialog
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onOpenBook={openBook}
+      />
       <BookDetailDialog
         book={selectedBook}
         removing={removing}

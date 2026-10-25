@@ -34,6 +34,8 @@ export function isEpubFile(file: File): boolean {
 interface CommitOverrides {
   title?: string;
   author?: string;
+  /** Forces the book id (used by the bundled sample book). */
+  id?: string;
 }
 
 /**
@@ -116,7 +118,7 @@ export function useAddBook() {
       setIsAdding(true);
 
       try {
-        const id = generateBookId();
+        const id = overrides.id ?? generateBookId();
         await saveBookFile(id, draft.file);
 
         const book: LibraryBook = {

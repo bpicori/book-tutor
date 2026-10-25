@@ -571,6 +571,26 @@ body.guide-open .guide {
   display: flex;
   flex-direction: column;
 }
+.guide-demo {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 24px 12px;
+  border-top: 1px solid var(--page-border);
+  font: 500 8.5px/1.5 var(--font-mono);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--page-muted);
+}
+.guide-demo a {
+  color: var(--page-fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
 .guide-pane {
   display: none;
   flex: 1;

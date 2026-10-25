@@ -9,6 +9,9 @@ import { getBookTitle, getBookAuthor } from "../utils/bookHelpers";
 import { makeChapterKey } from "../utils/chapterKeys";
 import { loadTocScopedText } from "../utils/chapterContent";
 import { useLLMSettings } from "./useLLMSettings";
+import { getDemoPreview, isSampleBook } from "../demo";
+
+const DEMO_THINKING_MS = 700;
 
 export function useChapterPreview(previewHref: string, previewLabel: string) {
   const {
@@ -43,6 +46,25 @@ export function useChapterPreview(previewHref: string, previewLabel: string) {
   const preview = chapterPreviews[previewKey];
 
   const generatePreview = useCallback(async () => {
+    // The bundled sample book answers from pre-written fixtures: the guide can
+    // be tried before a model is configured, and nothing leaves the browser.
+    if (isSampleBook(currentBookId)) {
+      const fixture = getDemoPreview(previewLabel, previewHref);
+      if (!fixture) {
+        setError(
+          "The sample ships with previews for the first three chapters. Connect a model in Settings to preview every chapter, here and in any book you add."
+        );
+        return;
+      }
+
+      setError(null);
+      setPreviewLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, DEMO_THINKING_MS));
+      setChapterPreview(previewKey, { ...fixture, chapterHref: previewKey });
+      setPreviewLoading(false);
+      return;
+    }
+
     if (!llmSettings) {
       setError(
         "Please configure your API key in Settings to generate previews."
@@ -97,6 +119,7 @@ export function useChapterPreview(previewHref: string, previewLabel: string) {
     }
   }, [
     book,
+    currentBookId,
     previewKey,
     previewHref,
     previewLabel,

@@ -309,6 +309,16 @@
   .tool .lbl {
     display: none;
   }
+  /* Without its label the guide needs to read as an icon, not a stray dot. */
+  .tool[data-open-guide] .guide-dot {
+    width: 13px;
+    height: 13px;
+    background: transparent;
+    border: 2px solid var(--page-accent);
+  }
+  .tool[data-open-guide].is-on .guide-dot {
+    background: var(--page-accent);
+  }
   .tool-sep {
     display: none;
   }

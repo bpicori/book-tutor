@@ -18,6 +18,11 @@ import { ReaderPager } from "../../components/reader/ReaderPager";
 import { PlayerBar } from "../../components/reader/PlayerBar";
 import { ContentsDrawer } from "../../components/reader/ContentsDrawer";
 import { GuidePanel } from "../../components/guide/GuidePanel";
+import {
+  findSampleChapterHref,
+  hasDemoPreview,
+  isSampleBook,
+} from "../../demo";
 
 export function ReaderPage() {
   const viewRef = useRef<FoliateView | null>(null);
@@ -94,6 +99,23 @@ export function ReaderPage() {
     document.body.classList.toggle("guide-open", isAiSidebarOpen);
     return () => document.body.classList.remove("guide-open");
   }, [isAiSidebarOpen]);
+
+  // The sample book opens at its first written chapter instead of the cover, so
+  // a visitor sees a real chapter (and a working guide) straight away. Once the
+  // reader is inside one of the written chapters, their position is kept.
+  const sampleJumped = useRef(false);
+  useEffect(() => {
+    if (sampleJumped.current || !isSampleBook(currentBookId) || isLoading) {
+      return;
+    }
+    if (hasDemoPreview(progress.tocLabel ?? "")) return;
+
+    const href = findSampleChapterHref(book?.toc);
+    if (!href) return;
+
+    sampleJumped.current = true;
+    void viewRef.current?.goTo(href);
+  }, [book, currentBookId, isLoading, progress.tocLabel]);
 
   useEffect(() => {
     document.body.classList.toggle("toc-open", !isSidebarCollapsed);

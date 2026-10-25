@@ -5,6 +5,11 @@ import type { HighlightColor, SelectionInfo } from "../../types";
 import { HIGHLIGHT_COLORS } from "../../constants";
 import { getWordDefinition } from "../../services/llmService";
 import { useLLMTranslationSettings } from "../../hooks/useLLMSettings";
+import {
+  DEMO_DEFINITION_FALLBACK,
+  getDemoDefinition,
+  isSampleBook,
+} from "../../demo";
 import { useStore } from "../../store/useStore";
 import { useToast } from "../ui/Toast";
 
@@ -110,6 +115,21 @@ export function SelectionActionBar({
       return;
     }
 
+    // Sample book: a small hand-written glossary, so a visitor can see the
+    // select → define → save-to-lexicon loop before configuring a model.
+    if (isSampleBook(currentBookId)) {
+      const demo = getDemoDefinition(lookup);
+      setDefinition({
+        word: lookup,
+        text: demo,
+        loading: false,
+        error: demo ? null : DEMO_DEFINITION_FALLBACK,
+        saved: false,
+        source,
+      });
+      return;
+    }
+
     if (!llmSettings) {
       setDefinition({
         word: lookup,
@@ -152,7 +172,7 @@ export function SelectionActionBar({
           : previous
       );
     }
-  }, [selection, words, llmSettings, source]);
+  }, [selection, words, llmSettings, source, currentBookId]);
 
   const handleSave = useCallback(() => {
     if (!definition?.text || definition.saved) return;

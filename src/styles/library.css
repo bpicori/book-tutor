@@ -339,8 +339,32 @@
   width: 100%;
   margin-top: 6px;
 }
+.empty-library .empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 2px;
+}
+.empty-library .form-error {
+  margin: 0;
+}
 .empty-library .note {
   margin: 0;
+}
+.link-inline {
+  padding: 0;
+  font: inherit;
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link-inline:hover {
+  text-decoration-thickness: 2px;
+}
+.link-inline:disabled {
+  color: var(--muted);
+  text-decoration: none;
+  cursor: default;
 }
 .now-actions .btn-quiet {
   gap: 7px;

@@ -18,6 +18,24 @@ import {
   resolveContentForChat,
 } from "../utils/chapterChat";
 import { useLLMAskSettings } from "./useLLMSettings";
+import { getDemoAnswer, isSampleBook } from "../demo";
+
+/** Splits a pre-written answer so the demo still feels like a stream. */
+function* streamChunks(text: string): Generator<string> {
+  const words = text.split(/(\s+)/);
+  let chunk = "";
+  let count = 0;
+  for (const word of words) {
+    chunk += word;
+    if (!word.trim()) continue;
+    if (++count >= 4) {
+      yield chunk;
+      chunk = "";
+      count = 0;
+    }
+  }
+  if (chunk) yield chunk;
+}
 
 interface UseChapterChatOptions {
   chapterHref: string;
@@ -93,6 +111,27 @@ export function useChapterChat({
       if (!message.trim()) return;
 
       addChatMessage(chapterKey, { role: "user", content: message });
+
+      // Sample book: answer from the pre-written fixtures, streamed so the
+      // conversation behaves like a live one. No network, no key required.
+      if (isSampleBook(currentBookId)) {
+        addChatMessage(chapterKey, {
+          role: "assistant",
+          content: "",
+          isStreaming: true,
+        });
+
+        let streamed = "";
+        for (const chunk of streamChunks(
+          getDemoAnswer(message, chapterLabel)
+        )) {
+          await new Promise((resolve) => setTimeout(resolve, 16));
+          streamed += chunk;
+          updateLastChatMessage(chapterKey, streamed, true);
+        }
+        updateLastChatMessage(chapterKey, streamed, false);
+        return;
+      }
 
       if (!llmSettings) {
         addChatMessage(chapterKey, {

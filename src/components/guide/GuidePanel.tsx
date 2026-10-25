@@ -1,5 +1,8 @@
+import { Link } from "react-router-dom";
 import { useStore } from "../../store/useStore";
 import { useCurrentChapter } from "../../hooks/useCurrentChapter";
+import { ROUTES } from "../../constants";
+import { isSampleBook } from "../../demo";
 import { Icon } from "../ui/Icon";
 import { GuideAsk } from "./GuideAsk";
 import { GuidePreview } from "./GuidePreview";
@@ -7,6 +10,7 @@ import { GuidePreview } from "./GuidePreview";
 export function GuidePanel() {
   const open = useStore((state) => state.isAiSidebarOpen);
   const activeTab = useStore((state) => state.activeAiTab);
+  const currentBookId = useStore((state) => state.currentBookId);
   const setOpen = useStore((state) => state.setAiSidebarOpen);
   const setActiveTab = useStore((state) => state.setActiveAiTab);
   const { chapterLabel } = useCurrentChapter();
@@ -52,6 +56,13 @@ export function GuidePanel() {
       <div className="guide-body">
         {activeTab === "preview" ? <GuidePreview /> : <GuideAsk />}
       </div>
+
+      {isSampleBook(currentBookId) && (
+        <p className="guide-demo" role="note">
+          Sample book · answers are pre-written.
+          <Link to={ROUTES.settings("guide")}>Connect a model</Link>
+        </p>
+      )}
     </aside>
   );
 }

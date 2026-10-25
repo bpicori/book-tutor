@@ -1,10 +1,12 @@
 import { useState } from "react";
 import type { LLMModelConfig, LLMProviderConfig } from "../../../types";
 import { useStore } from "../../../store/useStore";
+import { Chip } from "../../ui/Chip";
 import { Button } from "../../ui/Button";
 import { Field, TextInput } from "../../ui/Field";
 import { Switch } from "../../ui/Switch";
 import { ModelConfig } from "../ModelConfig";
+import { LLM_PRESETS, MODEL_COST_HINT } from "../../../constants/llmPresets";
 
 type CheckStatus = { state: "ok" | "error"; text: string } | null;
 
@@ -16,6 +18,9 @@ export function GuideSettingsPanel() {
 
   const provider = settings.llmProvider;
   const models = settings.llmModels;
+  const activePreset = LLM_PRESETS.find(
+    (preset) => preset.baseUrl === provider.baseUrl
+  );
 
   const handleProviderUpdate = (updates: Partial<LLMProviderConfig>) => {
     updateSettings({
@@ -78,6 +83,39 @@ export function GuideSettingsPanel() {
         </p>
       </div>
 
+      <div className="preset-block">
+        <div className="control-label">
+          <span>Provider</span>
+          <b>Presets only fill the endpoint</b>
+        </div>
+        <div className="chips">
+          {LLM_PRESETS.map((preset) => (
+            <Chip
+              key={preset.id}
+              active={activePreset?.id === preset.id}
+              onClick={() => handleProviderUpdate({ baseUrl: preset.baseUrl })}
+            >
+              {preset.label}
+            </Chip>
+          ))}
+        </div>
+        <p className="note">
+          {activePreset?.note ?? "Any OpenAI-compatible endpoint works."}
+          {activePreset?.keyUrl && (
+            <>
+              {" "}
+              <a
+                href={activePreset.keyUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                Get a key →
+              </a>
+            </>
+          )}
+        </p>
+      </div>
+
       <div className="form-grid">
         <Field label="Base URL" htmlFor="ai-url" span2>
           <TextInput
@@ -114,7 +152,8 @@ export function GuideSettingsPanel() {
             </button>
           </div>
           <p className="note">
-            Held in this browser and sent only to your provider.
+            Held in this browser and sent only to your provider.{" "}
+            {MODEL_COST_HINT}
           </p>
         </Field>
       </div>
