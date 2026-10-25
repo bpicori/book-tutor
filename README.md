@@ -1,139 +1,170 @@
 # Book Tutor
 
-**A free, local-first EPUB reader with a reading guide in the margin.** Before you start a
-chapter it tells you what to watch for — without spoiling it. While you read, it answers questions
-about the chapter you are in. It reads aloud, and it keeps a lexicon of the words you look up.
+Book Tutor is a reading app for EPUB files. It runs fully in your browser. The guide shows what to
+notice before you start a chapter. Then it answers questions about the chapter you are in. It also
+reads aloud. It keeps a lexicon: a list of saved words with their definitions.
 
-Your books never leave your device, and there is no account, no server, and no telemetry.
+Your books stay on your device. There is no account and no server.
 
-[**Open Book Tutor →**](https://bpicori.github.io/book-tutor/) · Works in any modern browser ·
-Installable as an app
+[**Open Book Tutor**](https://bpicori.github.io/book-tutor/)
+It runs in any modern browser, and you can install it as an app.
 
 [![A short demo: open the sample book, generate a chapter preview, ask a question](assets/demo.gif)](https://bpicori.github.io/book-tutor/)
 
-## Try it in 30 seconds
+## Try it
 
-1. [Open the app](https://bpicori.github.io/book-tutor/) and press **Open the sample book**.
-   *The Time Machine* loads in your browser — no file, no signup, no key.
-2. Open **Guide** and press **Generate chapter preview**.
-3. To use the guide on your own books, connect a model in **Settings → The guide**. Pick a preset
-   (OpenRouter, OpenAI, Groq, Ollama, LM Studio, or any OpenAI-compatible endpoint), paste a key,
-   and press **Load models**.
+1. Open `https://bpicori.github.io/book-tutor/` in a browser.
+2. Click **Open the sample book**.
+3. Open **Guide**.
+4. Click **Generate chapter preview**.
 
-The sample ships with a few written guide responses so you can see the reading experience before
-deciding whether to configure a model.
+Note: the sample book is *The Time Machine* by H. G. Wells. It is in the public domain. The app
+contains written guide answers for its first three chapters. As a result, you can do these steps
+without an API key.
+
+## Connect a model
+
+Do these steps to use the guide with your own books.
+
+1. Open **Settings**. Click **The guide**.
+2. Select a preset. The preset fills the base URL only.
+3. Get a key from the provider.
+4. Paste the key in the key field.
+5. Click **Load models**. The app fills the three model fields with the first model that it finds.
+
+You can change each model field. The provider supplies the model names.
+A chapter preview costs about $0.001 on a small model. A free model costs nothing. A local model
+also costs nothing.
 
 ## What it does
 
-### A preview before the chapter, not a summary after it
+### A preview before the chapter
 
-Most "AI reading" tools recap what you have already read. The guide works the other way: it reads
-only the chapter in front of you and returns its themes, the concepts to carry, the tone, the
-characters, the terms worth knowing, and a few questions to hold while you read. Nothing from later
-chapters is in context, so it cannot spoil what comes next.
+The guide reads one chapter only: the chapter in front of you. It returns themes, concepts, tone,
+characters, terms, and questions. It does not read the chapters that come after. As a result, it
+cannot spoil the book.
+
+A preview is not a summary. A summary tells you what you read. A preview tells you what to notice
+next.
 
 ![Chapter preview open in the margin guide](assets/reader-guide.webp)
 
 ### Ask about the chapter you are in
 
-Ask follows the same rule: one chapter plus short summaries of the chapters you have already
-previewed. It will explain a passage, untangle a character's motive, or connect an idea to what
-came before — and it says so when the answer is not in the text rather than inventing one.
+The Ask tab uses the same rule. The guide gets one chapter, plus short summaries of the chapters
+that you already previewed. If the answer is not in the chapter, the guide says so.
 
 ![Asking the guide about the current chapter](assets/reader-ask.webp)
 
-### A lexicon of the words you keep
+### A lexicon of your words
 
-Select text to highlight it, look it up, or save it to the lexicon. The lexicon keeps each word
-with its definition, the book it came from, and whether you know it yet — so a word you had to look
-up on page 40 is waiting for you on page 400.
+Do these steps to save a word.
+
+1. Select the word.
+2. Click **Define**.
+3. Click **Save to lexicon**.
+
+The lexicon keeps the definition, the book title, and the review state for each word. A word that
+you saved on page 40 is available on page 400.
 
 ![Selecting a word: define it without leaving the page, then save it](assets/define.webp)
 
 ![The lexicon: saved words with definitions and review state](assets/lexicon.webp)
 
-### Read aloud, from anywhere
+### Read aloud
 
-Paragraph-level text-to-speech from any paragraph or chapter, with a voice you configure. Audio is
-cached on your device (LRU, 128 MB) so a chapter you listened to once does not cost anything again.
+You can start the read-aloud from any paragraph or chapter. You select the voice in Settings. The
+app stores the audio on your device. A chapter that you listened to before does not cost again.
 
-### And the quiet parts matter too
+### Library and reader
 
-EPUB rendering with a table of contents, progress, and resumable position · single page or two-page
-spread · typography and colour themes · highlights and notes in the sidebar · export/import a full
-backup · offline after first load · optional self-hosted sync.
+The app shows the cover, the progress, and the last date for each book. You can filter the library
+and search for a title. The reader shows one page or two pages. It keeps your position. You can
+change the font, the size, the line height, and the color theme. You can add highlights and notes.
 
-## Read in a language that isn't your first
+## Read in a language that is not your first
 
-This is the workflow the app was built around. You read the original, not a translation:
+This workflow is the reason for the app. You read the original text, not a translation.
 
-- select a word → **Define** gives you the definition, with an English gloss when the word is in
-  another language;
-- **Save to lexicon** keeps it with the book it came from;
-- **Ask** explains a sentence in your own terms, inside the chapter you are reading;
-- **Listen** reads the paragraph aloud while you follow.
+1. Select a word. Click **Define**. If the word is in another language, you get an English gloss.
+2. Click **Save to lexicon**. The lexicon keeps the book with the word.
+3. Click **Ask**. The guide explains the sentence in simpler words.
+4. Click **Listen**. The app reads the paragraph aloud.
 
-It is not a language course. It is the scaffolding that lets you finish a book you would otherwise
-put down.
+It is not a language course. It helps you finish a book that you started.
 
 ## Your books, your key, your device
 
-- Books, progress, highlights, notes, lexicon, and settings live in your browser's IndexedDB and
-  localStorage. There is no backend, no account, and no analytics — you can read the source.
-- The only network calls are the ones you configure: your model endpoint for previews, answers, and
-  definitions, and your speech endpoint for read-aloud. Your key is stored in this browser and sent
-  only to the endpoint you set.
-- A chapter preview is a few thousand tokens — roughly $0.001 on a small model. OpenRouter offers
-  free models; local models through Ollama or LM Studio cost nothing.
-- Safari clears site storage for sites you have not visited in a week. Export a backup from
-  **Settings → Data**, or install the app to your home screen.
+- Books, progress, highlights, notes, the lexicon, and your settings stay in your browser.
+- There is no account, no analytics, and no server.
+- The app sends data only to the endpoints that you set.
+- Your API key stays in the browser. The app sends the key only to your endpoint.
+- You can export a full backup, and import it on another device.
+- The app works offline after the first load.
 
-More detail: [privacy](docs/privacy.md) · [getting started](docs/getting-started.md) ·
+CAUTION: Install the app on your home screen, or export a backup. Safari erases site data after
+seven days without a visit.
+
+More detail: [privacy](docs/privacy.md), [getting started](docs/getting-started.md),
 [FAQ](docs/faq.md).
 
 ## Run it yourself
 
-```bash
-git clone --recurse-submodules https://github.com/bpicori/book-tutor.git
-cd book-tutor
-npm install
-npm run dev
-```
+1. Clone the repository with the submodules.
 
-Then open <http://localhost:5173/book-tutor/> and add an EPUB — or press **Open the sample book**.
+   ```bash
+   git clone --recurse-submodules https://github.com/bpicori/book-tutor.git
+   cd book-tutor
+   ```
+
+2. Install the dependencies.
+
+   ```bash
+   npm install
+   ```
+
+3. Start the development server.
+
+   ```bash
+   npm run dev
+   ```
+
+4. Open `http://localhost:5173/book-tutor/` in a browser.
+
+Note: the build is a static site. You can use any static host.
 
 ```bash
 npm run build     # type-check and build into dist/
 npm run preview   # serve the production build
 ```
 
-The build is a static site: any static host works. The public instance is deployed to GitHub Pages
-by [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which is why `base` is
-`/book-tutor/`; change it in [`vite.config.ts`](vite.config.ts) if you host at a domain root.
+The public instance is on GitHub Pages. As a result, the base path is `/book-tutor/`. If you host
+the app at the root of a domain, change `base` in `vite.config.ts`.
 
-**Optional sync.** `cloudflare-worker/` contains a small self-hosted endpoint for backing up your
-library between devices. It is entirely optional — see
-[docs/self-hosting.md](docs/self-hosting.md).
+**Optional sync.** The `cloudflare-worker/` directory contains an endpoint for a backup between
+devices. The endpoint is optional. Read [self-hosting](docs/self-hosting.md) for the steps.
 
 ## Roadmap
 
-- [ ] Export the lexicon to Anki (CSV) — the workflow language learners already have
-- [ ] A **Translate** action for a selected passage, with a target language setting
-- [ ] More formats: the MOBI/AZW3/FB2/CBZ readers are already bundled, the import gate is not
-- [ ] Sentence-level read-aloud highlighting
-
-Feature requests are welcome — the [feature request
-template](.github/ISSUE_TEMPLATE/feature_request.yml) asks for the reading problem first.
+- Export the lexicon to Anki (CSV).
+- Add a **Translate** action for a selected passage.
+- Add more book formats. The app contains readers for MOBI, AZW3, FB2, and CBZ.
+- Highlight the current sentence during the read-aloud.
 
 ## Contributing
 
-Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the development
-setup, project layout, and the rules that keep this project what it is (no telemetry, no new
-runtime dependencies without a reason, spoiler-free by construction).
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before you send a pull request. Three rules apply:
+
+- The app must not contain telemetry.
+- Do not add a runtime dependency without a reason.
+- The guide must not use text from a later chapter.
 
 ## License
 
-[GNU Affero General Public License v3.0](LICENSE). The EPUB rendering engine is
-[foliate-js](https://github.com/johnfactotum/foliate-js) by John Factotum (MIT). The sample book is
-*The Time Machine* by H. G. Wells, from [Project Gutenberg](https://www.gutenberg.org/ebooks/35),
-in the public domain.
+Book Tutor uses the [GNU Affero General Public License v3.0](LICENSE).
+
+The EPUB renderer is [foliate-js](https://github.com/johnfactotum/foliate-js) by John Factotum.
+foliate-js uses the MIT license.
+
+The sample book is *The Time Machine* by H. G. Wells, from
+[Project Gutenberg](https://www.gutenberg.org/ebooks/35). It is in the public domain.
