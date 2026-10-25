@@ -48,6 +48,8 @@ Select text to highlight it, look it up, or save it to the lexicon. The lexicon 
 with its definition, the book it came from, and whether you know it yet — so a word you had to look
 up on page 40 is waiting for you on page 400.
 
+![Selecting a word: define it without leaving the page, then save it](assets/define.webp)
+
 ![The lexicon: saved words with definitions and review state](assets/lexicon.webp)
 
 ### Read aloud, from anywhere
@@ -70,7 +72,7 @@ backup · offline after first load · optional self-hosted sync.
 | No account | **Yes** | Sign-in for cloud features | Yes | Yes | Amazon account | Account |
 | Your books stay on your device | **Yes** | Optional cloud | Local or self-hosted sync | Yes | Amazon cloud | Cloud |
 | Preview *before* you read a chapter | **Yes** | [Not yet](https://github.com/readest/readest/issues/5367) | No | No | Recaps, after the fact | No |
-| Questions scoped to the current chapter | **Yes** | Yes, in progress | Prompt-based | Prompt-based | Yes, Kindle books only | Yes |
+| Questions scoped to the current chapter | **Yes** | Yes, in progress | Prompt-based | Prompt-based | Yes, Kindle books only | Document-level |
 | Vocabulary page with review | **Yes** | [Not yet](https://github.com/readest/readest/issues/789) | [Not yet](https://github.com/koodo-reader/koodo-reader/issues/1450) | [Not yet](https://github.com/Anxcye/anx-reader/issues/886) | Vocabulary Builder | No |
 | Reads aloud | **Yes, your voice** | Yes | Yes | Yes | Yes | Yes |
 | Your own model and key | **Yes** | Partial | Yes | Yes | No | No |
