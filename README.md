@@ -63,24 +63,6 @@ EPUB rendering with a table of contents, progress, and resumable position · sin
 spread · typography and colour themes · highlights and notes in the sidebar · export/import a full
 backup · offline after first load · optional self-hosted sync.
 
-## How it compares
-
-| | Book Tutor | Readest | Koodo Reader | Anx Reader | Kindle "Ask this Book" | Readwise Reader |
-| --- | --- | --- | --- | --- | --- | --- |
-| Free and open source | **AGPL-3.0** | AGPL-3.0 | AGPL-3.0 | MIT | No | No |
-| Runs in the browser, nothing to install | **Yes** | Yes, with an account for sync | Yes | No | No | Yes |
-| No account | **Yes** | Sign-in for cloud features | Yes | Yes | Amazon account | Account |
-| Your books stay on your device | **Yes** | Optional cloud | Local or self-hosted sync | Yes | Amazon cloud | Cloud |
-| Preview *before* you read a chapter | **Yes** | [Not yet](https://github.com/readest/readest/issues/5367) | No | No | Recaps, after the fact | No |
-| Questions scoped to the current chapter | **Yes** | Yes, in progress | Prompt-based | Prompt-based | Yes, Kindle books only | Document-level |
-| Vocabulary page with review | **Yes** | [Not yet](https://github.com/readest/readest/issues/789) | [Not yet](https://github.com/koodo-reader/koodo-reader/issues/1450) | [Not yet](https://github.com/Anxcye/anx-reader/issues/886) | Vocabulary Builder | No |
-| Reads aloud | **Yes, your voice** | Yes | Yes | Yes | Yes | Yes |
-| Your own model and key | **Yes** | Partial | Yes | Yes | No | No |
-| Any EPUB you own | **Yes** | Yes | Yes | Yes | No | Yes |
-
-<sub>Based on the projects' public trackers and documentation, October 2026. Corrections welcome —
-open an issue.</sub>
-
 ## Read in a language that isn't your first
 
 This is the workflow the app was built around. You read the original, not a translation:
