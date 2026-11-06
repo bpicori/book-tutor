@@ -21,27 +21,26 @@ npm run preview         # local preview of the production build
 npx serve dist
 ```
 
-### Hosting at a domain root
+### Hosting in a subdirectory
 
-The repository is configured for a project page at `/book-tutor/`. If you host at the root of a
-domain, change `base` (and the PWA `scope` / `start_url`) in
-[`vite.config.ts`](../vite.config.ts):
+The app expects the root of a domain. If you serve it from a subdirectory, set `VITE_BASE` when you
+build. The value sets the asset base, the router basename, the PWA `scope` and `start_url`, and the
+generated `_redirects` file:
 
-```ts
-export default defineConfig({
-  base: "/",
-  // ...
-  VitePWA({
-    manifest: { scope: "/", start_url: "/" },
-  }),
-});
+```bash
+VITE_BASE=/book-tutor/ npm run build
 ```
 
-### GitHub Pages
+### Cloudflare Pages
 
-[`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) builds and publishes `dist/` on
-every push to `main`, with submodules checked out. Enable Pages → Source: GitHub Actions in the
-repository settings, and the app is live at `https://<user>.github.io/<repo>/`.
+The public instance runs on Cloudflare Pages at `https://book-tutor.pages.dev/`. Every push to
+`main` builds `dist/` and publishes it:
+
+- Workflow: [`.github/workflows/deploy-cloudflare.yml`](../.github/workflows/deploy-cloudflare.yml)
+- Secrets: `CLOUDFLARE_API_TOKEN` (permission: Cloudflare Pages → Edit) and `CLOUDFLARE_ACCOUNT_ID`
+
+The build writes `dist/_redirects`, which Cloudflare Pages and Netlify use to send deep links to
+`index.html`.
 
 ## Optional: sync between devices
 

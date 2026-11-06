@@ -6,14 +6,14 @@ reads aloud. It keeps a lexicon: a list of saved words with their definitions.
 
 Your books stay on your device. There is no account and no server.
 
-[**Open Book Tutor**](https://bpicori.github.io/book-tutor/)
+[**Open Book Tutor**](https://book-tutor.pages.dev/)
 It runs in any modern browser, and you can install it as an app.
 
-[![A short demo: open the sample book, generate a chapter preview, ask a question](assets/demo.gif)](https://bpicori.github.io/book-tutor/)
+[![A short demo: open the sample book, generate a chapter preview, ask a question](assets/demo.gif)](https://book-tutor.pages.dev/)
 
 ## Try it
 
-1. Open `https://bpicori.github.io/book-tutor/` in a browser.
+1. Open `https://book-tutor.pages.dev/` in a browser.
 2. Click **Open the sample book**.
 3. Open **Guide**.
 4. Click **Generate chapter preview**.
@@ -129,7 +129,7 @@ More detail: [privacy](docs/privacy.md), [getting started](docs/getting-started.
    npm run dev
    ```
 
-4. Open `http://localhost:5173/book-tutor/` in a browser.
+4. Open `http://localhost:5173/` in a browser.
 
 Note: the build is a static site. You can use any static host.
 
@@ -138,8 +138,9 @@ npm run build     # type-check and build into dist/
 npm run preview   # serve the production build
 ```
 
-The public instance is on GitHub Pages. As a result, the base path is `/book-tutor/`. If you host
-the app at the root of a domain, change `base` in `vite.config.ts`.
+The public instance is on Cloudflare Pages, at the root of the domain. Every push to `main` deploys
+it with GitHub Actions. If you host the app in a subdirectory, set `VITE_BASE` to that path (for
+example `VITE_BASE=/book-tutor/`).
 
 **Optional sync.** The `cloudflare-worker/` directory contains an endpoint for a backup between
 devices. The endpoint is optional. Read [self-hosting](docs/self-hosting.md) for the steps.

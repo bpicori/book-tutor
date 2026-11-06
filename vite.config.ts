@@ -4,11 +4,11 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-// GitHub Pages serves the app from /book-tutor/. Hosts that serve the build at
-// the root of a domain (Cloudflare Pages, Netlify, a custom domain) pass
-// VITE_BASE=/ so the assets, the router, and the PWA manifest agree.
+// The app lives at the root of the domain (Cloudflare Pages). Hosts that serve
+// it from a subdirectory pass VITE_BASE=/subpath/ so the assets, the router,
+// and the PWA manifest agree.
 const base = (() => {
-  const value = process.env.VITE_BASE ?? "/book-tutor/";
+  const value = process.env.VITE_BASE ?? "/";
   const rooted = value.startsWith("/") ? value : `/${value}`;
   return rooted.endsWith("/") ? rooted : `${rooted}/`;
 })();
