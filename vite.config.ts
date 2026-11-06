@@ -1,6 +1,31 @@
+import { writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+
+// GitHub Pages serves the app from /book-tutor/. Hosts that serve the build at
+// the root of a domain (Cloudflare Pages, Netlify, a custom domain) pass
+// VITE_BASE=/ so the assets, the router, and the PWA manifest agree.
+const base = (() => {
+  const value = process.env.VITE_BASE ?? "/book-tutor/";
+  const rooted = value.startsWith("/") ? value : `/${value}`;
+  return rooted.endsWith("/") ? rooted : `${rooted}/`;
+})();
+
+// A single-page app needs every unknown path to return index.html. Cloudflare
+// Pages and Netlify both read this file from the build output.
+function spaFallback() {
+  return {
+    name: "spa-fallback",
+    closeBundle() {
+      writeFileSync(
+        resolve("dist/_redirects"),
+        `/*  ${base === "/" ? "/index.html" : `${base}index.html`}  200\n`
+      );
+    },
+  };
+}
 
 // Plugin to fix Vite's glob detection issue in foliate-js/pdf.js
 // Transforms `vendor/pdfjs/${path}` to `./vendor/pdfjs/${path}` in new URL() calls
@@ -25,8 +50,9 @@ function fixPdfjsGlobPattern() {
 }
 
 export default defineConfig({
-  base: "/book-tutor/",
+  base,
   plugins: [
+    spaFallback(),
     fixPdfjsGlobPattern(),
     react(),
     VitePWA({
@@ -47,8 +73,8 @@ export default defineConfig({
         theme_color: "#f9f8f5",
         background_color: "#f9f8f5",
         display: "standalone",
-        scope: "/book-tutor/",
-        start_url: "/book-tutor/",
+        scope: base,
+        start_url: base,
         icons: [
           {
             src: "icons/icon-192x192.png",

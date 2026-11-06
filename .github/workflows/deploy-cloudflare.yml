@@ -1,0 +1,67 @@
+# Builds the app and deploys it to Cloudflare Pages on every push to main.
+#
+# Needs two repository secrets:
+#   CLOUDFLARE_API_TOKEN  - API token with the "Cloudflare Pages: Edit" permission
+#   CLOUDFLARE_ACCOUNT_ID - 17edb2bfdef93bf7ab9e31fd6f587d2c
+#
+# Until the token exists the workflow skips itself, so forks and fresh clones
+# do not show a failed build.
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 'cloudflare-pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for the Cloudflare token
+        id: check
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -n "$TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::CLOUDFLARE_API_TOKEN is not set; skipping the Cloudflare deploy."
+          fi
+
+      - name: Checkout
+        if: steps.check.outputs.configured == 'true'
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+
+      - name: Set up Node
+        if: steps.check.outputs.configured == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.check.outputs.configured == 'true'
+        run: npm ci
+
+      - name: Build for the domain root
+        if: steps.check.outputs.configured == 'true'
+        env:
+          VITE_BASE: '/'
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        if: steps.check.outputs.configured == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4 pages deploy dist --project-name book-tutor --branch main
