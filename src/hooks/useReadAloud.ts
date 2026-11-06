@@ -9,8 +9,9 @@
  *    an ordered queue of paragraphs with `extractParagraphs(doc)`.
  * 3. Playing index N asks SpeechCache for a blob URL. The cache returns a
  *    cached URL, joins an in-flight request, or calls `generateSpeech`
- *    (OpenAI-compatible /audio/speech). The next paragraph is prefetched while
- *    N plays, so gaps stay small.
+ *    (OpenAI-compatible /audio/speech). A read-ahead window keeps about 30
+ *    seconds of upcoming paragraphs synthesized while N plays, so gaps stay
+ *    small.
  * 4. The URL is set on the <audio> element and played; the paragraph's Range is
  *    highlighted via the CSS Custom Highlight API and scrolled into view.
  * 5. On `ended`, advance to N+1. After the last paragraph, the player goes to
@@ -21,7 +22,7 @@
  * Navigation belongs to the player while it is active.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FoliateView } from "../types";
+import type { BookSection, FoliateView } from "../types";
 import { useStore } from "../store/useStore";
 import { useChapterScopeDepth } from "./useChapterScopeDepth";
 import { useParagraphHighlight } from "./useParagraphHighlight";
@@ -40,8 +41,32 @@ import {
   type ChapterScope,
 } from "../utils/tocUtils";
 
-/** How long a paragraph must play before the next one is prefetched. */
-const PREFETCH_DELAY_MS = 800;
+/**
+ * How long a paragraph must play before read-ahead starts. The short delay
+ * debounces skip clicks, so holding next does not synthesize a paragraph per
+ * click.
+ */
+const PREFETCH_DELAY_MS = 250;
+
+/**
+ * How much playable audio to keep synthesized beyond the current paragraph.
+ * Long paragraphs reach the target with one paragraph ahead; runs of short
+ * lines get more paragraphs, up to the cap.
+ */
+const PREFETCH_TARGET_SECONDS = 30;
+
+/** Upper bound on paragraphs generated ahead, to cap cost on short lines. */
+const PREFETCH_MAX_PARAGRAPHS = 5;
+
+/** Rough speech pace used to estimate paragraph duration before it is fetched. */
+const SPEECH_CHARS_PER_SECOND = 14;
+
+function estimateSpeechSeconds(text: string, rate: number): number {
+  return Math.max(
+    text.length / (SPEECH_CHARS_PER_SECOND * Math.max(rate, 0.6)),
+    1
+  );
+}
 
 export type ReadAloudStatus =
   | "idle"
@@ -125,6 +150,10 @@ export function useReadAloud({
   const advanceRef = useRef<() => void>(() => {});
   const followRef = useRef<((range: Range) => void) | null>(null);
   const prefetchTimerRef = useRef<number | null>(null);
+  const readAheadRunRef = useRef(0);
+  const nextSectionTextsRef = useRef(
+    new WeakMap<BookSection, Promise<string[]>>()
+  );
   const rateRef = useRef(playbackRate);
 
   const stateRef = useRef({
@@ -175,32 +204,29 @@ export function useReadAloud({
   }, []);
 
   /**
-   * Warms the first paragraph of the next section while the last paragraph of
-   * the current one plays, so the chapter transition has no synthesis pause.
+   * Paragraph texts of a later section, extracted without rendering it. Only
+   * text is needed for synthesis, so the created document can be released
+   * after extraction and is never held by the read-ahead cache.
    */
-  const warmNextSection = useCallback(async () => {
-    const state = stateRef.current;
-    const scope = scopeRef.current;
-    const section = sectionIndexRef.current;
-    const nextSection =
-      state.book?.sections && section !== null && scope && section < scope.end
-        ? state.book.sections[section + 1]
-        : undefined;
-    const settings = state.speechSettings;
-    if (!nextSection?.createDocument || !settings) return;
+  const loadSectionTexts = useCallback(
+    (section: BookSection): Promise<string[]> => {
+      const cached = nextSectionTextsRef.current.get(section);
+      if (cached) return cached;
 
-    const token = tokenRef.current;
-    try {
-      const doc = await nextSection.createDocument();
-      const [first] = extractParagraphs(doc);
-      if (!first) return;
-      const url = await getCache().get(first, settings, currentBookId);
-      if (token !== tokenRef.current) return;
-      getAudio().preload(url);
-    } catch {
-      // Warm-up is best-effort; the normal path fetches on arrival.
-    }
-  }, [currentBookId, getAudio, getCache]);
+      const pending = section
+        .createDocument()
+        .then((doc) =>
+          extractParagraphs(doc).map((paragraph) => paragraph.text)
+        );
+      nextSectionTextsRef.current.set(section, pending);
+      void pending.catch(() => {
+        // Let a later fill retry a section that failed to parse.
+        nextSectionTextsRef.current.delete(section);
+      });
+      return pending;
+    },
+    []
+  );
 
   const clearPrefetchTimer = useCallback(() => {
     if (prefetchTimerRef.current !== null) {
@@ -210,38 +236,129 @@ export function useReadAloud({
   }, []);
 
   /**
-   * Prefetches the next paragraph only after the current one has actually been
-   * playing for a moment. Starting a request per skip would bill audio the
-   * reader never hears.
+   * Stops scheduling read-ahead work. In-flight requests are left running:
+   * they finish into the cache and are useful after a pause or a skip.
    */
-  const schedulePrefetch = useCallback(
+  const cancelReadAhead = useCallback(() => {
+    clearPrefetchTimer();
+    readAheadRunRef.current += 1;
+  }, [clearPrefetchTimer]);
+
+  /**
+   * Synthesizes upcoming paragraphs until about `PREFETCH_TARGET_SECONDS` of
+   * audio is buffered, or `PREFETCH_MAX_PARAGRAPHS` is reached. Runs one
+   * request at a time so the immediate next paragraph is ready first; the
+   * cache dedupes requests a previous fill already started.
+   */
+  const fillReadAhead = useCallback(
+    async (startIndex: number, token: number, run: number) => {
+      const settings = stateRef.current.speechSettings;
+      if (!settings) return;
+
+      const queue = queueRef.current;
+      const isCurrent = () =>
+        token === tokenRef.current &&
+        run === readAheadRunRef.current &&
+        statusRef.current === "playing";
+
+      let buffered = 0;
+      let fetched = 0;
+
+      for (
+        let index = startIndex + 1;
+        index < queue.length &&
+        fetched < PREFETCH_MAX_PARAGRAPHS &&
+        buffered < PREFETCH_TARGET_SECONDS;
+        index++, fetched++
+      ) {
+        const paragraph = queue[index];
+        buffered += estimateSpeechSeconds(paragraph.text, rateRef.current);
+        const url = await getCache().prefetch(
+          paragraph.text,
+          settings,
+          currentBookId
+        );
+        if (!isCurrent()) return;
+        if (url && index === startIndex + 1) getAudio().preload(url);
+      }
+
+      // Once the remaining current-section audio is short, prepare the next
+      // section too, so a chapter transition gets the same head start.
+      const remaining = queue
+        .slice(startIndex + 1)
+        .reduce(
+          (sum, paragraph) =>
+            sum + estimateSpeechSeconds(paragraph.text, rateRef.current),
+          0
+        );
+      if (remaining >= PREFETCH_TARGET_SECONDS) return;
+
+      const state = stateRef.current;
+      const section = sectionIndexRef.current;
+      const scope = scopeRef.current;
+      if (
+        !state.book?.sections ||
+        section === null ||
+        !scope ||
+        section >= scope.end
+      ) {
+        return;
+      }
+      const nextSection = state.book.sections[section + 1];
+      if (!nextSection?.createDocument) return;
+
+      let texts: string[];
+      try {
+        texts = await loadSectionTexts(nextSection);
+      } catch {
+        // The rendered section fetches normally when it arrives.
+        return;
+      }
+      if (!isCurrent()) return;
+
+      for (
+        let index = 0;
+        index < texts.length &&
+        fetched < PREFETCH_MAX_PARAGRAPHS &&
+        buffered < PREFETCH_TARGET_SECONDS;
+        index++, fetched++
+      ) {
+        buffered += estimateSpeechSeconds(texts[index], rateRef.current);
+        const url = await getCache().prefetch(
+          texts[index],
+          settings,
+          currentBookId
+        );
+        if (!isCurrent()) return;
+        // Only take the idle audio element when nothing else is queued in this
+        // section; otherwise it holds the next current-section URL.
+        if (url && startIndex === queue.length - 1 && index === 0) {
+          getAudio().preload(url);
+        }
+      }
+    },
+    [currentBookId, getAudio, getCache, loadSectionTexts]
+  );
+
+  /**
+   * Starts the read-ahead fill after the current paragraph has actually been
+   * playing for a moment, so a burst of skip clicks does not issue a request
+   * per click.
+   */
+  const scheduleReadAhead = useCallback(
     (index: number) => {
-      clearPrefetchTimer();
+      cancelReadAhead();
       const token = tokenRef.current;
+      const run = readAheadRunRef.current;
       prefetchTimerRef.current = window.setTimeout(() => {
         prefetchTimerRef.current = null;
         if (token !== tokenRef.current || statusRef.current !== "playing") {
           return;
         }
-        const paragraph = queueRef.current[index];
-        const settings = stateRef.current.speechSettings;
-        if (!settings) return;
-        if (!paragraph) {
-          void warmNextSection();
-          return;
-        }
-        void getCache()
-          .prefetch(paragraph, settings, currentBookId)
-          .then((url) => {
-            if (!url) return;
-            if (token !== tokenRef.current || statusRef.current !== "playing") {
-              return;
-            }
-            getAudio().preload(url);
-          });
+        void fillReadAhead(index, token, run);
       }, PREFETCH_DELAY_MS);
     },
-    [clearPrefetchTimer, currentBookId, getAudio, getCache, warmNextSection]
+    [cancelReadAhead, fillReadAhead]
   );
 
   const buildQueue = useCallback((doc: Document): ReadAloudParagraph[] => {
@@ -320,7 +437,7 @@ export function useReadAloud({
 
       let url: string;
       try {
-        url = await getCache().get(paragraph, settings, currentBookId);
+        url = await getCache().get(paragraph.text, settings, currentBookId);
       } catch (err) {
         if (token !== tokenRef.current) return;
         if (err instanceof DOMException && err.name === "AbortError") return;
@@ -336,7 +453,7 @@ export function useReadAloud({
         if (token !== tokenRef.current) return;
         updateStatus("playing");
         followRef.current?.(paragraph.range);
-        schedulePrefetch(index + 1);
+        scheduleReadAhead(index);
       } catch (err) {
         if (token !== tokenRef.current) return;
         if (err instanceof DOMException && err.name === "AbortError") return;
@@ -349,7 +466,7 @@ export function useReadAloud({
       finishQueue,
       getAudio,
       getCache,
-      schedulePrefetch,
+      scheduleReadAhead,
       updateStatus,
     ]
   );
@@ -425,11 +542,11 @@ export function useReadAloud({
 
   useEffect(() => {
     return () => {
-      clearPrefetchTimer();
+      cancelReadAhead();
       cacheRef.current?.dispose();
       audioRef.current?.dispose();
     };
-  }, [clearPrefetchTimer]);
+  }, [cancelReadAhead]);
 
   const beginAtSection = useCallback(
     (sectionIndex: number, href: string | null) => {
@@ -507,6 +624,10 @@ export function useReadAloud({
       tokenRef.current++;
 
       docRef.current = doc;
+      const rendered = viewRef.current?.renderer
+        ?.getContents?.()
+        .find((content) => content.doc === doc);
+      if (rendered) sectionIndexRef.current = rendered.index;
       scopeRef.current = computeChapterScope(
         state.book,
         state.book?.toc,
@@ -518,7 +639,7 @@ export function useReadAloud({
       const startIndex = findParagraphIndex(queue, range);
       void playIndex(startIndex);
     },
-    [buildQueue, findParagraphIndex, getAudio, playIndex]
+    [buildQueue, findParagraphIndex, getAudio, playIndex, viewRef]
   );
 
   const startChapter = useCallback(
@@ -542,10 +663,10 @@ export function useReadAloud({
 
   const pause = useCallback(() => {
     if (statusRef.current !== "playing") return;
-    clearPrefetchTimer();
+    cancelReadAhead();
     audioRef.current?.pause();
     updateStatus("paused");
-  }, [clearPrefetchTimer, updateStatus]);
+  }, [cancelReadAhead, updateStatus]);
 
   const toggle = useCallback(() => {
     if (statusRef.current === "playing") {
@@ -560,7 +681,7 @@ export function useReadAloud({
         .resume()
         .then(() => {
           updateStatus("playing");
-          schedulePrefetch(indexRef.current + 1);
+          scheduleReadAhead(indexRef.current);
         })
         .catch(() => fail("Could not resume the audio. Try again."));
       return;
@@ -569,19 +690,19 @@ export function useReadAloud({
     if (statusRef.current === "error") {
       void playIndex(indexRef.current);
     }
-  }, [fail, getAudio, pause, playIndex, schedulePrefetch, updateStatus]);
+  }, [fail, getAudio, pause, playIndex, scheduleReadAhead, updateStatus]);
 
   const prev = useCallback(() => {
-    clearPrefetchTimer();
+    cancelReadAhead();
     if (indexRef.current > 0) void playIndex(indexRef.current - 1);
-  }, [clearPrefetchTimer, playIndex]);
+  }, [cancelReadAhead, playIndex]);
 
   const next = useCallback(() => {
-    clearPrefetchTimer();
+    cancelReadAhead();
     const target = indexRef.current + 1;
     if (target < queueRef.current.length) void playIndex(target);
     else finishQueue();
-  }, [clearPrefetchTimer, finishQueue, playIndex]);
+  }, [cancelReadAhead, finishQueue, playIndex]);
 
   const retry = useCallback(() => {
     void playIndex(indexRef.current);
@@ -590,7 +711,7 @@ export function useReadAloud({
   const stop = useCallback(() => {
     tokenRef.current++;
     pendingRef.current = null;
-    clearPrefetchTimer();
+    cancelReadAhead();
     getCache().abortAll();
     getAudio().stop();
     queueRef.current = [];
@@ -600,7 +721,7 @@ export function useReadAloud({
     setCurrentRange(null);
     setError(null);
     updateStatus("idle");
-  }, [clearPrefetchTimer, getAudio, getCache, updateStatus]);
+  }, [cancelReadAhead, getAudio, getCache, updateStatus]);
 
   const nextChapter = useCallback(() => {
     const scope = scopeRef.current;

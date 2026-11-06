@@ -76,6 +76,10 @@ Clicking a question under *Questions to hold* sends it to Ask.
 Audio is cached on your device (128 MB LRU), so replaying a paragraph you have already heard is
 instant and free. Speed is adjustable while playing.
 
+While a paragraph plays, the app prepares the paragraphs that come next. This keeps the reading
+smooth. The app may send a few paragraphs that you have not heard yet; they stay in the cache, so
+you do not pay for them twice.
+
 ## 6. Keep your words
 
 Select any text in a book:

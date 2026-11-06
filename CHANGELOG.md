@@ -7,6 +7,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Read aloud** — pre-generates a read-ahead buffer of upcoming paragraphs, so playback continues
+  without a wait between short paragraphs and across chapter transitions.
+
 ### Planned
 
 - Vocabulary export for Anki (CSV).

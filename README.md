@@ -76,6 +76,9 @@ you saved on page 40 is available on page 400.
 You can start the read-aloud from any paragraph or chapter. You select the voice in Settings. The
 app stores the audio on your device. A chapter that you listened to before does not cost again.
 
+While you listen, the app prepares the next paragraphs. This keeps the reading smooth. If you stop
+early, the audio it already prepared stays on your device and does not cost again.
+
 ### Library and reader
 
 The app shows the cover, the progress, and the last date for each book. You can filter the library

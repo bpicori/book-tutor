@@ -1,4 +1,3 @@
-import type { ReadAloudParagraph } from "../utils/ttsChunker";
 import { generateSpeech, type SpeechRequestSettings } from "./speechService";
 import {
   getSpeechBlob,
@@ -35,11 +34,11 @@ export class SpeechCache {
   }
 
   get(
-    paragraph: ReadAloudParagraph,
+    text: string,
     settings: SpeechRequestSettings,
     bookId: string | null
   ): Promise<string> {
-    const key = this.memoryKey(paragraph.text, settings, bookId);
+    const key = this.memoryKey(text, settings, bookId);
     const cached = this.urls.get(key);
     if (cached) return Promise.resolve(cached);
 
@@ -51,7 +50,7 @@ export class SpeechCache {
     this.controllers.add(controller);
     const promise = this.resolve(
       key,
-      paragraph,
+      text,
       settings,
       bookId,
       controller
@@ -65,7 +64,7 @@ export class SpeechCache {
 
   private async resolve(
     key: string,
-    paragraph: ReadAloudParagraph,
+    text: string,
     settings: SpeechRequestSettings,
     bookId: string | null,
     controller: AbortController
@@ -75,7 +74,7 @@ export class SpeechCache {
       settings.model,
       settings.voice,
       bookId ?? "",
-      paragraph.text
+      text
     );
 
     // A persisted hit never touches the network.
@@ -90,11 +89,7 @@ export class SpeechCache {
       return url;
     }
 
-    const blob = await generateSpeech(
-      paragraph.text,
-      settings,
-      controller.signal
-    );
+    const blob = await generateSpeech(text, settings, controller.signal);
     const url = URL.createObjectURL(blob);
     this.urls.set(key, url);
     this.trim();
@@ -106,12 +101,12 @@ export class SpeechCache {
 
   /** Fetches a paragraph ahead of playback; resolves to its URL if it lands. */
   async prefetch(
-    paragraph: ReadAloudParagraph,
+    text: string,
     settings: SpeechRequestSettings,
     bookId: string | null
   ): Promise<string | undefined> {
     try {
-      return await this.get(paragraph, settings, bookId);
+      return await this.get(text, settings, bookId);
     } catch {
       // Prefetch failures are silent; playback retries on demand.
       return undefined;
