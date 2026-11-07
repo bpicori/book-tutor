@@ -260,7 +260,7 @@ export type ReaderFont = "iowan" | "charter" | "sans";
  */
 export interface TypographySettings {
   fontFamily: ReaderFont;
-  fontSize: number; // 16-24
+  fontSize: number; // 12-24
   lineHeight: number; // one of 1.55, 1.72, 1.9
   /** The reading column width in pixels. */
   readingWidth: number; // one of 560, 620, 680

@@ -39,6 +39,9 @@ export const READER_FONT_OPTIONS: { value: ReaderFont; label: string }[] = [
 export const READER_LINE_HEIGHTS = [1.55, 1.72, 1.9] as const;
 export const READER_WIDTHS = [560, 620, 680] as const;
 
+/** Reading text size in px. The lower bound keeps small phones usable. */
+export const READER_FONT_SIZE_RANGE = { min: 12, max: 24 } as const;
+
 export const DEFAULT_SPEECH_PROVIDER: SpeechProviderConfig = {
   baseUrl: OPENROUTER_BASE_URL,
   apiKey: "",

@@ -11,6 +11,7 @@ import {
   DEFAULT_SETTINGS,
   DEFAULT_SPEECH_PROVIDER,
   READER_FONTS,
+  READER_FONT_SIZE_RANGE,
 } from "../constants";
 
 const THEME_MAP: Record<string, Theme> = {
@@ -51,7 +52,11 @@ export function normalizeSettings(raw: unknown): ReaderSettings {
 
   const rawSize = Number(source.fontSize);
   const fontSize = Number.isFinite(rawSize)
-    ? clamp(Math.round(rawSize * 2) / 2, 16, 24)
+    ? clamp(
+        Math.round(rawSize * 2) / 2,
+        READER_FONT_SIZE_RANGE.min,
+        READER_FONT_SIZE_RANGE.max
+      )
     : DEFAULT_SETTINGS.fontSize;
 
   const lineHeights = [1.55, 1.72, 1.9];

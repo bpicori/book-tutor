@@ -1,5 +1,6 @@
 import {
   READER_FONT_OPTIONS,
+  READER_FONT_SIZE_RANGE,
   READER_LINE_HEIGHTS,
   READER_WIDTHS,
 } from "../../../constants";
@@ -60,15 +61,15 @@ export function TypographyPanel() {
             <Range
               id="set-size"
               value={settings.fontSize}
-              min={16}
-              max={24}
+              min={READER_FONT_SIZE_RANGE.min}
+              max={READER_FONT_SIZE_RANGE.max}
               step={0.5}
               label="Reading font size"
               onChange={(fontSize) => updateSettings({ fontSize })}
             />
             <div className="range-scale">
-              <span>16</span>
-              <span>24</span>
+              <span>{READER_FONT_SIZE_RANGE.min}</span>
+              <span>{READER_FONT_SIZE_RANGE.max}</span>
             </div>
           </div>
 

@@ -1,6 +1,7 @@
 import {
   DEFAULT_SETTINGS,
   READER_FONT_OPTIONS,
+  READER_FONT_SIZE_RANGE,
   READER_LINE_HEIGHTS,
   READER_WIDTHS,
   THEMES,
@@ -68,8 +69,8 @@ export function TypePopover() {
         </p>
         <Range
           value={settings.fontSize}
-          min={16}
-          max={24}
+          min={READER_FONT_SIZE_RANGE.min}
+          max={READER_FONT_SIZE_RANGE.max}
           step={0.5}
           label="Reading font size"
           onChange={(fontSize) => updateSettings({ fontSize })}

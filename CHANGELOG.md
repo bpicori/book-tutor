@@ -11,6 +11,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **Read aloud** — pre-generates a read-ahead buffer of upcoming paragraphs, so playback continues
   without a wait between short paragraphs and across chapter transitions.
+- **Typography** — the reading-size control now goes down to 12 px (was 16 px), for smaller text on
+  phones. The default stays at 19.5 px.
 
 ### Planned
 
